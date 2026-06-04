@@ -61,10 +61,16 @@ WSGI_APPLICATION = 'Event_Project.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=True if os.environ.get('DATABASE_URL') else False
     )
 }
+if not DATABASES['default']:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 

@@ -1,15 +1,13 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule Event — NexusFlow</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+{% block title %}Schedule Event — NexusFlow {% endblock %}
+
+{% block content %}
+<!-- Isolated UI Sandbox Wrapper to prevent style contamination with base layout -->
+<div class="nf-sandbox">
     <style>
-        :root {
+        .nf-sandbox {
             --primary: #38bdf8;
             --accent: #ff007a;
             --bg: #070513;
@@ -21,84 +19,53 @@
             --agent-glow: rgba(56, 189, 248, 0.15);
             --ai-gold: #fbbf24;
             --ai-glow: rgba(251, 191, 36, 0.08);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
+            
             box-sizing: border-box;
             font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg);
-            background-image: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
-                              radial-gradient(circle at 90% 80%, rgba(255, 0, 122, 0.04) 0%, transparent 40%);
             color: var(--text-main);
-            padding: 40px 20px;
+            padding: 20px 0 40px 0;
             min-height: 100vh;
         }
 
-        .container {
+        .nf-sandbox * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nf-container {
             max-width: 850px;
             margin: 0 auto;
         }
 
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            transition: 0.2s ease;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 8px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .btn-back:hover {
-            color: var(--primary);
-            background: rgba(56, 189, 248, 0.1);
-            border-color: rgba(56, 189, 248, 0.2);
-        }
-
-        .header {
+        .nf-header {
             margin-bottom: 35px;
         }
 
-        .header-title-area {
+        .nf-header-title-area {
             display: flex;
             align-items: center;
             gap: 14px;
         }
 
-        .header h1 {
+        .nf-header h1 {
             font-size: 2.2rem;
             font-weight: 800;
             letter-spacing: -0.8px;
             background: linear-gradient(135deg, #ffffff, #cbd5e1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            line-height: 1.2;
         }
 
-        .header p {
+        .nf-header p {
             color: var(--text-muted);
             margin-top: 6px;
             font-size: 15px;
         }
 
         /* Progress Steps Indicator Matrix */
-        .step-progress-wrapper {
+        .nf-step-progress-wrapper {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -109,7 +76,7 @@
             border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        .step-item {
+        .nf-step-item {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -117,17 +84,17 @@
             transition: all 0.3s ease;
         }
 
-        .step-item.active {
+        .nf-step-item.active {
             opacity: 1;
         }
 
-        .step-item.active .step-number {
+        .nf-step-item.active .nf-step-number {
             background: var(--primary);
             color: var(--bg);
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
         }
 
-        .step-number {
+        .nf-step-number {
             width: 28px;
             height: 28px;
             border-radius: 8px;
@@ -140,12 +107,12 @@
             font-size: 13px;
         }
 
-        .step-label {
+        .nf-step-label {
             font-size: 14px;
             font-weight: 600;
         }
 
-        .step-divider {
+        .nf-step-divider {
             flex-grow: 1;
             height: 1px;
             background: rgba(255, 255, 255, 0.08);
@@ -153,11 +120,11 @@
         }
 
         /* Messages System Alerts */
-        .messages-container {
+        .nf-messages-container {
             margin-bottom: 25px;
         }
 
-        .alert {
+        .nf-alert {
             padding: 16px 20px;
             border-radius: 16px;
             margin-bottom: 12px;
@@ -166,20 +133,20 @@
             line-height: 1.5;
         }
 
-        .alert-error {
+        .nf-alert-error {
             background: rgba(239, 68, 68, 0.1);
             color: #fca5a5;
             border: 1px solid rgba(239, 68, 68, 0.25);
         }
 
-        .alert-success {
+        .nf-alert-success {
             background: rgba(16, 185, 129, 0.1);
             color: #a7f3d0;
             border: 1px solid rgba(16, 185, 129, 0.25);
         }
 
         /* AI Prediction Diagnostics Panel */
-        .ai-panel {
+        .nf-ai-panel {
             grid-column: 1 / -1;
             background: rgba(251, 191, 36, 0.03);
             border: 1px solid rgba(251, 191, 36, 0.2);
@@ -190,7 +157,7 @@
             position: relative;
         }
 
-        .ai-panel::before {
+        .nf-ai-panel::before {
             content: '';
             position: absolute;
             top: 0;
@@ -200,7 +167,7 @@
             background: var(--ai-gold);
         }
 
-        .ai-panel h4 {
+        .nf-ai-panel h4 {
             font-size: 0.8rem;
             font-weight: 800;
             color: var(--ai-gold);
@@ -212,21 +179,21 @@
             gap: 6px;
         }
 
-        .ai-metrics-row {
+        .nf-ai-metrics-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 16px;
             margin-bottom: 14px;
         }
 
-        .ai-metric-card {
+        .nf-ai-metric-card {
             background: rgba(15, 23, 42, 0.4);
             border: 1px solid rgba(251, 191, 36, 0.08);
             padding: 12px 16px;
             border-radius: 12px;
         }
 
-        .ai-metric-label {
+        .nf-ai-metric-label {
             font-size: 11px;
             font-weight: 700;
             color: var(--text-muted);
@@ -234,16 +201,16 @@
             margin-bottom: 4px;
         }
 
-        .ai-metric-value {
+        .nf-ai-metric-value {
             font-size: 1.25rem;
             font-weight: 800;
         }
 
-        .ai-metric-value.highlight {
+        .nf-ai-metric-value.highlight {
             color: #fef08a;
         }
 
-        .ai-reason-text {
+        .nf-ai-reason-text {
             font-size: 13px;
             line-height: 1.6;
             color: #e2e8f0;
@@ -253,7 +220,7 @@
         }
 
         /* Glass Form Containers */
-        .glass-card {
+        .nf-glass-card {
             background: var(--card);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -263,37 +230,37 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
         }
 
-        .form-step-section {
+        .nf-form-step-section {
             display: none;
         }
 
-        .form-step-section.active {
+        .nf-form-step-section.active {
             display: block;
-            animation: fadeIn 0.4s ease-in-out forwards;
+            animation: nfFadeIn 0.4s ease-in-out forwards;
         }
 
-        @keyframes fadeIn {
+        @keyframes nfFadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .form-grid {
+        .nf-form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 24px;
         }
 
-        .full-width {
+        .nf-full-width {
             grid-column: 1 / -1;
         }
 
-        .input-group {
+        .nf-input-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
 
-        .input-group label {
+        .nf-input-group label {
             font-size: 0.75rem;
             font-weight: 700;
             color: var(--primary);
@@ -301,7 +268,7 @@
             letter-spacing: 0.8px;
         }
 
-        input, select, textarea {
+        .nf-sandbox input, .nf-sandbox select, .nf-sandbox textarea {
             background: rgba(15, 23, 42, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 12px;
@@ -313,14 +280,14 @@
             width: 100%;
         }
 
-        input:focus, select:focus, textarea:focus {
+        .nf-sandbox input:focus, .nf-sandbox select:focus, .nf-sandbox textarea:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
             background: rgba(15, 23, 42, 0.75);
         }
 
-        .timeline-section-header {
+        .nf-timeline-section-header {
             grid-column: 1 / -1;
             margin-top: 10px;
             padding-bottom: 6px;
@@ -331,8 +298,18 @@
             text-transform: uppercase;
         }
 
+        /* Dynamic Field Errors Styling */
+        .nf-field-error-msg {
+            color: var(--error);
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+            display: block;
+            animation: nfFadeIn 0.2s ease-in-out forwards;
+        }
+
         /* File Dropper Asset Area */
-        .file-upload-wrapper {
+        .nf-file-upload-wrapper {
             position: relative;
             border: 2px dashed rgba(255, 255, 255, 0.15);
             padding: 30px 24px;
@@ -342,12 +319,12 @@
             transition: 0.25s ease;
         }
 
-        .file-upload-wrapper:hover {
+        .nf-file-upload-wrapper:hover {
             border-color: var(--primary);
             background: rgba(56, 189, 248, 0.03);
         }
 
-        .file-upload-wrapper input[type="file"] {
+        .nf-file-upload-wrapper input[type="file"] {
             position: absolute;
             top: 0;
             left: 0;
@@ -357,7 +334,7 @@
             cursor: pointer;
         }
 
-        .poster-preview-element {
+        .nf-poster-preview-element {
             max-height: 180px;
             max-width: 100%;
             object-fit: contain;
@@ -368,14 +345,14 @@
         }
 
         /* Admin Controls Segment */
-        .admin-panel {
+        .nf-admin-panel {
             background: rgba(56, 189, 248, 0.02);
             border: 1px solid rgba(56, 189, 248, 0.15);
             padding: 24px;
             border-radius: 16px;
         }
 
-        .admin-header-text {
+        .nf-admin-header-text {
             font-size: 0.75rem;
             font-weight: 800;
             color: #fbbf24;
@@ -387,21 +364,21 @@
             gap: 6px;
         }
 
-        .toggle-group {
+        .nf-toggle-group {
             display: flex;
             align-items: center;
             gap: 12px;
             margin-bottom: 20px;
         }
 
-        .toggle-group input[type="checkbox"] {
+        .nf-toggle-group input[type="checkbox"] {
             width: auto;
             scale: 1.15;
             cursor: pointer;
         }
 
         /* Dynamic Control Action Buttons Block */
-        .action-button-row {
+        .nf-action-button-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -411,7 +388,7 @@
             border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .btn-nav-control {
+        .nf-btn-nav-control {
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-main);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -423,11 +400,11 @@
             transition: all 0.2s ease;
         }
 
-        .btn-nav-control:hover {
+        .nf-btn-nav-control:hover {
             background: rgba(255, 255, 255, 0.1);
         }
 
-        .btn-nav-control.primary-action {
+        .nf-btn-nav-control.primary-action {
             background: linear-gradient(135deg, var(--primary), #0284c7);
             color: #070513;
             border: none;
@@ -435,114 +412,102 @@
             box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
         }
 
-        .btn-nav-control.primary-action:hover {
+        .nf-btn-nav-control.primary-action:hover {
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35);
             background: linear-gradient(135deg, #7dd3fc, var(--primary));
         }
 
-        #icon {
+        #nf-icon {
             height: 32px;
             width: auto;
         }
 
         @media (max-width: 680px) {
-            .form-grid, .ai-metrics-row {
+            .nf-form-grid, .nf-ai-metrics-row {
                 grid-template-columns: 1fr;
             }
-            .step-progress-wrapper {
+            .nf-step-progress-wrapper {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 12px;
             }
-            .step-divider {
+            .nf-step-divider {
                 display: none;
             }
         }
     </style>
-</head>
 
-<body>
-
-    <div class="container">
-        
-        <div class="top-bar">
-            <a href="javascript:history.back()" class="btn-back">← Back to Dashboard</a>
-<div style="display:flex;align-items:center;gap:6px;opacity:0.4;">
-  <img src="{% static 'nexusflow_icon.svg' %}" style="height:18px;width:18px;border-radius:4px;">
-  <span style="font-size:11px;font-weight:800;color:#fff;letter-spacing:2px;text-transform:uppercase;">NexusFlow</span>
-</div>
-        </div>
-
-        <div class="header">
-            <div class="header-title-area">
+    <div class="nf-container">
+        <div class="nf-header">
+            <div class="nf-header-title-area">
                 {% if static %}
-                    <img src="{% static 'nexusflow_icon.svg' %}" id="icon"
-     alt="NexusFlow" style="height:32px;width:32px;border-radius:7px;">
+                    <img src="{% static 'nexusflow_icon.svg' %}" id="nf-icon" alt="NexusFlow" style="height:32px;width:32px;border-radius:7px;">
                 {% endif %}
                 <h1>Schedule New Event</h1>
             </div>
             <p>Configure operational parameters and system infrastructure assignments cleanly.</p>
         </div>
 
-        <div class="step-progress-wrapper">
-            <div class="step-item active" id="step-node-1">
-                <div class="step-number">1</div>
-                <div class="step-label">Basic Metrics</div>
+        <div class="nf-step-progress-wrapper">
+            <div class="nf-step-item active" id="step-node-1">
+                <div class="nf-step-number">1</div>
+                <div class="nf-step-label">Basic Metrics</div>
             </div>
-            <div class="step-divider"></div>
-            <div class="step-item" id="step-node-2">
-                <div class="step-number">2</div>
-                <div class="step-label">Time & Allocation</div>
+            <div class="nf-step-divider"></div>
+            <div class="nf-step-item" id="step-node-2">
+                <div class="nf-step-number">2</div>
+                <div class="nf-step-label">Time & Allocation</div>
             </div>
-            <div class="step-divider"></div>
-            <div class="step-item" id="step-node-3">
-                <div class="step-number">3</div>
-                <div class="step-label">Review & Post</div>
+            <div class="nf-step-divider"></div>
+            <div class="nf-step-item" id="step-node-3">
+                <div class="nf-step-number">3</div>
+                <div class="nf-step-label">Review & Post</div>
             </div>
         </div>
 
         {% if messages %}
-        <div class="messages-container">
+        <div class="nf-messages-container">
             {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                <div class="nf-alert nf-alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
                     {{ message }}
                 </div>
             {% endfor %}
         </div>
         {% endif %}
 
-        <form method="POST" enctype="multipart/form-data" class="glass-card" id="multi-step-form">
+        <form method="POST" enctype="multipart/form-data" class="nf-glass-card" id="multi-step-form">
             {% csrf_token %}
             
-            <div class="form-step-section active" id="step-section-1">
-                <div class="form-grid">
+            <!-- STEP 1: Basic Metrics -->
+            <div class="nf-form-step-section active" id="step-section-1">
+                <div class="nf-form-grid">
                     
                     {% if ai_prediction %}
-                    <div class="ai-panel">
+                    <div class="nf-ai-panel">
                         <h4>⚡ Agentic AI Event Intelligence</h4>
-                        <div class="ai-metrics-row">
-                            <div class="ai-metric-card">
-                                <div class="ai-metric-label">Predicted Attendance</div>
-                                <div class="ai-metric-value highlight">{{ ai_prediction.predicted_crowd }} Students</div>
+                        <div class="nf-ai-metrics-row">
+                            <div class="nf-ai-metric-card">
+                                <div class="nf-ai-metric-label">Predicted Attendance</div>
+                                <div class="nf-ai-metric-value highlight">{{ ai_prediction.predicted_crowd }} Students</div>
                             </div>
-                            <div class="ai-metric-card">
-                                <div class="ai-metric-label">Confidence Level</div>
-                                <div class="ai-metric-value">{{ ai_prediction.confidence }}</div>
+                            <div class="nf-ai-metric-card">
+                                <div class="nf-ai-metric-label">Confidence Level</div>
+                                <div class="nf-ai-metric-value">{{ ai_prediction.confidence }}</div>
                             </div>
                         </div>
-                        <div class="ai-reason-text">
+                        <div class="nf-ai-reason-text">
                             <strong>AI Crowd Analysis:</strong><br>
                             {{ ai_prediction.reason }}
                         </div>
                         <br>
-                        <div class="ai-reason-text">
+                        <div class="nf-ai-reason-text">
                             <strong>AI Venue Decision:</strong><br>
                             {{ ai_prediction.venue_reason }}
                         </div>
                         {% if ai_prediction.warnings %}
                         <br>
-                        <div class="ai-reason-text">
+                        <div class="nf-ai-reason-text">
                             <strong>Warnings:</strong>
                             <ul style="margin-top:10px; padding-left:20px;">
                                 {% for warning in ai_prediction.warnings %}
@@ -554,82 +519,84 @@
                     </div>
                     {% endif %}
 
-                    <div class="input-group full-width">
+                    <div class="nf-input-group nf-full-width">
                         <label>Event Title (Catchy Heading)</label>
                         <input type="text" name="title" placeholder="e.g., Innovate 2026: The Future of AI" required>
                     </div>
 
-                    <div class="input-group full-width">
+                    <div class="nf-input-group nf-full-width">
                         <label>Description</label>
                         <textarea name="description" rows="4" placeholder="Describe context, rules, and outcomes..." required></textarea>
                     </div>
 
-                    <div class="input-group full-width">
+                    <div class="nf-input-group nf-full-width">
                         <label>Expected Crowd Capacity</label>
                         <input type="number" name="expected_crowd" min="1" placeholder="e.g., 150" required>
                     </div>
                 </div>
             </div>
 
-            <div class="form-step-section" id="step-section-2">
-                <div class="form-grid">
-                    <div class="timeline-section-header">Target Date & Operational Hours</div>
+            <!-- STEP 2: Time & Allocation Window -->
+            <div class="nf-form-step-section" id="step-section-2">
+                <div class="nf-form-grid">
+                    <div class="nf-timeline-section-header">Target Date & Operational Hours</div>
                     
-                    <div class="input-group full-width">
+                    <div class="nf-input-group nf-full-width">
                         <label>Event Date</label>
                         <input type="date" name="date" required id="event_date">
                     </div>
 
-                    <div class="input-group">
+                    <div class="nf-input-group">
                         <label>Start Time</label>
-                        <input type="time" name="start_time" required>
+                        <input type="time" name="start_time" id="start_time" required>
                     </div>
 
-                    <div class="input-group">
+                    <div class="nf-input-group">
                         <label>End Time</label>
-                        <input type="time" name="end_time" required>
+                        <input type="time" name="end_time" id="end_time" required>
                     </div>
 
-                    <div class="timeline-section-header">Gate Registration Windows</div>
+                    <div class="nf-timeline-section-header">Gate Registration Windows</div>
 
-                    <div class="input-group">
+                    <div class="nf-input-group">
                         <label>Registration Opens</label>
-                        <input type="datetime-local" name="registration_start" required>
+                        <input type="datetime-local" name="registration_start" id="registration_start" required>
                     </div>
 
-                    <div class="input-group">
+                    <div class="nf-input-group">
                         <label>Registration Closes</label>
-                        <input type="datetime-local" name="registration_end" required>
+                        <input type="datetime-local" name="registration_end" id="registration_end" required>
                     </div>
                 </div>
             </div>
 
-            <div class="form-step-section" id="step-section-3">
-                <div class="form-grid">
-                    <div class="timeline-section-header">Visual Promotional Asset</div>
+            <!-- STEP 3: Review & Post Controls -->
+            <div class="nf-form-step-section" id="step-section-3">
+                <div class="nf-form-grid">
+                    <div class="nf-timeline-section-header">Visual Promotional Asset</div>
                     
-                    <div class="input-group full-width">
-                        <div class="file-upload-wrapper">
+                    <div class="nf-input-group nf-full-width">
+                        <div class="nf-file-upload-wrapper">
                             <input type="file" name="poster" accept="image/*" id="poster_input">
                             <p id="file_status" style="font-size: 14px; font-weight: 500; color: var(--text-muted);">
                                 Drag &amp; drop or click to upload assets
                             </p>
-                            <img id="poster_preview" class="poster-preview-element" alt="Preview Asset Container">
+                            <img id="poster_preview" class="nf-poster-preview-element" alt="Preview Asset Container">
                         </div>
                     </div>
 
                     {% if is_admin %}
-                    <div class="timeline-section-header">Administrative Controls</div>
-                    <div class="admin-panel full-width">
-                        <div class="admin-header-text">🛡️ Privileged Authorization Matrix</div>
+                    <div class="nf-timeline-section-header">Administrative Controls</div>
+                    <div class="nf-admin-panel nf-full-width">
+                        <div class="nf-admin-header-text">🛡️ Privileged Authorization Matrix</div>
 
-                        <div class="toggle-group">
+                        <div class="nf-toggle-group">
                             <input type="checkbox" name="is_general" id="is_general">
                             <label for="is_general">Promote to General Scope Event (Cross-Institutional)</label>
                         </div>
 
-                        <div class="form-grid" style="gap: 16px;">
-                            <div class="input-group">
+                        <div class="nf-form-grid" style="gap: 16px;">
+                            <div class="nf-input-group">
                                 <label>Static Venue Override</label>
                                 <select name="override_venue">
                                     <option value="">-- Auto-Assign Allocation --</option>
@@ -639,7 +606,7 @@
                                 </select>
                             </div>
 
-                            <div class="input-group" id="college_selector">
+                            <div class="nf-input-group" id="college_selector">
                                 <label>Institution Assignment Context</label>
                                 <select name="college_profile">
                                     <option value="">-- Target Profile --</option>
@@ -654,105 +621,192 @@
                 </div>
             </div>
 
-            <div class="action-button-row">
-                <button type="button" class="btn-nav-control" id="btn-prev-step" style="visibility: hidden;">Previous Step</button>
-                <button type="button" class="btn-nav-control primary-action" id="btn-next-step">Continue</button>
+            <div class="nf-action-button-row">
+                <button type="button" class="nf-btn-nav-control" id="btn-prev-step" style="visibility: hidden;">Previous Step</button>
+                <button type="button" class="nf-btn-nav-control primary-action" id="btn-next-step">Continue</button>
             </div>
         </form>
     </div>
+</div>
 
-    <script>
-        // Set dynamic date validation safeguards
-        const todayStr = new Date().toISOString().split('T')[0];
-        document.getElementById('event_date').setAttribute('min', todayStr);
+<script>
+    // Set dynamic date validation safeguards
+    const todayStr = new Date().toISOString().split('T')[0];
+    const eventDateInput = document.getElementById('event_date');
+    if (eventDateInput) eventDateInput.setAttribute('min', todayStr);
 
-        // Step Navigation Controller
-        let activeStep = 1;
-        const totalSteps = 3;
+    let activeStep = 1;
+    const totalSteps = 3;
 
-        const btnPrev = document.getElementById('btn-prev-step');
-        const btnNext = document.getElementById('btn-next-step');
-        const multiForm = document.getElementById('multi-step-form');
+    const btnPrev = document.getElementById('btn-prev-step');
+    const btnNext = document.getElementById('btn-next-step');
+    const multiForm = document.getElementById('multi-step-form');
 
-        function changeStepVisibility(targetStep) {
-            document.querySelectorAll('.form-step-section').forEach(section => section.classList.remove('active'));
-            document.querySelectorAll('.step-item').forEach(node => node.classList.remove('active'));
+    // --- Inline Error UI Elements State Renderers ---
+    function showFieldError(inputElement, message) {
+        clearFieldError(inputElement);
+        inputElement.style.borderColor = 'var(--error)';
+        inputElement.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.15)';
+        
+        const errorDiv = document.createElement('span');
+        errorDiv.className = 'nf-field-error-msg';
+        errorDiv.innerText = message;
+        inputElement.parentNode.appendChild(errorDiv);
+    }
 
-            document.getElementById(`step-section-${targetStep}`).classList.add('active');
-            for(let i = 1; i <= targetStep; i++) {
-                document.getElementById(`step-node-${i}`).classList.add('active');
-            }
-
-            btnPrev.style.visibility = (targetStep === 1) ? 'hidden' : 'visible';
-            btnNext.innerText = (targetStep === totalSteps) ? 'Schedule & Reserve Venue ⚡' : 'Continue';
+    function clearFieldError(inputElement) {
+        inputElement.style.borderColor = '';
+        inputElement.style.boxShadow = '';
+        const existingError = inputElement.parentNode.querySelector('.nf-field-error-msg');
+        if (existingError) {
+            existingError.remove();
         }
+    }
 
-        btnNext.addEventListener('click', () => {
-            // Validate basic inputs in the active section before progressing
-            const activeInputs = document.getElementById(`step-section-${activeStep}`).querySelectorAll('input[required], textarea[required]');
-            let stepValid = true;
-            activeInputs.forEach(input => {
-                if(!input.checkValidity()) {
-                    input.reportValidity();
-                    stepValid = false;
-                }
-            });
+    // --- Real-time Validation Engine ---
+    function runRealTimeChecks() {
+        let isStep2Valid = true;
 
-            if(!stepValid) return;
+        const dateInput = document.getElementById('event_date');
+        const startTimeInput = document.getElementById('start_time');
+        const endTimeInput = document.getElementById('end_time');
+        const regStartInput = document.getElementById('registration_start');
+        const regEndInput = document.getElementById('registration_end');
 
-            if (activeStep < totalSteps) {
-                activeStep++;
-                changeStepVisibility(activeStep);
+        const now = new Date();
+
+        // 1. Validate Event Date Window Context
+        if (dateInput && dateInput.value) {
+            const selectedDate = new Date(dateInput.value + 'T00:00:00');
+            const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            if (selectedDate < todayMidnight) {
+                showFieldError(dateInput, "Target event dates cannot look into the past.");
+                isStep2Valid = false;
             } else {
-                multiForm.submit();
+                clearFieldError(dateInput);
+            }
+        }
+
+        // 2. Validate Operational Layout Timelines
+        if (startTimeInput && endTimeInput && startTimeInput.value && endTimeInput.value) {
+            if (endTimeInput.value <= startTimeInput.value) {
+                showFieldError(endTimeInput, "Operational end time must occur strictly after start execution.");
+                isStep2Valid = false;
+            } else {
+                clearFieldError(endTimeInput);
+            }
+        }
+
+        // 3. Validate Gate Registration Access Bounds
+        if (regStartInput && regEndInput && regStartInput.value && regEndInput.value) {
+            const regStart = new Date(regStartInput.value);
+            const regEnd = new Date(regEndInput.value);
+
+            if (regEnd <= regStart) {
+                showFieldError(regEndInput, "Registration gate window close must be after opening timeline initialization.");
+                isStep2Valid = false;
+            } else {
+                clearFieldError(regEndInput);
+            }
+        }
+
+        return isStep2Valid;
+    }
+
+    // Assign Event Listeners dynamically to detect input changes or blur highlights
+    const step2Fields = ['event_date', 'start_time', 'end_time', 'registration_start', 'registration_end'];
+    step2Fields.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('blur', runRealTimeChecks);
+            element.addEventListener('input', runRealTimeChecks);
+        }
+    });
+
+    // --- Multi-Step Visibility Controller Layer ---
+    function changeStepVisibility(targetStep) {
+        document.querySelectorAll('.nf-form-step-section').forEach(section => section.classList.remove('active'));
+        document.querySelectorAll('.nf-step-item').forEach(node => node.classList.remove('active'));
+
+        document.getElementById(`step-section-${targetStep}`).classList.add('active');
+        for(let i = 1; i <= targetStep; i++) {
+            document.getElementById(`step-node-${i}`).classList.add('active');
+        }
+
+        btnPrev.style.visibility = (targetStep === 1) ? 'hidden' : 'visible';
+        btnNext.innerText = (targetStep === totalSteps) ? 'Schedule & Reserve Venue ⚡' : 'Continue';
+    }
+
+    btnNext.addEventListener('click', () => {
+        // Validate system parameters within current viewport section
+        const activeInputs = document.getElementById(`step-section-${activeStep}`).querySelectorAll('input[required], textarea[required]');
+        let stepValid = true;
+        activeInputs.forEach(input => {
+            if(!input.checkValidity()) {
+                input.reportValidity();
+                stepValid = false;
             }
         });
 
-        btnPrev.addEventListener('click', () => {
-            if (activeStep > 1) {
-                activeStep--;
-                changeStepVisibility(activeStep);
+        if(!stepValid) return;
+
+        // Deep intercept conditional mapping validation check for Step 2 parameters
+        if (activeStep === 2 && !runRealTimeChecks()) {
+            return;
+        }
+
+        if (activeStep < totalSteps) {
+            activeStep++;
+            changeStepVisibility(activeStep);
+        } else {
+            multiForm.submit();
+        }
+    });
+
+    btnPrev.addEventListener('click', () => {
+        if (activeStep > 1) {
+            activeStep--;
+            changeStepVisibility(activeStep);
+        }
+    });
+
+    // Live Image File Poster Asset Upload Rendering Preview Logic
+    const fileInput = document.getElementById('poster_input');
+    const fileStatus = document.getElementById('file_status');
+    const previewImg = document.getElementById('poster_preview');
+
+    if (fileInput && fileStatus) {
+        fileInput.addEventListener('change', (e) => {
+            if(e.target.files.length > 0) {
+                const selectedFile = e.target.files[0];
+                fileStatus.innerText = `Selected asset: ${selectedFile.name}`;
+                fileStatus.style.color = 'var(--primary)';
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImg.src = event.target.result;
+                    previewImg.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(selectedFile);
             }
         });
+    }
 
-        // Live Image File Poster Asset Upload Rendering Preview Logic
-        const fileInput = document.getElementById('poster_input');
-        const fileStatus = document.getElementById('file_status');
-        const previewImg = document.getElementById('poster_preview');
-
-        if (fileInput && fileStatus) {
-            fileInput.addEventListener('change', (e) => {
-                if(e.target.files.length > 0) {
-                    const selectedFile = e.target.files[0];
-                    fileStatus.innerText = `Selected asset: ${selectedFile.name}`;
-                    fileStatus.style.color = 'var(--primary)';
-                    
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        previewImg.src = event.target.result;
-                        previewImg.style.display = 'inline-block';
-                    };
-                    reader.readAsDataURL(selectedFile);
-                }
-            });
-        }
-
-        // Admin Profile Context Selection Visibility States
-        {% if is_admin %}
-        const isGeneralCheck = document.getElementById('is_general');
-        const collegeSelector = document.getElementById('college_selector');
-        if (isGeneralCheck && collegeSelector) {
-            isGeneralCheck.addEventListener('change', () => {
-                if (isGeneralCheck.checked) {
-                    collegeSelector.style.opacity = '0.25';
-                    collegeSelector.style.pointerEvents = 'none';
-                } else {
-                    collegeSelector.style.opacity = '1';
-                    collegeSelector.style.pointerEvents = 'all';
-                }
-            });
-        }
-        {% endif %}
-    </script>
-</body>
-</html>
+    // Admin Profile Context Selection Visibility States
+    {% if is_admin %}
+    const isGeneralCheck = document.getElementById('is_general');
+    const collegeSelector = document.getElementById('college_selector');
+    if (isGeneralCheck && collegeSelector) {
+        isGeneralCheck.addEventListener('change', () => {
+            if (isGeneralCheck.checked) {
+                collegeSelector.style.opacity = '0.25';
+                collegeSelector.style.pointerEvents = 'none';
+            } else {
+                collegeSelector.style.opacity = '1';
+                collegeSelector.style.pointerEvents = 'all';
+            }
+        });
+    }
+    {% endif %}
+</script>
+{% endblock %}
