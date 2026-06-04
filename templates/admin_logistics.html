@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Logistics & Pass Configuration Console{% endblock %}
+
+{% block extrahead %}
+<style>
+    .logistics-sandbox {
+        --logi-cyan: #00f0ff;
+        --logi-rose: #ff007f;
+        --logi-amber: #ffaa00;
+        --logi-emerald: #39ff14;
+        --logi-card: #0b1120;
+        --logi-border: rgba(255, 255, 255, 0.08);
+        --logi-muted: #64748b;
+        display: block;
+        width: 100%;
+        margin-top: 20px;
+    }
+    .logistics-sandbox .console-header { margin-bottom: 32px; }
+    .logistics-sandbox .console-header h2 { margin: 0; font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #ffffff 40%, var(--logi-muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .logistics-sandbox .console-header p { margin: 6px 0 0 0; color: var(--logi-muted); font-size: 14px; }
+    .logistics-sandbox .logistics-rows-stack { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+    .logistics-sandbox .event-logistics-panel { background: var(--logi-card); border: 1px solid var(--logi-border); border-radius: 14px; padding: 24px; display: grid; grid-template-columns: 1fr 280px 320px; gap: 24px; align-items: start; }
+    .logistics-sandbox .meta-details-segment { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+    .logistics-sandbox .event-header-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .logistics-sandbox .event-title { font-size: 18px; font-weight: 700; color: #ffffff; margin: 0; }
+    .logistics-sandbox .badge-status { font-size: 9px; font-weight: 700; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; }
+    .logistics-sandbox .status-approved { background: rgba(57, 255, 20, 0.08); color: var(--logi-emerald); border: 1px solid rgba(57, 255, 20, 0.2); }
+    .logistics-sandbox .status-pending { background: rgba(255, 170, 0, 0.08); color: var(--logi-amber); border: 1px solid rgba(255, 170, 0, 0.2); }
+    .logistics-sandbox .info-subtext-grid { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--logi-muted); }
+    .logistics-sandbox .info-subtext-grid span { display: flex; align-items: center; gap: 6px; }
+    .logistics-sandbox .info-subtext-grid i { color: var(--logi-cyan); }
+    .logistics-sandbox .pass-state-indicator { margin-top: 16px; display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    .logistics-sandbox .indicator-published { color: var(--logi-emerald); }
+    .logistics-sandbox .indicator-restricted { color: var(--logi-rose); }
+    .logistics-sandbox .telemetry-metrics-segment { background: rgba(6, 9, 19, 0.4); border: 1px solid rgba(255, 255, 255, 0.03); border-radius: 10px; padding: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center; align-self: center; }
+    .logistics-sandbox .telemetry-card h5 { margin: 0; font-size: 9px; text-transform: uppercase; color: var(--logi-muted); }
+    .logistics-sandbox .telemetry-card p { margin: 6px 0 0 0; font-size: 18px; font-weight: 700; color: #ffffff; font-family: monospace; }
+    .logistics-sandbox .telemetry-card:not(:last-child) { border-right: 1px solid rgba(255, 255, 255, 0.05); }
+    .logistics-sandbox .admin-actions-segment { border-left: 1px solid rgba(255, 255, 255, 0.05); padding-left: 24px; display: flex; flex-direction: column; gap: 14px; }
+    .logistics-sandbox .assignment-notice { font-size: 12px; color: var(--logi-muted); line-height: 1.4; }
+    .logistics-sandbox .assignment-notice strong { color: var(--logi-cyan); }
+    .logistics-sandbox .inline-action-form { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    .logistics-sandbox .select-manager-dropdown { width: 100%; background: rgba(6, 9, 19, 0.8); border: 1px solid var(--logi-border); border-radius: 6px; padding: 10px 12px; color: #ffffff; font-family: inherit; font-size: 13px; }
+    .logistics-sandbox .notes-field-input { width: 100%; background: rgba(6, 9, 19, 0.8); border: 1px solid var(--logi-border); border-radius: 6px; padding: 8px 12px; color: #ffffff; font-family: inherit; font-size: 12px; resize: none; }
+    .logistics-sandbox .btn-control-submit { background: rgba(0, 240, 255, 0.08); color: var(--logi-cyan); border: 1px solid rgba(0, 240, 255, 0.2); padding: 10px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; text-transform: uppercase; }
+    .logistics-sandbox .btn-control-submit:hover { background: var(--logi-cyan); color: #060913; }
+    .logistics-sandbox .btn-unpublish-trigger { background: rgba(255, 0, 127, 0.08); color: var(--logi-rose); border: 1px solid rgba(255, 0, 127, 0.2); padding: 10px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; width: 100%; text-transform: uppercase; }
+    .logistics-sandbox .btn-unpublish-trigger:hover { background: var(--logi-rose); color: #ffffff; }
+    
+    @media (max-width: 1100px) {
+        .logistics-sandbox .event-logistics-panel { grid-template-columns: 1fr; }
+        .logistics-sandbox .admin-actions-segment { border-left: none; padding-left: 0; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 20px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logistics-sandbox">
+
+    <div class="console-header">
+        <h2>Ecosystem Logistics Configuration</h2>
+        <p>Appoint operational staff overlays or verify current organizer logistics metrics.</p>
+    </div>
+
+    <div class="logistics-rows-stack">
+        {% for data in event_data %}
+            <div class="event-logistics-panel">
+                
+                <!-- Segment 1: Identity -->
+                <div class="meta-details-segment">
+                    <div>
+                        <div class="event-header-row">
+                            <h3 class="event-title">{{ data.event.title }}</h3>
+                            <span class="badge-status {% if data.event.status == 'APPROVED' %}status-approved{% else %}status-pending{% endif %}">
+                                {{ data.event.status }}
+                            </span>
+                        </div>
+                        
+                        <div class="info-subtext-grid">
+                            <span><i class="fa-solid fa-building"></i> {{ data.event.venue.name|default:"Virtual Space / Unassigned" }}</span>
+                            <span><i class="fa-solid fa-calendar-day"></i> {{ data.event.date|date:"M d, Y" }}</span>
+                            <span><i class="fa-solid fa-user-tie"></i> Organizer: {{ data.event.organizer.get_full_name|default:data.event.organizer.username }}</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        {% if data.is_published %}
+                            <div class="pass-state-indicator indicator-published">
+                                <i class="fa-solid fa-circle-check"></i> Passes Active & Scan Streams Live
+                            </div>
+                        {% else %}
+                            <div class="pass-state-indicator indicator-restricted">
+                                <i class="fa-solid fa-circle-minus"></i> Passes Pending / Locked
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Segment 2: Live Metrics Telemetry -->
+                <div class="telemetry-metrics-segment">
+                    <div class="telemetry-card">
+                        <h5>Registered</h5>
+                        <p>{{ data.total_registered }}</p>
+                    </div>
+                    <div class="telemetry-card">
+                        <h5>Active Passes</h5>
+                        <p>{{ data.passes_active }}</p>
+                    </div>
+                    <div class="telemetry-card">
+                        <h5>Verified In</h5>
+                        <p>{{ data.passes_verified }}</p>
+                    </div>
+                </div>
+
+                <!-- Segment 3: Assignment System Override Controls -->
+                <div class="admin-actions-segment">
+                    <div class="assignment-notice">
+                        {% if data.has_explicit_assignment %}
+                            <span style="color: var(--logi-amber); font-weight: 600;">
+                                <i class="fa-solid fa-user-shield"></i> Proxy Manager Assigned:
+                            </span><br>
+                            <strong>{{ data.assigned_teacher.get_full_name|default:data.assigned_teacher.username }}</strong>
+                        {% else %}
+                            <span style="color: var(--logi-muted);">
+                                <i class="fa-solid fa-user-check"></i> Operating Manager:
+                            </span><br>
+                            <strong>{{ data.event.organizer.get_full_name|default:data.event.organizer.username }} (Organizer)</strong>
+                        {% endif %}
+                    </div>
+
+                    <!-- Explicit Overlay Reassignment form -->
+                    <form method="POST" action="{% url 'assign_logistics_teacher' data.event.id %}" class="inline-action-form">
+                        {% csrf_token %}
+                        <select name="teacher_id" class="select-manager-dropdown" required>
+                            <option value="" disabled selected>Override Operating Manager Node...</option>
+                            {% for teacher in teachers %}
+                                <option value="{{ teacher.id }}" {% if data.assigned_teacher.id == teacher.id and data.has_explicit_assignment %}selected{% endif %}>
+                                    {{ teacher.get_full_name|default:teacher.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <input type="text" name="notes" class="notes-field-input" placeholder="Optional dispatch directions if assigning a backup manager..." maxlength="250">
+                        <button type="submit" class="btn-control-submit">Enforce Assignment</button>
+                    </form>
+
+                    {% if data.is_published %}
+                        <form method="POST" action="{% url 'unpublish_passes' data.event.id %}" style="margin-top: 4px;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-unpublish-trigger">Force Lock Passes</button>
+                        </form>
+                    {% endif %}
+                </div>
+
+            </div>
+        {% empty %}
+            <div class="empty-fallback-row">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <h4 style="margin: 0; color: #ffffff;">Zero Active Event Logistics Lines</h4>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

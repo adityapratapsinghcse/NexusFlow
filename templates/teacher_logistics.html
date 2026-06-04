@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Logistics Control Hub — NexusFlow{% endblock %}
+
+{% block content %}
+<style>
+    #nexusflow-sandbox-scope {
+        --primary: #38bdf8;
+        --primary-hover: #7dd3fc;
+        --accent: #ff007a;
+        --surface-card: rgba(22, 30, 49, 0.6);
+        --surface-inner: rgba(15, 23, 42, 0.8);
+        --border-ether: rgba(255, 255, 255, 0.08);
+        --text-muted: #94a3b8;
+        
+        width: 100% !important;
+        max-width: 1320px !important;
+        margin: 0 auto !important;
+    }
+
+    #nexusflow-sandbox-scope * { box-sizing: border-box !important; }
+
+    .workspace-header { margin-bottom: 40px !important; }
+    .workspace-header h1 { font-size: 2.25rem !important; font-weight: 800 !important; color: #ffffff !important; margin-bottom: 8px !important; }
+    .workspace-header p { color: var(--text-muted) !important; font-size: 15px !important; }
+
+    .operations-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)) !important;
+        gap: 32px !important;
+    }
+
+    .op-card {
+        background: var(--surface-card) !important;
+        border: 1px solid var(--border-ether) !important;
+        border-radius: 24px !important;
+        padding: 32px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
+
+    .card-meta-header { display: flex !important; justify-content: space-between !important; align-items: flex-start !important; margin-bottom: 12px !important; }
+    .event-title { font-size: 20px !important; font-weight: 700 !important; color: #ffffff !important; margin: 0 !important; }
+
+    .role-tag { font-size: 10px !important; font-weight: 700 !important; text-transform: uppercase !important; padding: 6px 12px !important; border-radius: 8px !important; }
+    .tag-owner { background: rgba(56, 189, 248, 0.08) !important; color: var(--primary) !important; border: 1px solid rgba(56, 189, 248, 0.15) !important; }
+    .tag-proxy { background: rgba(245, 158, 11, 0.08) !important; color: #f59e0b !important; border: 1px solid rgba(245, 158, 11, 0.15) !important; }
+
+    .venue-line { font-size: 13.5px !important; color: var(--text-muted) !important; margin-bottom: 28px !important; }
+
+    .metric-container {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        background: var(--border-ether) !important;
+        padding: 1px !important;
+        border-radius: 16px !important;
+        margin-bottom: 24px !important;
+        overflow: hidden !important;
+    }
+    .metric-box { background: var(--surface-inner) !important; padding: 16px !important; text-align: center !important; }
+    .metric-box h6 { font-size: 10px !important; color: var(--text-muted) !important; text-transform: uppercase !important; margin: 0 0 6px 0 !important; }
+    .metric-box p { font-size: 20px !important; font-weight: 700 !important; color: #ffffff !important; margin: 0 !important; }
+
+    .action-grid-wrapper {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+
+    .btn-core-action, .btn-form-action {
+        width: 100% !important;
+        height: 46px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 12px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        text-decoration: none !important;
+        border: none !important;
+        cursor: pointer !important;
+    }
+
+    .btn-core-accent-scan { background: var(--primary) !important; color: #070513 !important; }
+    .btn-core-accent-publish { background: rgba(255, 0, 122, 0.1) !important; border: 1px solid rgba(255, 0, 122, 0.3) !important; color: #ff409f !important; }
+    .btn-core-utility { background: rgba(255, 255, 255, 0.03) !important; border: 1px solid var(--border-ether) !important; color: var(--text-muted) !important; }
+    
+    .full-width-span { grid-column: span 2 !important; }
+    .empty-state-card { grid-column: 1 / -1 !important; background: var(--surface-card) !important; border: 1px dashed var(--border-ether) !important; border-radius: 24px !important; padding: 64px 32px !important; text-align: center !important; }
+</style>
+
+<div id="nexusflow-sandbox-scope">
+    <div class="workspace-header">
+        <h1>Logistics Control Hub</h1>
+        <p>Monitor operations, analyze attendee statistics, and verify access passes for your assigned events.</p>
+    </div>
+
+    <div class="operations-grid">
+        {% for item in managed_events %}
+            <div class="op-card">
+                <div>
+                    <div class="card-meta-header">
+                        <h3 class="event-title">{{ item.event.title }}</h3>
+                        {% if item.is_explicit_backup %}
+                            <span class="role-tag tag-proxy">Assigned Proxy</span>
+                        {% else %}
+                            <span class="role-tag tag-owner">Event Owner</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="venue-line">
+                        <span>📍 {{ item.event.venue.name|default:"No Venue Assigned" }}</span> — <span>📅 {{ item.event.date|date:"M d, Y" }}</span>
+                    </div>
+
+                    <div class="metric-container">
+                        <div class="metric-box"><h6>Enrolled</h6><p>{{ item.total_registered }}</p></div>
+                        <div class="metric-box"><h6>Active</h6><p>{{ item.passes_active }}</p></div>
+                        <div class="metric-box"><h6>Verified</h6><p>{{ item.passes_verified }}</p></div>
+                    </div>
+                </div>
+
+                <div class="action-grid-wrapper">
+                    <a href="{% url 'scan_pass' item.event.id %}" class="btn-core-action btn-core-accent-scan {% if item.event.is_published %}full-width-span{% endif %}">
+                        📷 Scan Pass
+                    </a>
+
+                    {% if not item.event.is_published %}
+                        <form method="POST" action="{% url 'publish_passes' item.event.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-form-action btn-core-accent-publish" onclick="return confirm('Publish passes?')">
+                                ⚡ Publish
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <a href="{% url 'upload_bus_route' item.event.id %}" class="btn-core-action btn-core-utility">🚌 Bus Route</a>
+                    <a href="{% url 'upload_certificate' item.event.id %}" class="btn-core-action btn-core-utility">📜 Certificates</a>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state-card">
+                <h3>No Operational Deployments</h3>
+                <p>You aren't currently registered as the owner or proxy manager for any active slots.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

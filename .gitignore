@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments — CRITICAL: never commit venv
+venv/
+venv311/
+env/
+.env
+
+# Django
+*.sqlite3
+db.sqlite3
+staticfiles/
+media/
+
+# Secrets
+.env
+*.env
+local_settings.py
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

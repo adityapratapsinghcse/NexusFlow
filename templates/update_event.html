@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Event | {{ events.name }} | NexusFlow{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Premium Isolated Portal Workspace --- */
+    .nexus-portal-viewport {
+        max-width: 900px;
+        margin: 40px auto 80px auto;
+        padding: 0 24px;
+        box-sizing: border-box;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* --- Header Configuration Block --- */
+    .portal-header-row {
+        margin-bottom: 32px;
+        border-left: 5px solid var(--accent, #ff007a);
+        padding-left: 20px;
+    }
+    
+    .portal-header-row.admin-header {
+        border-left-color: var(--admin-purple, #a855f7);
+    }
+    
+    .portal-header-row h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.02em;
+        margin-top: 4px;
+    }
+
+    .portal-badge { 
+        display: inline-flex; 
+        padding: 4px 12px; 
+        border-radius: 100px; 
+        font-size: 11px; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px;
+        background: rgba(56, 189, 248, 0.1); 
+        color: var(--neon-cyan, #00f0ff);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    /* --- Role Status Informational Callouts --- */
+    .status-notice {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 32px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+    
+    .notice-teacher { 
+        background: rgba(251, 191, 36, 0.08); 
+        border: 1px solid var(--warning, #fbbf24); 
+        color: var(--warning, #fbbf24); 
+    }
+    
+    .notice-admin { 
+        background: rgba(168, 85, 247, 0.08); 
+        border: 1px solid var(--admin-purple, #a855f7); 
+        color: #d8b4fe; 
+    }
+
+    /* --- Grid-Form Workspace Architecture --- */
+    .portal-form-container {
+        background: var(--surface-card, #1a202c);
+        padding: 40px;
+        border-radius: 24px;
+        border: 1px solid var(--border-ether, #2d3748);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .portal-grid-form { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 24px; 
+    }
+    
+    .full-width { 
+        grid-column: span 2; 
+    }
+
+    .input-group { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+    }
+    
+    .input-group label { 
+        font-size: 11px; 
+        font-weight: 700; 
+        color: var(--neon-cyan, #00f0ff); 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+    }
+    
+    .portal-input {
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid var(--border-ether, #2d3748);
+        padding: 14px 16px;
+        border-radius: 10px;
+        color: #ffffff;
+        font-size: 14.5px;
+        outline: none;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    
+    .portal-input:focus { 
+        border-color: var(--primary, #38bdf8); 
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12); 
+    }
+    
+    textarea.portal-input {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    /* --- Drag & Drop Interactive Canvas --- */
+    .drop-zone {
+        border: 2px dashed var(--border-ether, #2d3748); 
+        padding: 40px 24px; 
+        border-radius: 14px;
+        text-align: center; 
+        cursor: pointer; 
+        transition: all 0.2s ease; 
+        background: rgba(0, 0, 0, 0.15);
+    }
+    
+    .drop-zone:hover { 
+        border-color: var(--primary, #38bdf8); 
+        background: rgba(56, 189, 248, 0.02); 
+    }
+    
+    .drop-zone.drag-over { 
+        border-color: #10b981; 
+        background: rgba(16, 185, 129, 0.05); 
+    }
+    
+    #preview-img { 
+        width: 100%; 
+        max-height: 280px; 
+        object-fit: contain; 
+        margin-top: 16px; 
+        border-radius: 10px; 
+        border: 1px solid var(--border-ether, #2d3748); 
+    }
+
+    /* --- Execution Controls Layout --- */
+    .btn-row { 
+        grid-column: span 2; 
+        display: flex; 
+        gap: 16px; 
+        margin-top: 16px; 
+    }
+    
+    .btn { 
+        flex: 1; 
+        padding: 14px 24px; 
+        border-radius: 10px; 
+        font-weight: 700; 
+        cursor: pointer; 
+        transition: all 0.2s ease; 
+        text-align: center; 
+        border: none; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+        font-size: 13px; 
+    }
+    
+    .btn-save { 
+        background: linear-gradient(90deg, #ff007a, #ff4d97); 
+        color: #ffffff; 
+        box-shadow: 0 4px 15px rgba(255, 0, 122, 0.2); 
+    }
+    
+    .btn-save:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 10px 25px rgba(255, 0, 122, 0.4); 
+    }
+    
+    .btn-cancel { 
+        background: rgba(255, 255, 255, 0.04); 
+        color: var(--slate-muted, #a0aec0); 
+        text-decoration: none; 
+        border: 1px solid var(--border-ether, #2d3748); 
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center; 
+    }
+    
+    .btn-cancel:hover { 
+        background: rgba(255, 255, 255, 0.08); 
+        color: #ffffff; 
+        border-color: var(--slate-muted, #a0aec0);
+    }
+
+    /* --- Modern Alert Toast Wrapper --- */
+    .messages-container {
+        position: fixed;
+        top: 32px;
+        right: 32px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .message-toast { 
+        padding: 16px 24px; 
+        border-radius: 12px; 
+        font-size: 14.5px; 
+        font-weight: 600; 
+        color: #ffffff;
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between;
+        gap: 20px;
+        min-width: 320px;
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(12px);
+        animation: toastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes toastIn {
+        from { transform: translateX(40px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .msg-success { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; }
+    .msg-error { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; }
+    .msg-info { background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; }
+
+    .close-msg {
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+    }
+    .close-msg:hover { opacity: 1; }
+
+    @media (max-width: 680px) { 
+        .portal-grid-form { grid-template-columns: 1fr; } 
+        .full-width { grid-column: span 1; } 
+        .portal-form-container { padding: 24px; }
+    }
+</style>
+
+<div class="nexus-portal-viewport">
+
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="message-toast msg-{{ message.tags }}">
+            <span>{{ message }}</span>
+            <span class="close-msg" onclick="this.parentElement.remove()">&times;</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Configuration Context Header -->
+    <div class="portal-header-row {% if request.user.groups.all.0.name == 'Admin' %}admin-header{% endif %}">
+        <span class="portal-badge">Modification Workspace</span>
+        <h1>Update Configuration</h1>
+        <p style="color: var(--slate-muted, #a0aec0); font-size: 0.9rem; margin-top: 6px;">
+            Currently Editing: <strong style="color: #ffffff;">{{ events.name }}</strong>
+        </p>
+    </div>
+
+    <!-- Active Structural Form Engine -->
+    <div class="portal-form-container">
+        {% if request.user.groups.all.0.name == "Admin" %}
+        <div class="status-notice notice-admin">
+            <span>🛡️</span>
+            <span>Administrator Mode: Changes will automatically set status to <strong>APPROVED</strong>.</span>
+        </div>
+        {% else %}
+        <div class="status-notice notice-teacher">
+            <span>⚠️</span>
+            <span>Teacher Mode: Text changes will revert status to <strong>PENDING</strong> for re-approval. Poster-only updates will not affect status.</span>
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" id="update-form" class="portal-grid-form">
+            {% csrf_token %}
+            
+            <div class="input-group full-width">
+                <label for="id_name">Event Title</label>
+                <input type="text" id="id_name" name="title" class="portal-input" value="{{ events.title }}" required>
+            </div>
+
+            <div class="input-group full-width">
+                <label for="id_description">Description</label>
+                <textarea id="id_description" name="description" class="portal-input" rows="3" required>{{ events.description }}</textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="id_date">Date</label>
+                <input type="date" id="id_date" name="date" class="portal-input" value="{{ events.date|date:'Y-m-d' }}" required>
+            </div>
+
+            <div class="input-group">
+                <label for="id_expected_crowd">Crowd Size</label>
+                <input type="number" id="id_expected_crowd" name="expected_crowd" class="portal-input" value="{{ events.expected_crowd }}" required>
+            </div>
+
+            <div class="input-group">
+                <label for="id_start_time">Start Time</label>
+                <input type="time" id="id_start_time" name="start_time" class="portal-input" value="{{ events.start_time|time:'H:i' }}" required>
+            </div>
+
+            <div class="input-group">
+                <label for="id_end_time">End Time</label>
+                <input type="time" id="id_end_time" name="end_time" class="portal-input" value="{{ events.end_time|time:'H:i' }}" required>
+            </div>
+
+            <div class="input-group">
+                <label for="id_registration_start">Registration Opens</label>
+                <input type="datetime-local" id="id_registration_start" name="registration_start" class="portal-input" value="{{ events.registration_start|date:'Y-m-d\TH:i' }}" required>
+            </div>
+
+            <div class="input-group">
+                <label for="id_registration_end">Registration Closes</label>
+                <input type="datetime-local" id="id_registration_end" name="registration_end" class="portal-input" value="{{ events.registration_end|date:'Y-m-d\TH:i' }}" required>
+            </div>
+
+            <div class="input-group full-width">
+                <label>Poster Gallery</label>
+                <div class="drop-zone" id="drop-zone">
+                    <div id="drop-text" {% if events.poster %}style="display:none;"{% endif %}>
+                        <p style="font-size: 0.85rem; color: var(--slate-muted, #a0aec0);">Drag & drop new poster art or <strong>Click to Browse</strong></p>
+                    </div>
+                    <input type="file" name="poster" id="poster-input" style="display: none;" accept="image/*">
+                    <img id="preview-img" src="{% if events.poster %}{{ events.poster.url }}{% endif %}" style="{% if events.poster %}display: block;{% else %}display: none;{% endif %}" alt="Event Preview">
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <a href="{% url 'teachers_event_list' %}" class="btn btn-cancel">Discard Changes</a>
+                <button type="submit" class="btn btn-save">Update Event</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // System Lifecycle: Toast Auto Dismissal
+    document.addEventListener('DOMContentLoaded', () => {
+        const toasts = document.querySelectorAll('.message-toast');
+        toasts.forEach(toast => {
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
+        });
+    });
+
+    // Integrated File Drag & Drop Engine
+    const dropZone = document.getElementById('drop-zone');
+    const posterInput = document.getElementById('poster-input');
+    const previewImg = document.getElementById('preview-img');
+    const dropText = document.getElementById('drop-text');
+
+    dropZone.addEventListener('click', () => posterInput.click());
+
+    posterInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) handlePreview(this.files[0]);
+    });
+
+    ['dragover', 'dragleave', 'drop'].forEach(evt => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+
+    dropZone.addEventListener('dragover', () => dropZone.classList.add('drag-over'));
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+
+    dropZone.addEventListener('drop', (e) => {
+        dropZone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            posterInput.files = dataTransfer.files;
+            handlePreview(file);
+        }
+    });
+
+    function handlePreview(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            previewImg.style.display = 'block';
+            dropText.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
+{% endblock %}

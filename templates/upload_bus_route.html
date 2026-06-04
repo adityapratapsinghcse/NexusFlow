@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nexus Admin | Upload Bus Route{% endblock %}
+
+{% block extrahead %}
+<style>
+    /* --- Layout Alignment Core Variables --- */
+    body {
+        background: #0b0f19; /* Ensures dark background fall-through if base is not set */
+    }
+
+    .nexus-upload-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 120px);
+        padding: 24px 16px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* --- Core Geometric Card Structure --- */
+    .nexus-upload-card {
+        background: var(--surface-card, #1a202c);
+        border: 1px solid var(--border-ether, #2d3748);
+        width: 100%;
+        max-width: 480px;
+        padding: 40px 32px;
+        border-radius: 20px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        text-align: center;
+    }
+
+    /* --- Card Header Elements --- */
+    .upload-card-header {
+        margin-bottom: 32px;
+    }
+
+    .upload-card-header h1 {
+        color: #ffffff;
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+    }
+
+    .upload-card-header p {
+        color: var(--slate-muted, #a0aec0);
+        font-size: 14px;
+    }
+
+    .event-highlight-tag {
+        color: var(--neon-cyan, #00f0ff);
+        font-weight: 600;
+    }
+
+    /* --- Drag & Drop Interactive Canvas Zone --- */
+    .interactive-drop-zone {
+        width: 100%;
+        padding: 42px 20px;
+        border: 2px dashed var(--border-ether, #3d4a5d);
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        margin-bottom: 28px;
+    }
+
+    .interactive-drop-zone:hover, 
+    .interactive-drop-zone.dragover {
+        border-color: var(--neon-cyan, #00f0ff);
+        background: rgba(0, 240, 255, 0.03);
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
+    }
+
+    .interactive-drop-zone input[type="file"] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .drop-zone-icon-shell {
+        width: 56px;
+        height: 56px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 22px;
+        transition: transform 0.2s ease;
+    }
+    .interactive-drop-zone:hover .drop-zone-icon-shell {
+        transform: scale(1.05);
+    }
+
+    .drop-text-primary {
+        font-size: 14px;
+        font-weight: 600;
+        color: #ffffff;
+    }
+
+    .drop-text-muted {
+        font-size: 12px;
+        color: var(--slate-muted, #a0aec0);
+        margin-top: 4px;
+    }
+
+    /* --- File Live Preview Component Deck --- */
+    .preview-component-deck {
+        display: none;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(0, 240, 255, 0.2);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 28px;
+        align-items: center;
+        gap: 12px;
+        text-align: left;
+        animation: slideInUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .preview-format-icon {
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .preview-metadata {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .metadata-filename {
+        font-size: 13px;
+        font-weight: 600;
+        color: #ffffff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .metadata-filesize {
+        font-size: 11px;
+        color: var(--slate-muted, #a0aec0);
+        margin-top: 1px;
+    }
+
+    .preview-clear-trigger {
+        background: transparent;
+        border: none;
+        color: var(--slate-muted, #a0aec0);
+        cursor: pointer;
+        padding: 4px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: background 0.2s ease, color 0.2s ease;
+        z-index: 20; /* Keep active above input area during active states */
+        position: relative;
+    }
+
+    .preview-clear-trigger:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ff4d4d;
+    }
+
+    /* --- Form Submission & Navigation CTA Layout --- */
+    .action-trigger-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-decoration: none;
+        box-sizing: border-box;
+        border: none;
+        transition: filter 0.2s ease, transform 0.1s ease;
+        cursor: pointer;
+    }
+    .action-trigger-btn:hover { filter: brightness(1.15); }
+    .action-trigger-btn:active { transform: translateY(1px); }
+
+    .btn-style-cyan { 
+        background: linear-gradient(135deg, #00c6ff, #0072ff); 
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(0, 114, 255, 0.25);
+    }
+
+    .cancel-return-link {
+        display: inline-block;
+        margin-top: 20px;
+        color: var(--slate-muted, #a0aec0);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: color 0.15s ease;
+    }
+    .cancel-return-link:hover {
+        color: #ff4d4d;
+    }
+
+    /* --- Diagnostics Stack messages --- */
+    .system-message-panel {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 24px;
+    }
+
+    .message-item-node {
+        font-size: 13px;
+        font-weight: 600;
+        padding: 10px 14px;
+        border-radius: 6px;
+        text-align: left;
+    }
+    .message-item-node.error {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ff4d4d;
+    }
+    .message-item-node.success {
+        background: rgba(57, 255, 20, 0.08);
+        border: 1px solid rgba(57, 255, 20, 0.2);
+        color: var(--neon-emerald, #39ff14);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nexus-upload-wrapper">
+    <div class="nexus-upload-card">
+        
+        <!-- Header Section -->
+        <header class="upload-card-header">
+            <h1>Upload Bus Route</h1>
+            <p>Target System Deployment: <span class="event-highlight-tag">{{ event.title }}</span></p>
+        </header>
+
+        <!-- Message Pipeline Notices -->
+        {% if messages %}
+        <ul class="system-message-panel">
+            {% for message in messages %}
+            <li class="message-item-node {{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <!-- Interactive File Operations Target -->
+        <form method="POST" enctype="multipart/form-data" id="upload-form">
+            {% csrf_token %}
+            
+            <!-- Structural Drop Target Box Zone -->
+            <div class="interactive-drop-zone" id="drop-zone">
+                <div class="drop-zone-icon-shell" id="dynamic-zone-icon">🚌</div>
+                <div id="drop-zone-prompt-text">
+                    <p class="drop-text-primary">Drag & drop asset or click to browse</p>
+                    <p class="drop-text-muted">Accepts PDF, XLSX, XLS, or PNG imaging data</p>
+                </div>
+                <input type="file" name="bus_route_file" id="file-input" required>
+            </div>
+
+            <!-- Dynamic Preview Module Grid Component (Hidden Until Selected) -->
+            <div class="preview-component-deck" id="preview-deck">
+                <div class="preview-format-icon" id="preview-icon">📄</div>
+                <div class="preview-metadata">
+                    <div class="metadata-filename" id="preview-filename">route_manifest.pdf</div>
+                    <div class="metadata-filesize" id="preview-filesize">0.0 KB</div>
+                </div>
+                <button type="button" class="preview-clear-trigger" id="clear-file-btn" title="Remove payload">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Execution Action Call Button -->
+            <button type="submit" class="action-trigger-btn btn-style-cyan">
+                Deploy System Route Manifest
+            </button>
+        </form>
+
+        <!-- Abort Navigation Redirect -->
+        <a href="{% url 'manage_events' %}" class="cancel-return-link">
+            Cancel and Return to Dashboard
+        </a>
+
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const dropZonePrompt = document.getElementById('drop-zone-prompt-text');
+    const dynamicZoneIcon = document.getElementById('dynamic-zone-icon');
+    
+    const previewDeck = document.getElementById('preview-deck');
+    const previewIcon = document.getElementById('preview-icon');
+    const previewFilename = document.getElementById('preview-filename');
+    const previewFilesize = document.getElementById('preview-filesize');
+    const clearFileBtn = document.getElementById('clear-file-btn');
+
+    // Utility function to compute scannable metric sizes
+    function parseByteString(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // Identifies extension rules and assigns accurate matching layouts
+    function updateFilePreviewState(file) {
+        if (!file) return;
+
+        const filename = file.name;
+        const extension = filename.split('.').pop().toLowerCase();
+        
+        let iconType = '📄';
+        if (['xlsx', 'xls', 'csv'].includes(extension)) {
+            iconType = '📊';
+        } else if (['pdf'].includes(extension)) {
+            iconType = '📕';
+        } else if (['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {
+            iconType = '🖼️';
+        }
+
+        // Apply metadata payload parameters to UI
+        previewIcon.textContent = iconType;
+        previewFilename.textContent = filename;
+        previewFilesize.textContent = parseByteString(file.size);
+
+        // Slide view state transitions
+        dropZonePrompt.style.opacity = '0.3';
+        dynamicZoneIcon.textContent = '✅';
+        previewDeck.style.display = 'flex';
+    }
+
+    function resetFileFormChannel() {
+        fileInput.value = "";
+        dropZonePrompt.style.opacity = '1';
+        dynamicZoneIcon.textContent = '🚌';
+        previewDeck.style.display = 'none';
+    }
+
+    // Native Change Event Observers
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            updateFilePreviewState(fileInput.files[0]);
+        } else {
+            resetFileFormChannel();
+        }
+    });
+
+    // Clear Button Reset Implementation Interceptor
+    clearFileBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        resetFileFormChannel();
+    });
+
+    // Drag Over Visual States Event Integrations
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        }, false);
+    });
+</script>
+{% endblock %}

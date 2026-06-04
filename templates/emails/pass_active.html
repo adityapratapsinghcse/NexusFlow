@@ -1,0 +1,25 @@
+{% extends "emails/base_email.html" %}
+{% block title %}Your Pass Is Active — {{ event.title }}{% endblock %}
+{% block badge %}<span class="badge" style="background:rgba(56,189,248,0.1);color:#38bdf8;border:1px solid rgba(56,189,248,0.2)">&#9889; Pass Active</span>{% endblock %}
+{% block body %}
+  <p class="greeting">Hi {{ user.first_name|default:user.username }},</p>
+  <p class="text">Your entry pass for the event below is now <span class="highlight">active and ready</span>. Show the QR code or your pass code at the entry gate.</p>
+
+  <div class="event-card">
+    <p class="event-title">{{ event.title }}</p>
+    <p class="meta">
+      <strong>Date &amp; Time:</strong> {{ event.start_datetime|date:"l, d F Y" }} at {{ event.start_datetime|time:"g:i A" }}<br>
+      <strong>Venue:</strong> {{ event.venue.name }}<br>
+    </p>
+  </div>
+
+  <div class="pass-box">
+    <p class="pass-label">Your Pass Code</p>
+    <p class="pass-code">{{ pass_code }}</p>
+    <p class="pass-hint">Present this code or your QR at the entry gate</p>
+  </div>
+
+  <p class="text">Log in to the portal and visit <span class="highlight">My Passes</span> to view your QR code for quick scanning.</p>
+  <div class="divider"></div>
+  <p class="text" style="font-size:12px;color:#475569">Keep this pass code confidential. Each pass is single-use and tied to your registration.</p>
+{% endblock %}

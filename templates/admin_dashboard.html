@@ -1,0 +1,993 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Dashboard — NexusFlow</title>      
+    <link rel="icon" type="image/svg+xml" href="{% static 'nexusflow_icon.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.12);
+            --primary-hover: #0ea5e9;
+            --admin-gold: #fbbf24;
+            --admin-gold-glow: rgba(251, 191, 36, 0.12);
+            --accent-pink: #ff007a;
+            --bg-dark: #070513;
+            --card-glass: rgba(15, 23, 42, 0.55);
+            --text-main: #f9fbff;
+            --text-muted: #94a3b8;
+            --success: #00ff99;
+            --success-glow: rgba(0, 255, 153, 0.12);
+            --error: #ef4444;
+            --border-glow: rgba(255, 255, 255, 0.06);
+            --border-ether: rgba(255, 255, 255, 0.08);
+            --blur-panel: blur(20px);
+            --sidebar-width: 290px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            display: flex;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 60% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 80%, rgba(255, 0, 122, 0.02) 0%, transparent 35%);
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- Sidebar Navigation Hub --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 24px;
+            z-index: 100;
+            background: #090718;
+            border-right: 1px solid var(--border-glow);
+        }
+
+        .logo-section {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 28px;
+            padding-left: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-ether);
+            padding-bottom: 0px;
+        }
+
+        .nav-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+        
+        .nav-container::-webkit-scrollbar { width: 4px; }
+        .nav-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: -2px;
+        }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 12px;
+            gap: 14px;
+        }
+
+        .nav-links li a svg {
+            height: 20px;
+            width: 20px;
+            flex-shrink: 0;
+            stroke: var(--text-muted);
+            fill: none;
+            stroke-width: 2;
+            transition: stroke 0.2s ease;
+        }
+
+        .nav-links li a:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-links li a:hover svg { stroke: #ffffff; }
+        .nav-links li a.active {
+            color: #ffffff;
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 3px solid var(--primary);
+            font-weight: 700;
+        }
+        .nav-links li a.active svg { stroke: var(--primary); }
+
+        .logout-container {
+            padding-top: 20px;
+            border-top: 1px solid var(--border-ether);
+            margin-top: auto;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 3px 16px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover { 
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--error);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+
+        /* --- Main Content Area --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            padding: 40px 50px;
+        }
+
+        /* --- System Messages --- */
+        #message-wrapper { margin-bottom: 25px; }
+        .message-container {
+            padding: 16px 20px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid transparent;
+        }
+        .msg-success { background: rgba(0, 255, 153, 0.05); color: var(--success); border-color: rgba(0, 255, 153, 0.15); border-left: 5px solid var(--success); }
+        .msg-error { background: rgba(239, 68, 68, 0.05); color: var(--error); border-color: rgba(239, 68, 68, 0.15); border-left: 5px solid var(--error); }
+
+        /* --- Workspace Header Area --- */
+        .workspace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            border-bottom: 1px solid var(--border-glow);
+            padding-bottom: 20px;
+        }
+
+        .workspace-title h1 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.8px; color: #ffffff; }
+        .workspace-title p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .bell-trigger-btn {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--card-glass);
+            border: 1px solid var(--border-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .bell-trigger-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .bell-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--accent-pink);
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 20px;
+            line-height: 1;
+            min-width: 18px;
+            text-align: center;
+            border: 2px solid var(--bg-dark);
+            box-shadow: 0 2px 8px rgba(255, 0, 122, 0.4);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #070513;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(5, 5, 5, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(56, 189, 248, 0.3);
+        }
+
+        /* --- Metrics Hub --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .stat-card {
+            background: var(--card-glass);
+            backdrop-filter: var(--blur-panel);
+            -webkit-backdrop-filter: var(--blur-panel);
+            padding: 22px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--border-glow);
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-decoration: none;
+            min-height: 115px;
+        }
+        .stat-card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+        .stat-card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .stat-card h4 {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+        }
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+        .stat-icon-box {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-icon-box svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .card-logistics { border-top: 3px solid #00d4ff; }
+        .card-logistics .stat-icon-box { background: rgba(0, 212, 255, 0.1); }
+        .card-logistics .stat-icon-box svg { stroke: #00d4ff; }
+
+        .card-pending { border-top: 3px solid var(--admin-gold); }
+        .card-pending .stat-icon-box { background: var(--admin-gold-glow); }
+        .card-pending .stat-icon-box svg { stroke: var(--admin-gold); }
+        
+        .card-active { border-top: 3px solid var(--success); }
+        .card-active .stat-icon-box { background: var(--success-glow); }
+        .card-active .stat-icon-box svg { stroke: var(--success); }
+        
+        .card-registrations { border-top: 3px solid var(--primary); }
+        .card-registrations .stat-icon-box { background: var(--primary-glow); }
+        .card-registrations .stat-icon-box svg { stroke: var(--primary); }
+
+        .card-teachers { border-top: 3px solid #a855f7; }
+        .card-teachers .stat-icon-box { background: rgba(168, 85, 247, 0.12); }
+        .card-teachers .stat-icon-box svg { stroke: #a855f7; }
+
+        .card-students { border-top: 3px solid var(--accent-pink); }
+        .card-students .stat-icon-box { background: rgba(255, 0, 122, 0.12); }
+        .card-students .stat-icon-box svg { stroke: var(--accent-pink); }
+
+        /* --- Balanced Charts Grid Matrix --- */
+        .charts-wrapper-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 35px;
+        }
+        .chart-box-panel {
+            background: var(--card-glass);
+            backdrop-filter: var(--blur-panel);
+            border: 1px solid var(--border-glow);
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-panel-title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-glow);
+            padding-bottom: 10px;
+        }
+        .chart-container-inner {
+            position: relative; 
+            height: 280px; 
+            width: 100%;
+        }
+
+        /* --- Lower Content Layout Panels --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+        }
+
+        .panel {
+            background: var(--card-glass);
+            backdrop-filter: var(--blur-panel);
+            border-radius: 24px;
+            border: 1px solid var(--border-glow);
+            padding: 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-glow);
+            padding-bottom: 12px;
+        }
+
+        .panel-header h3 {
+            font-weight: 800;
+            font-size: 16px;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        /* --- Data Lists & Presentation Tables --- */
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .event-table th {
+            text-align: left;
+            font-size: 11px;
+            color: var(--primary);
+            padding: 12px 8px;
+            border-bottom: 1px solid var(--border-glow);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .event-table td {
+            padding: 14px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 13.5px;
+            color: #e2e8f0;
+        }
+
+        .event-table tr:last-child td { border-bottom: none; }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .status-PENDING { background: rgba(251, 191, 36, 0.06); color: var(--admin-gold); border: 1px solid rgba(251, 191, 36, 0.15); }
+        .status-APPROVED { background: rgba(0, 255, 153, 0.06); color: var(--success); border: 1px solid rgba(0, 255, 153, 0.15); }
+
+        .teacher-tag {
+            font-size: 10px;
+            color: var(--primary);
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        /* --- ANIMATED & HIDDEN SCROLLBAR ACTIVITY FEED --- */
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 0px;
+            
+            /* Hides scrollbars on Firefox */
+            scrollbar-width: none; 
+            /* Hides scrollbars on IE/Edge */
+            -ms-overflow-style: none; 
+        }
+        
+        /* Hides scrollbars on Chrome, Safari, and Opera Webkit Engines */
+        .activity-feed::-webkit-scrollbar {
+            display: none;
+            width: 0 !important;
+            height: 0 !important;
+            background: transparent;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            
+            /* Smooth hardware-accelerated micro-transitions */
+            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), 
+                        background-color 0.25s ease, 
+                        border-color 0.25s ease,
+                        box-shadow 0.25s ease;
+            will-change: transform, box-shadow;
+        }
+
+        /* Micro-interactions: Elevate cards smoothly on cursor hover */
+        .activity-item:hover {
+            transform: translateY(-2px) scale(1.005);
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 6px 20px rgba(7, 5, 19, 0.4);
+        }
+        
+        .notif-unread {
+            background: rgba(251, 191, 36, 0.01);
+            border-left: 3px solid var(--admin-gold);
+            border-top: 1px solid rgba(251, 191, 36, 0.05);
+            border-right: 1px solid rgba(251, 191, 36, 0.05);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.05);
+        }
+
+        .notif-unread:hover {
+            background: rgba(251, 191, 36, 0.03);
+            border-color: rgba(251, 191, 36, 0.15);
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.04);
+        }
+
+        .role-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Icon springs to life when parent item is highlighted */
+        .activity-item:hover .role-icon {
+            transform: scale(1.15);
+        }
+
+        /* Specific subtle rotational animation variants for different alert classes */
+        .activity-item:hover .animate-icon-shield {
+            transform: scale(1.15) rotate(8deg);
+        }
+        
+        .activity-item:hover .animate-icon-bell {
+            animation: bellRingKeyframe 0.4s ease-in-out;
+        }
+
+        @keyframes bellRingKeyframe {
+            0%, 100% { transform: scale(1.15) rotate(0deg); }
+            20% { transform: scale(1.15) rotate(15deg); }
+            40% { transform: scale(1.15) rotate(-15deg); }
+            60% { transform: scale(1.15) rotate(10deg); }
+            80% { transform: scale(1.15) rotate(-10deg); }
+        }
+
+        /* Subtle staggered load animations for system entries */
+        .audit-item-animate {
+            animation: feedEntranceKeyframe 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .notif-item-animate {
+            animation: feedEntranceKeyframe 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes feedEntranceKeyframe {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .activity-info { flex-grow: 1; }
+        .activity-info p {
+            font-size: 13px;
+            font-weight: 500;
+            color: #f1f5f9;
+            line-height: 1.4;
+        }
+
+        .activity-info span.timestamp {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .audit-tag-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        .sub-link {
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+        .sub-link:hover { 
+            text-decoration: none;
+            color: var(--primary-hover);
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 1650px) {
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-wrapper-grid, .dashboard-grid { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; width: 100%; padding: 30px 20px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="logo-section">
+            <img src="{% static 'nexusflow_icon.svg' %}" style="height:34px; width:34px; border-radius:8px; flex-shrink:0;">
+            <span>Nexus<span style="color:var(--primary);">Flow</span></span>
+        </div>
+        
+        <div class="nav-container">
+            <ul class="nav-links">
+                <li>
+                    <a href="{% url 'profile' %}">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        User Profile
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'admin_dashboard' %}" class="active">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                        Dashboard Analytics
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'venue_management' %}">
+                        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Venues Management
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'admin_logistics_overview' %}">
+                        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                        Logistics & Tickets
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'audit_log' %}">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        System Audit Logs
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'action_event' %}">
+                        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        Approval Requests
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'schedule_event' %}">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        Schedule Calendar
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'teacher_my_events' %}">
+                        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        My Scheduled Events
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'cancel_event_list' %}">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        Cancel Event
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'students_registered' %}">
+                        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                        Student Database
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'prev_events' %}">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Event History
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'student_ban_list' %}">
+                        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Ban Management
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="logout-container">
+            <form method="POST" action="{% url 'logout_view' %}" style="display:block; width: 100%;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <span>Sign Out</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        {% if messages %}
+        <div id="message-wrapper">
+            {% for message in messages %}
+            <div class="message-container msg-{{ message.tags }}">
+                <span>{% if message.tags == 'success' %}✅{% else %}⚠️{% endif %}</span>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="workspace-header">
+            <div class="workspace-title">
+                <h1>Welcome back, <span style="color: var(--primary);">Prof. {{ request.user.first_name }}</span></h1>
+                <p>Here is what's happening with your events today.</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'all_notifications' %}" class="bell-trigger-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f8fafc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    {% if recent_notifications.count > 0 %}
+                    <span class="bell-badge" id="bell-notif-badge">{{ recent_notifications.count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'action_event' %}" class="btn-primary">
+                    <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M13 2v9h9v2h-9v9h-2v-9H2v-2h9V2h2z"/></svg>
+                    Review Pending Queue
+                </a>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <a href="{% url 'admin_logistics_overview' %}" class="stat-card card-logistics">
+                <div class="stat-card-meta">
+                    <h4>Logistics</h4>
+                    <div class="stat-icon-box">
+                        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                    </div>
+                </div>
+                <div class="value" style="font-size:15px; font-weight:700; color:#00d4ff; margin-top: auto;">Tickets Hub</div>
+            </a>
+
+            <div class="stat-card card-pending">
+                <div class="stat-card-meta">
+                    <h4>Pending</h4>
+                    <div class="stat-icon-box">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                </div>
+                <div class="value" style="color: var(--admin-gold);">{{ pending_approvals|default:0 }}</div>
+            </div>
+
+            <div class="stat-card card-active">
+                <div class="stat-card-meta">
+                    <h4>Active Events</h4>
+                    <div class="stat-icon-box">
+                        <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    </div>
+                </div>
+                <div class="value" style="color: var(--success);">{{ active_events_count|default:0 }}</div>
+            </div>
+
+            <div class="stat-card card-registrations">
+                <div class="stat-card-meta">
+                    <h4>Total Enrolled</h4>
+                    <div class="stat-icon-box">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                </div>
+                <div class="value" style="color: var(--primary);">{{ total_registrations|default:0 }}</div>
+            </div>
+
+            <div class="stat-card card-teachers">
+                <div class="stat-card-meta">
+                    <h4>Instructors</h4>
+                    <div class="stat-icon-box">
+                        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                </div>
+                <div class="value" style="color: #a855f7;">{{ total_teachers|default:0 }}</div>
+            </div>
+
+            <div class="stat-card card-students">
+                <div class="stat-card-meta">
+                    <h4>Students</h4>
+                    <div class="stat-icon-box">
+                        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                </div>
+                <div class="value" style="color: var(--accent-pink);">{{ total_students|default:0 }}</div>
+            </div>
+        </div>
+
+        <!-- Correctly Aligned 50/50 Shared Space Chart Canvas Wrappers -->
+        <div class="charts-wrapper-grid">
+            <div class="chart-box-panel">
+                <div class="chart-panel-title">Registration Activity Velocity</div>
+                <div class="chart-container-inner">
+                    <canvas id="registrationTrendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-box-panel">
+                <div class="chart-panel-title">Venue Allocations & Capacity Metric</div>
+                <div class="chart-container-inner">
+                    <canvas id="venueDensityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Recent Event Submissions</h3>
+                    <a href="{% url 'action_event' %}" class="sub-link">View Queue &rarr;</a>
+                </div>
+                <table class="event-table">
+                    <thead>
+                        <tr>
+                            <th>Event Title</th>
+                            <th>Date Scheduled</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in recent_requests %}
+                        <tr>
+                            <td>
+                                <div style="font-weight: 700; color: #ffffff;">{{ event.title }}</div>
+                                <span class="teacher-tag">Organizer: Prof. {{ event.organizer.last_name|default:event.organizer.username }}</span>
+                            </td>
+                            <td style="color: var(--text-muted); font-weight: 500;">{{ event.date|date:"M d, Y" }}</td>
+                            <td><span class="status-badge status-{{ event.status }}">{{ event.status }}</span></td>
+                            <td><a href="{% url 'action_event' %}" style="text-decoration: none;">📝</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align:center; padding: 40px; color: var(--text-muted);">No current submissions awaiting review.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="panel">
+    <div class="panel-header">
+        <h3>System Alerts & Dispatches</h3>
+        <a href="{% url 'audit_log' %}" class="sub-link">All Audit Logs</a>
+    </div>
+    
+    <div class="activity-feed">
+        {% for log in recent_audit %}
+        <div class="activity-item audit-item-animate" style="border-left: 3px solid var(--primary);">
+            <div class="role-icon animate-icon-shield" style="background: rgba(56, 189, 248, 0.08); color: var(--primary);">🛡️</div>
+            <div class="activity-info">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <p><b>{{ log.actor.username }}</b> <span class="audit-tag-badge">{{ log.action|default:"ACTION" }}</span></p>
+                    <span class="timestamp">{{ log.timestamp|date:"H:i:s" }}</span>
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted);">
+                    Target: {% if log.event_name %}{{ log.event_name }}{% elif log.event %}{{ log.event.title }}{% else %}Core Framework{% endif %}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% for notify in recent_notifications %}
+        <div class="activity-item notif-unread notif-item-animate">
+            <a href="{% url 'all_notifications' %}" class="role-icon animate-icon-bell" style="background: rgba(251, 191, 36, 0.08); color: var(--admin-gold); text-decoration:none;">
+                🔔
+            </a>
+            <div class="activity-info">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <p style="font-weight: 700; color: #fff;">System Notice</p>
+                    <span class="timestamp">{{ notify.created_at|date:"M d, H:i"|default:"Just Now" }}</span>
+                </div>
+                <p style="font-size: 12.5px; color: #cbd5e1;">{{ notify.text|default:notify.message|default:"New infrastructure event recorded within application metrics." }}</p>
+            </div>
+        </div>
+        {% empty %}
+            {% if not recent_audit %}
+            <div style="text-align:center; padding: 40px; color: var(--text-muted); font-size: 13.5px;">
+                No infrastructure logs or active dashboard alerts present.
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+    </div>
+
+    <!-- Chart Config Scripts with proper Color Schemes and Clean Dark Mode Gridline Styling -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Line Chart Implementation
+            const trendCtx = document.getElementById('registrationTrendChart').getContext('2d');
+            const registrationLabels = [
+                {% for item in monthly_regs %}"{{ item.month|date:'M Y' }}"{% if not forloop.last %}, {% endif %}{% empty %}"No Data Available"{% endfor %}
+            ];
+            const registrationData = [
+                {% for item in monthly_regs %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% empty %}0{% endfor %}
+            ];
+
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: registrationLabels,
+                    datasets: [{
+                        label: 'Registrations',
+                        data: registrationData,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.04)',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#38bdf8',
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', font: { size: 11 }, precision: 0 } }
+                    }
+                }
+            });
+
+            // Bar Chart Implementation
+            const venueCtx = document.getElementById('venueDensityChart').getContext('2d');
+            const venueLabels = [
+                {% for venue in top_venues %}"{{ venue.name }}"{% if not forloop.last %}, {% endif %}{% empty %}"No Venues Specified"{% endfor %}
+            ];
+            const venueData = [
+                {% for venue in top_venues %}{{ venue.event_count }}{% if not forloop.last %}, {% endif %}{% empty %}0{% endfor %}
+            ];
+
+            new Chart(venueCtx, {
+                type: 'bar',
+                data: {
+                    labels: venueLabels,
+                    datasets: [{
+                        data: venueData,
+                        backgroundColor: [
+                            'rgba(56, 189, 248, 0.75)', 
+                            'rgba(251, 191, 36, 0.75)', 
+                            'rgba(0, 255, 153, 0.75)', 
+                            'rgba(168, 85, 247, 0.75)', 
+                            'rgba(255, 0, 122, 0.75)'
+                        ],
+                        borderColor: [
+                            '#38bdf8', '#fbbf24', '#00ff99', '#a855f7', '#ff007a'
+                        ],
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', font: { size: 11 }, precision: 0 } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

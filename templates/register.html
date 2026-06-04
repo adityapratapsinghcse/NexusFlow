@@ -1,0 +1,373 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Account — NexusFlow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="{% static 'nexusflow_icon.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #0a061f;
+            --card-bg: #0f1235;
+            --accent-pink: #ff007a;
+            --accent-blue: #00d4ff;
+            --text-gray: #b0b3c1;
+            --glass: rgba(255,255,255,0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: var(--primary-bg);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-container {
+            width: 95%;
+            max-width: 1100px;
+            height: 90vh;
+            display: flex;
+            background: var(--card-bg);
+            border-radius: 25px;
+            overflow: hidden;
+            border: 1px solid var(--glass);
+        }
+
+        /* LEFT SIDE */
+        .illustration-side {
+            flex: 1;
+            background: var(--primary-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 40px;
+            border-right: 1px solid var(--glass);
+        }
+
+        .logo-top {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            height: 45px;
+        }
+
+        .hero-img {
+            max-width: 350px;
+            width: 100%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* RIGHT SIDE */
+        .form-side {
+            flex: 1.2;
+            background: #0a0d28;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        /* ACT Logo */
+        #img_34 {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        #img_34 img {
+            height: 30px;
+            width: auto;
+            display: block;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            margin-bottom: 25px;
+        }
+
+        /* Django Messages */
+        .django-messages {
+            margin-bottom: 20px;
+        }
+
+        .error-banner {
+            background: rgba(255, 0, 122, 0.15);
+            border-left: 5px solid var(--accent-pink);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* FORM */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-box label {
+            font-size: 0.7rem;
+            color: var(--accent-blue);
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .input-box input,
+        .input-box select {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass);
+            padding: 12px;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+        }
+
+        .input-box select option {
+            background: #000;
+            color: var(--accent-blue);
+        }
+
+        /* Validation */
+        .hint-list {
+            list-style: none;
+            padding: 0;
+            margin: 5px 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hint-list li {
+            font-size: 0.65rem;
+            color: #555;
+        }
+
+        .valid {
+            color: var(--accent-blue) !important;
+            font-weight: 600;
+        }
+
+        .status-msg {
+            font-size: 0.65rem;
+            margin-top: 4px;
+            min-height: 15px;
+            font-weight: 500;
+        }
+
+        .reg-btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(90deg, var(--accent-pink), #ff4d97);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .reg-btn:disabled {
+            background: #2a2d3e !important;
+            opacity: 0.5;
+            cursor: not-allowed;
+            border: 1px solid #444;
+        }
+
+        /* MOBILE */
+        @media (max-width: 900px) {
+            .illustration-side {
+                display: none;
+            }
+
+            .main-container {
+                height: auto;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="main-container">
+
+    <div class="illustration-side">
+        <img src="{% static 'sign_up_vector.svg' %}" class="hero-img">
+    </div>
+
+    <div class="form-side">
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+      <img src="{% static 'nexusflow_icon.svg' %}"
+           style="height:44px;width:44px;border-radius:10px;">
+      <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;
+                   font-weight:800;color:#fff;letter-spacing:-0.5px;">
+        Nexus<span style="color:#00d4ff;">Flow</span>
+      </span>
+    </div>
+
+    <p class="subtitle">Join NexusFlow — Your College Event Hub</p>
+        {% if messages %}
+        <div class="django-messages">
+            {% for message in messages %}
+            <div class="error-banner">
+                <strong>Error:</strong> {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" id="registrationForm">
+            {% csrf_token %}
+
+            <div class="input-box full-width">
+                <label>Role</label>
+                <div style="display:flex; gap:20px;">
+                    <label><input type="radio" name="role" value="Teacher" required> Teacher</label>
+                    <label><input type="radio" name="role" value="Student"> Student</label>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="input-box">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" required>
+                </div>
+
+                <div class="input-box">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" required>
+                </div>
+
+                <div class="input-box">
+                    <label>College ID</label>
+                    <input type="text" id="College_id" name="college_id" maxlength="10" required>
+                    <div id="idMessage" class="status-msg"></div>
+                </div>
+
+                <div class="input-box">
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+                </div>
+
+                <div class="input-box full-width">
+                    <label>College Name</label>
+                    <select name="college_name" required>
+                        <option value="" disabled selected>-- Select College --</option>
+                        {% for code, full_name in colleges %}
+                        <option value="{{ code }}">{{ full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-box">
+                    <label>Password</label>
+                    <input type="password" id="password" name="password" required>
+                    <ul class="hint-list">
+                        <li id="len">• 8+ Chars</li>
+                        <li id="up">• Uppercase</li>
+                        <li id="num">• Number</li>
+                    </ul>
+                </div>
+
+                <div class="input-box">
+                    <label>Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                    <div id="matchMessage" class="status-msg"></div>
+                </div>
+            </div>
+
+            <button type="submit" class="reg-btn" id="submitBtn" disabled>
+                Sign Up
+            </button>
+        </form>
+
+        <p style="text-align:center; font-size:0.8rem; margin-top:15px; color:var(--text-gray);">
+            Already have an account?
+            <a href="{% url 'login' %}" style="color:var(--accent-blue); text-decoration:none; font-weight:600;">
+                Log In
+            </a>
+        </p>
+
+    </div>
+</div>
+
+<script>
+    const collegeId = document.getElementById('College_id');
+    const pass = document.getElementById('password');
+    const confirmPass = document.getElementById('confirm_password');
+    const btn = document.getElementById('submitBtn');
+
+    function validate() {
+        const idValid = collegeId.value.trim().length === 10;
+        document.getElementById('idMessage').innerText =
+            collegeId.value ? (idValid ? "✓ ID valid" : "✗ Must be 10 characters") : "";
+
+        const hasLen = pass.value.length >= 8;
+        const hasUp = /[A-Z]/.test(pass.value);
+        const hasNum = /[0-9]/.test(pass.value);
+
+        document.getElementById('len').className = hasLen ? "valid" : "";
+        document.getElementById('up').className = hasUp ? "valid" : "";
+        document.getElementById('num').className = hasNum ? "valid" : "";
+
+        const match = pass.value === confirmPass.value && confirmPass.value;
+        document.getElementById('matchMessage').innerText =
+            confirmPass.value ? (match ? "✓ Passwords match" : "✗ Passwords do not match") : "";
+
+        btn.disabled = !(idValid && hasLen && hasUp && hasNum && match);
+    }
+
+    [collegeId, pass, confirmPass].forEach(el =>
+        el.addEventListener('input', validate)
+    );
+</script>
+
+</body>
+</html>

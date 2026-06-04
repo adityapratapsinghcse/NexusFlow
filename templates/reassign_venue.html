@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}NexusFlow | Reassign Venue{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Premium Isolated Form Container --- */
+    .reassign-workspace-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px 80px 20px;
+        min-height: 80vh;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .form-panel {
+        background: var(--surface-card, #1a202c);
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 580px;
+        width: 100%;
+        box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6);
+    }
+
+    .form-panel h2 {
+        font-weight: 800;
+        font-size: 1.75rem;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+        color: #ffffff;
+    }
+
+    .form-panel p {
+        color: var(--slate-muted, #a0aec0);
+        font-size: 14.5px;
+        margin-bottom: 28px;
+        line-height: 1.6;
+    }
+
+    .form-panel p strong {
+        color: var(--neon-cyan, #00f0ff);
+        font-weight: 600;
+    }
+
+    /* --- Notice Advisory Box --- */
+    .notice {
+        background: rgba(245, 158, 11, 0.04);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        border-radius: 12px;
+        padding: 16px 20px;
+        font-size: 13.5px;
+        color: #fbbf24;
+        margin-bottom: 28px;
+        line-height: 1.6;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--neon-cyan, #00f0ff);
+    }
+
+    /* --- Form Formats & Inputs --- */
+    .form-select, .form-textarea {
+        width: 100%;
+        background-color: rgba(15, 23, 42, 0.4);
+        color: #ffffff;
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 15px;
+        font-weight: 500;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+    .form-select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300f0ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 16px;
+        padding-right: 45px;
+        cursor: pointer;
+    }
+
+    .form-textarea {
+        font-family: inherit;
+        resize: vertical;
+        min-height: 120px;
+        line-height: 1.5;
+    }
+
+    .form-textarea::placeholder {
+        color: #4a5568;
+    }
+
+    .form-select:focus, .form-textarea:focus {
+        border-color: var(--neon-cyan, #00f0ff);
+        box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.12);
+        background: rgba(15, 23, 42, 0.6);
+    }
+
+    .form-select option {
+        background-color: #1a202c;
+        color: #ffffff;
+        padding: 12px;
+    }
+
+    .form-select option.capacity-error {
+        color: #f87171;
+        background-color: #1a202c;
+    }
+
+    .char-tracker {
+        font-size: 12px;
+        color: var(--slate-muted, #a0aec0);
+        text-align: right;
+        margin-top: -18px;
+        margin-bottom: 28px;
+        font-weight: 500;
+    }
+
+    /* --- Action Button Strip --- */
+    .btn-group {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .btn-cancel {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--slate-muted, #a0aec0);
+        padding: 14px 24px;
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .btn-cancel:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .btn-submit {
+        flex: 1.6;
+        background: #34d399;
+        color: #0f172a;
+        padding: 14px 24px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(52, 211, 153, 0.2);
+    }
+
+    .btn-submit:hover {
+        background: #059669;
+        color: #ffffff;
+        box-shadow: 0 6px 24px rgba(5, 150, 105, 0.35);
+    }
+</style>
+
+<div class="reassign-workspace-wrapper">
+    <div class="form-panel">
+        <h2>Reassign Venue</h2>
+        <p>Updating details for <strong>{{ event.title }}</strong>. Current assigned location is: <strong>{{ event.venue.name|default:"Venue TBD" }}</strong></p>
+
+        {% if not is_admin %}
+        <div class="notice">
+            <strong>Teacher Request Guidelines:</strong><br>
+            Venue updates apply exclusively to pending events and are monitored within clear scheduling guidelines. Providing an updated description (minimum 20 characters) helps coordinate changes cleanly with system organizers.
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Target Venue Selection</label>
+                <select name="venue_id" class="form-select" required>
+                    {% for v in venues %}
+                        <option value="{{ v.id }}" {% if v == event.venue %}selected{% endif %} {% if v.capacity < event.expected_crowd %}class="capacity-error"{% endif %}>
+                            {{ v.name }} (Capacity: {{ v.capacity }})
+                            {% if v.capacity < event.expected_crowd %} — Exceeds Estimated Attendance{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Reason for Request Change</label>
+                <textarea id="reason-field" name="reason" class="form-textarea" minlength="20" required
+                    placeholder="Provide context regarding space adjustments or updated setup requirements..."
+                    oninput="document.getElementById('char-count').textContent = this.value.length + ' characters entered (min 20)'"></textarea>
+            </div>
+            <div class="char-tracker" id="char-count">0 characters entered (min 20)</div>
+
+            <div class="btn-group">
+                <a href="{% url 'teacher_my_events' %}" class="btn-cancel">
+                    Cancel
+                </a>
+                <button type="submit" class="btn-submit">
+                    Confirm Venue Assignment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

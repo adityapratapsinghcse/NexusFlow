@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Submit Feedback | Nexus{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #070513 !important;
+        background-image: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.08) 0%, transparent 60%) !important;
+    }
+
+    .nexus-feedback-viewport {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        min-height: calc(100vh - 180px) !important; 
+        width: 100% !important;
+        padding: 40px 24px !important;
+        box-sizing: border-box !important;
+    }
+
+    .feedback-card {
+        background: rgba(15, 18, 53, 0.75) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 24px !important;
+        padding: 40px !important;
+        max-width: 540px !important;
+        width: 100% !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
+        animation: cardFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    }
+
+    @keyframes cardFadeIn {
+        from { transform: translateY(15px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .feedback-card h2 {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 800 !important;
+        font-size: 2rem !important;
+        letter-spacing: -0.02em !important;
+        margin-bottom: 10px !important;
+        color: #ffffff !important;
+        background: none !important;
+        -webkit-text-fill-color: initial !important;
+    }
+
+    .feedback-card p {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        color: #94a3b8 !important;
+        font-size: 14.5px !important;
+        margin-bottom: 32px !important;
+        line-height: 1.6 !important;
+    }
+
+    .feedback-card p strong {
+        color: #38bdf8 !important;
+        font-weight: 600 !important;
+    }
+
+    .form-group {
+        margin-bottom: 28px !important;
+    }
+
+    .form-label {
+        display: block !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1.5px !important;
+        color: #94a3b8 !important;
+        margin-bottom: 14px !important;
+    }
+
+    .rating-wrapper {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.04) !important;
+        padding: 24px !important;
+        border-radius: 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 14px !important;
+        align-items: center !important;
+    }
+
+    .rating-stars {
+        display: flex !important;
+        flex-direction: row-reverse !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        direction: rtl !important;
+    }
+
+    .rating-stars input {
+        display: none !important;
+    }
+
+    .rating-stars label {
+        font-size: 38px !important;
+        color: rgba(255, 255, 255, 0.12) !important;
+        cursor: pointer !important;
+        transition: color 0.2s ease, transform 0.1s ease !important;
+    }
+
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label,
+    .rating-stars input:checked ~ label {
+        color: #fbbf24 !important;
+        text-shadow: 0 0 15px rgba(251, 191, 36, 0.3) !important;
+    }
+
+    .rating-stars label:active {
+        transform: scale(0.85) !important;
+    }
+
+    .rating-indicator {
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        color: #38bdf8 !important;
+        height: 16px !important;
+    }
+
+    .form-textarea {
+        width: 100% !important;
+        min-height: 140px !important;
+        background-color: rgba(15, 23, 42, 0.6) !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 14px !important;
+        padding: 16px !important;
+        font-size: 14.5px !important;
+        font-weight: 500 !important;
+        line-height: 1.5 !important;
+        outline: none !important;
+        transition: all 0.25s ease !important;
+        resize: vertical !important;
+    }
+
+    .form-textarea:focus {
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+        background-color: rgba(15, 23, 42, 0.8) !important;
+    }
+
+    .btn-group {
+        display: flex !important;
+        gap: 14px !important;
+        margin-top: 36px !important;
+    }
+
+    .btn-submit {
+        background: #38bdf8 !important;
+        color: #070513 !important;
+        padding: 14px 28px !important;
+        border: none !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        flex: 2 !important;
+        text-align: center !important;
+        box-shadow: 0 4px 20px rgba(56, 189, 248, 0.2) !important;
+    }
+
+    .btn-submit:hover {
+        background: #7dd3fc !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 24px rgba(56, 189, 248, 0.35) !important;
+    }
+
+    .btn-cancel {
+        background: transparent !important;
+        color: #94a3b8 !important;
+        padding: 14px 24px !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease !important;
+        text-align: center !important;
+        flex: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.03) !important;
+        color: #f8fafc !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+</style>
+
+<div class="nexus-feedback-viewport">
+    <div class="feedback-card">
+        <h2>Share Your Experience</h2>
+        <p>How was your time at <strong>{{ event.title }}</strong>? Your review helps us enhance future programs on <strong>Nexus</strong>.</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Your Rating</label>
+                <div class="rating-wrapper">
+                    <div class="rating-stars" id="starsContentBlock">
+                        <input type="radio" id="c_star5" name="rating" value="5" required>
+                        <label for="c_star5" data-text="Excellent" title="5 stars">★</label>
+                        
+                        <input type="radio" id="c_star4" name="rating" value="4">
+                        <label for="c_star4" data-text="Very Good" title="4 stars">★</label>
+                        
+                        <input type="radio" id="c_star3" name="rating" value="3">
+                        <label for="c_star3" data-text="Good" title="3 stars">★</label>
+                        
+                        <input type="radio" id="c_star2" name="rating" value="2">
+                        <label for="c_star2" data-text="Fair" title="2 stars">★</label>
+                        
+                        <input type="radio" id="c_star1" name="rating" value="1">
+                        <label for="c_star1" data-text="Poor" title="1 star">★</label>
+                    </div>
+                    <div class="rating-indicator" id="textIndicatorContent">Select your score</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Review Comment (Optional)</label>
+                <textarea name="comment" class="form-textarea" placeholder="Tell us what you liked or what could be improved..."></textarea>
+            </div>
+
+            <div class="btn-group">
+                <a href="{% url 'my_registrations' %}" class="btn-cancel">Cancel</a>
+                <button type="submit" class="btn-submit">Submit Feedback</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const setupRatingSystem = (containerId, indicatorId) => {
+            const container = document.getElementById(containerId);
+            const indicator = document.getElementById(indicatorId);
+            if (!container || !indicator) return;
+
+            const labels = container.querySelectorAll('label');
+            const inputs = container.querySelectorAll('input');
+            let activeText = "Select your score";
+
+            labels.forEach(label => {
+                label.addEventListener('mouseenter', () => {
+                    indicator.textContent = label.getAttribute('data-text');
+                    indicator.style.color = "#fbbf24";
+                });
+
+                label.addEventListener('mouseleave', () => {
+                    indicator.textContent = activeText;
+                    indicator.style.color = (activeText === "Select your score") ? "#38bdf8" : "#fbbf24";
+                });
+            });
+
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    const linkedLabel = container.querySelector(`label[for="${input.id}"]`);
+                    activeText = linkedLabel.getAttribute('data-text');
+                    indicator.textContent = activeText;
+                    indicator.style.color = "#fbbf24";
+                });
+            });
+        };
+
+        setupRatingSystem('starsContentBlock', 'textIndicatorContent');
+        setupRatingSystem('starsLayoutBlock', 'textIndicatorLayout');
+    });
+</script>
+{% endblock %}
+
+{% block layout %}
+<style>
+    .nexus-feedback-viewport {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        min-height: calc(100vh - 180px) !important; 
+        width: 100% !important;
+        padding: 40px 24px !important;
+        box-sizing: border-box !important;
+    }
+</style>
+
+<div class="nexus-feedback-viewport">
+    <div class="feedback-card">
+        <h2>Share Your Experience</h2>
+        <p>How was your time at <strong>{{ event.title }}</strong>? Your review helps us enhance future programs on <strong>Nexus</strong>.</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Your Rating</label>
+                <div class="rating-wrapper">
+                    <div class="rating-stars" id="starsLayoutBlock">
+                        <input type="radio" id="l_star5" name="rating" value="5" required>
+                        <label for="l_star5" data-text="Excellent" title="5 stars">★</label>
+                        
+                        <input type="radio" id="l_star4" name="rating" value="4">
+                        <label for="l_star4" data-text="Very Good" title="4 stars">★</label>
+                        
+                        <input type="radio" id="l_star3" name="rating" value="3">
+                        <label for="l_star3" data-text="Good" title="3 stars">★</label>
+                        
+                        <input type="radio" id="l_star2" name="rating" value="2">
+                        <label for="l_star2" data-text="Fair" title="2 stars">★</label>
+                        
+                        <input type="radio" id="l_star1" name="rating" value="1">
+                        <label for="l_star1" data-text="Poor" title="1 star">★</label>
+                    </div>
+                    <div class="rating-indicator" id="textIndicatorLayout">Select your score</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Review Comment (Optional)</label>
+                <textarea name="comment" class="form-textarea" placeholder="Tell us what you liked or what could be improved..."></textarea>
+            </div>
+
+            <div class="btn-group">
+                <a href="{% url 'my_registrations' %}" class="btn-cancel">Cancel</a>
+                <button type="submit" class="btn-submit">Submit Feedback</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

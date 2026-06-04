@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nexus Admin | Event Logistics Management{% endblock %}
+
+{% block extrahead %}
+<style>
+    /* --- Layout & Structural Containers --- */
+    .logistics-dashboard-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 20px 16px 40px 16px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    /* --- Workspace Header Block --- */
+    .dashboard-header-flex {
+        display: flex; 
+        flex-direction: column;
+        gap: 8px;
+        border-bottom: 1px solid var(--border-ether, #2d3748);
+        padding-bottom: 24px;
+        margin-bottom: 32px;
+    }
+
+    .dashboard-header-flex h1 {
+        color: #ffffff;
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .dashboard-header-flex p {
+        color: var(--slate-muted, #a0aec0);
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    /* --- Core Event Card Blocks --- */
+    .event-workspace-card {
+        background: var(--surface-card, #1a202c);
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 16px;
+        padding: 28px;
+        margin-bottom: 28px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .event-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-ether, #2d3748);
+        padding-bottom: 20px;
+        margin-bottom: 24px;
+    }
+
+    .event-identity-title h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: -0.01em;
+        margin: 0;
+    }
+
+    .event-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--slate-muted, #a0aec0);
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 6px;
+    }
+
+    /* --- Status Pill Badges --- */
+    .status-pill-badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-pill-badge.upcoming {
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid rgba(0, 240, 255, 0.2);
+        color: var(--neon-cyan, #00f0ff);
+    }
+    
+    .status-pill-badge.completed {
+        background: rgba(160, 174, 192, 0.08);
+        border: 1px solid rgba(160, 174, 192, 0.2);
+        color: var(--slate-muted, #a0aec0);
+    }
+
+    /* --- Symmetric Logistics Functional Grid --- */
+    .logistics-deck-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .logistics-node-card {
+        background: rgba(0, 0, 0, 0.15);
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 12px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .logistics-node-card:hover {
+        border-color: rgba(0, 240, 255, 0.3);
+        background: rgba(0, 0, 0, 0.25);
+    }
+
+    .card-content-block {
+        margin-bottom: 20px;
+    }
+
+    .node-icon-wrapper {
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    .node-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 6px;
+    }
+
+    .node-description {
+        font-size: 12.5px;
+        color: var(--slate-muted, #a0aec0);
+        line-height: 1.5;
+    }
+
+    /* --- Unified Action Trigger Buttons --- */
+    .action-trigger-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        box-sizing: border-box;
+        border: none;
+        transition: filter 0.2s ease, transform 0.1s ease;
+        cursor: pointer;
+    }
+    .action-trigger-btn:hover { filter: brightness(1.2); }
+    .action-trigger-btn:active { transform: translateY(1px); }
+
+    .btn-style-cyan { 
+        background: linear-gradient(135deg, #00c6ff, #0072ff); 
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(0, 114, 255, 0.25);
+    }
+
+    .btn-style-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-ether, #3d4a5d);
+        color: #ffffff;
+    }
+    .btn-style-secondary:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-locked-state {
+        background: #2d3748;
+        color: var(--slate-muted, #a0aec0);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        cursor: not-allowed;
+    }
+
+    /* --- Null Engine Blank Canvas State --- */
+    .empty-state-canvas {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--surface-card, #1a202c);
+        border: 1px dashed var(--border-ether, #2d3748);
+        border-radius: 16px;
+        max-width: 500px;
+        margin: 40px auto 0 auto;
+    }
+    
+    .empty-state-canvas p {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--slate-muted, #a0aec0);
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logistics-dashboard-container">
+    
+    <!-- Workspace Top Header -->
+    <header class="dashboard-header-flex">
+        <h1>Event Logistics Management</h1>
+        <p>Distribute operational transit parameters, manage global fleet distribution schedules, and configure completion digital credentials.</p>
+    </header>
+
+    <!-- Event Deck Loop Array Execution -->
+    {% for event in events %}
+    <div class="event-workspace-card">
+        
+        <!-- Individual Card Context Header -->
+        <div class="event-card-header">
+            <div class="event-identity-title">
+                <h2>{{ event.title }}</h2>
+                <div class="event-meta-row">
+                    <span>📍 {{ event.location|default:"Campus Grounds" }}</span>
+                    <span style="opacity: 0.3;">|</span>
+                    <span>📅 {{ event.date|date:"F d, Y" }}</span>
+                </div>
+            </div>
+            <div>
+                {% if event.is_completed %}
+                    <span class="status-pill-badge completed">Archive / Completed</span>
+                {% else %}
+                    <span class="status-pill-badge upcoming">Active Runway</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Symmetric Configuration Grid Matrix -->
+        <div class="logistics-deck-grid">
+            
+            <!-- Fleet & Route Node Segment -->
+            <div class="logistics-node-card">
+                <div class="card-content-block">
+                    <div class="node-icon-wrapper">🚌</div>
+                    <div class="node-title">Transit Channels & Fleet Routes</div>
+                    <p class="node-description">Inject structured PDF schedules or localized spreadsheet frames mapping student pick-up matrices, timing arrays, and supervisor contact indexes.</p>
+                </div>
+                <a href="{% url 'upload_bus_route' event.id %}" class="action-trigger-btn btn-style-secondary">
+                    Upload System Routes
+                </a>
+            </div>
+
+            <!-- Certification Logic Node Segment -->
+            <div class="logistics-node-card">
+                <div class="card-content-block">
+                    <div class="node-icon-wrapper">🎓</div>
+                    <div class="node-title">Credentialing & Certification Matrix</div>
+                    <p class="node-description">Upload and lock the root graphics certificate design payload. System distribution arrays release automatically to authorized attendees post-event.</p>
+                </div>
+                
+                {% if event.is_completed %}
+                    <a href="{% url 'upload_certificate' event.id %}" class="action-trigger-btn btn-style-cyan">
+                        Manage Credentials
+                    </a>
+                {% else %}
+                    <button class="action-trigger-btn btn-locked-state" disabled>
+                        Locked Until Event Termination
+                    </button>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+    {% empty %}
+    <!-- Engine Empty Result Fallback UI -->
+    <div class="empty-state-canvas">
+        <div style="font-size: 32px; margin-bottom: 12px; filter: grayscale(1); opacity: 0.7;">📂</div>
+        <p>No managed operational payloads matched your profile routing directory.</p>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "emails/base_email.html" %}
+{% block title %}Event Cancelled — {{ event.title }}{% endblock %}
+{% block badge %}<span class="badge" style="background:rgba(244,63,94,0.1);color:#f43f5e;border:1px solid rgba(244,63,94,0.2)">&#9888; Event Cancelled</span>{% endblock %}
+{% block body %}
+  <p class="greeting">Hi {{ user.first_name|default:user.username }},</p>
+  <p class="text">We're sorry to let you know that an event you were registered for has been <span class="danger">cancelled</span>.</p>
+
+  <div class="event-card" style="border-color:rgba(244,63,94,0.15)">
+    <p class="event-title">{{ event.title }}</p>
+    <p class="meta">
+      <strong>Original Date:</strong> {{ event.start_datetime|date:"l, d F Y" }} at {{ event.start_datetime|time:"g:i A" }}<br>
+      <strong>Venue:</strong> {{ event.venue.name }}<br>
+    </p>
+  </div>
+
+  <p class="text">Your registration has been automatically removed. No action is required on your part. Keep an eye on the portal for rescheduled or alternative events.</p>
+  <div class="divider"></div>
+  <p class="text" style="font-size:12px;color:#475569">We apologise for any inconvenience. For more information, contact your campus administrator.</p>
+{% endblock %}

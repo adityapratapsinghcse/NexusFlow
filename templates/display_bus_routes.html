@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Transport Routes | Nexus{% endblock %}
+
+{% block extrahead %}
+<style>
+    :root { 
+        --primary: #38bdf8; 
+        --accent: #818cf8; 
+        --bg-hub: #020617; 
+        --card-bg: rgba(15, 23, 42, 0.6); 
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --text-muted: #94a3b8;
+    }
+
+    /* Core Workspace Framework Layer */
+    .transport-workspace-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 20px;
+        position: relative;
+    }
+
+    /* Interactive Top Back Navigation Row */
+    .top-navigation-row {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 24px;
+    }
+    .btn-back-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--glass-border);
+        padding: 10px 20px;
+        border-radius: 14px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    .btn-back-nav:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--primary);
+        transform: translateX(-4px);
+    }
+
+    /* Typography Header Blocks */
+    .transport-header {
+        text-align: center;
+        margin-bottom: 44px;
+    }
+    .transport-header h1 { 
+        font-size: 2.6rem; 
+        font-weight: 800; 
+        letter-spacing: -1.5px; 
+        color: #ffffff;
+    }
+    .transport-header p { 
+        color: var(--text-muted); 
+        margin-top: 8px; 
+        font-size: 1.1rem;
+        font-weight: 300;
+    }
+
+    /* Responsive Grid Architecture Layout */
+    .route-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 28px;
+        margin-bottom: 40px;
+    }
+
+    /* Premium Tactile Route Card Components */
+    .route-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 32px;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .route-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(56, 189, 248, 0.4);
+        background: rgba(15, 23, 42, 0.8);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(56, 189, 248, 0.05);
+    }
+
+    .event-info {
+        margin-bottom: 28px;
+    }
+
+    /* Neon Floating Vehicle Icon Plate */
+    .bus-icon-plate {
+        font-size: 28px;
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(129, 140, 248, 0.05));
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .event-name {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+        line-height: 1.3;
+        color: #ffffff;
+    }
+
+    .event-date {
+        font-size: 0.9rem;
+        color: var(--primary);
+        font-weight: 600;
+        letter-spacing: 0.2px;
+    }
+
+    /* High Contrast Contextual Download Action Trigger */
+    .btn-download-pass {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: #ffffff;
+        color: #020617;
+        text-decoration: none;
+        padding: 14px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: 1px solid #ffffff;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-download-pass:hover {
+        background: transparent;
+        color: var(--primary);
+        border-color: var(--primary);
+        box-shadow: 0 10px 25px rgba(56, 189, 248, 0.15);
+    }
+
+    /* Null Record Fallback Visual Block */
+    .empty-state-card {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 80px 40px;
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 28px;
+        border: 2px dashed var(--glass-border);
+    }
+    .empty-state-card h3 {
+        color: #ffffff;
+        font-size: 1.3rem;
+        margin-bottom: 6px;
+    }
+    .empty-state-card p {
+        color: var(--text-muted);
+        font-weight: 300;
+    }
+
+    .btn-return-footer {
+        display: block;
+        text-align: center;
+        margin-top: 16px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+    .btn-return-footer:hover { color: #ffffff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="transport-workspace-container">
+
+    <!-- Top Action Navigation Block Row -->
+    <div class="top-navigation-row">
+        <a href="javascript:history.back()" class="btn-back-nav">
+            &larr; Return to Previous View
+        </a>
+    </div>
+
+    <header class="transport-header">
+        <h1>Transport Routes</h1>
+        <p>Download logistics and bus schedules for your registered Nexus events</p>
+    </header>
+
+    <div class="route-grid">
+        {% for event in events %}
+        <div class="route-card">
+            <div class="event-info">
+                <div class="bus-icon-plate">🚌</div>
+                <h2 class="event-name">{{ event.title }}</h2>
+                <p class="event-date">📅 {{ event.date|date:"d M Y" }}</p>
+            </div>
+
+            <!-- Dynamic Anchor Download Execution Layer -->
+            <a href="{{ event.bus_route.url }}" class="btn-download-pass" download>
+                <span>📥</span> Download PDF Route
+            </a>
+        </div>
+        {% empty %}
+        <!-- Null Record Fallback Block -->
+        <div class="empty-state-card">
+            <div style="font-size: 50px; margin-bottom: 16px; opacity: 0.5;">Tracks Section🛤️</div>
+            <h3>No Transit Records Allocated</h3>
+            <p>Routes appear automatically as soon as your institutional event coordinators publish them.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

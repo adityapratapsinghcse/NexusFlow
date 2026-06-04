@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Certificates | Nexus{% endblock %}
+
+{% block extrahead %}
+<style>
+    :root { 
+        --primary: #38bdf8; 
+        --accent: #818cf8; 
+        --bg-hub: #020617; 
+        --card-bg: #0f172a; 
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --text-muted: #94a3b8;
+    }
+
+    /* Core Workspace Framework Layer */
+    .gallery-workspace-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 20px;
+        position: relative;
+    }
+
+    /* Interactive Top Back Navigation Row */
+    .top-navigation-row {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 24px;
+    }
+    .btn-back-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--glass-border);
+        padding: 10px 20px;
+        border-radius: 14px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    .btn-back-nav:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--primary);
+        transform: translateX(-4px);
+    }
+
+    /* Typography Header Blocks */
+    .gallery-header {
+        text-align: center;
+        margin-bottom: 44px;
+    }
+    .gallery-header h1 { 
+        font-size: 2.6rem; 
+        font-weight: 800; 
+        letter-spacing: -1.5px; 
+        color: #ffffff;
+    }
+    .gallery-header p { 
+        color: var(--text-muted); 
+        margin-top: 8px; 
+        font-size: 1.1rem;
+        font-weight: 300;
+    }
+
+    /* Responsive Grid Architecture Layout */
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 28px;
+        margin-bottom: 40px;
+    }
+
+    /* Premium Tactile Certificate Card Component */
+    .cert-card { 
+        background: var(--card-bg); 
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px; 
+        overflow: hidden; 
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+        display: flex;
+        flex-direction: column;
+    }
+    .cert-card:hover { 
+        transform: translateY(-6px); 
+        border-color: rgba(56, 189, 248, 0.4); 
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(56, 189, 248, 0.05);
+    }
+
+    /* Certificate Visual Frame Preview area */
+    .cert-preview { 
+        height: 190px; 
+        background: #090d16; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        position: relative; 
+        overflow: hidden;
+        border-bottom: 1px solid var(--glass-border);
+    }
+    .cert-preview img { 
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover; 
+        opacity: 0.5; 
+        transition: scale 0.3s ease;
+    }
+    .cert-card:hover .cert-preview img {
+        scale: 1.04;
+        opacity: 0.7;
+    }
+    .cert-badge-floating { 
+        position: absolute; 
+        font-size: 42px; 
+        filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
+    }
+
+    /* Information Content Block */
+    .cert-body { 
+        padding: 24px; 
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+    .cert-body h3 { 
+        font-size: 1.3rem; 
+        font-weight: 700; 
+        margin-bottom: 6px; 
+        color: #ffffff;
+        line-height: 1.3;
+    }
+    .cert-body p { 
+        font-size: 0.9rem; 
+        color: var(--primary); 
+        font-weight: 600;
+        margin-bottom: 24px; 
+    }
+
+    /* Interaction Nodes Trigger Callouts */
+    .btn-download { 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 8px;
+        width: 100%;
+        padding: 14px; 
+        background: #ffffff; 
+        color: #020617; 
+        text-decoration: none; 
+        border-radius: 12px; 
+        font-weight: 700; 
+        font-size: 0.9rem; 
+        border: 1px solid #ffffff;
+        margin-top: auto;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-download:hover { 
+        background: transparent;
+        color: var(--primary);
+        border-color: var(--primary);
+        box-shadow: 0 8px 20px rgba(56, 189, 248, 0.15);
+    }
+
+    /* Null Record Fallback Visual Block */
+    .empty-state-card {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 80px 40px;
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 28px;
+        border: 2px dashed var(--glass-border);
+    }
+    .empty-state-card h2 {
+        color: #ffffff;
+        font-size: 1.4rem;
+        margin-bottom: 6px;
+    }
+    .empty-state-card p {
+        color: var(--text-muted);
+        font-weight: 300;
+    }
+
+    .btn-return-footer {
+        display: block;
+        text-align: center;
+        margin-top: 16px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+    .btn-return-footer:hover { color: #ffffff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gallery-workspace-container">
+
+    <header class="gallery-header">
+        <h1>Achievement Gallery</h1>
+        <p>You have successfully earned {{ certificates.count }} official credentials across Nexus</p>
+    </header>
+
+    <div class="grid">
+        {% for cert in certificates %}
+        <div class="cert-card">
+            
+            <!-- Graphic Verification Frame -->
+            <div class="cert-preview">
+                {% if cert.certificate_file.url %}
+                    <img src="{{ cert.certificate_file.url }}" alt="Official Certificate Graphic Preview">
+                {% endif %}
+                <div class="cert-badge-floating">🏅</div>
+            </div>
+            
+            <!-- Metadata Body Deck -->
+            <div class="cert-body">
+                <h3>{{ cert.event.title }}</h3>
+                <p>Awarded on {{ cert.event.date|date:"M d, Y" }}</p>
+                
+                <a href="{{ cert.certificate_file.url }}" class="btn-download" download>
+                    📥 Download PDF
+                </a>
+            </div>
+
+        </div>
+        {% empty %}
+        <!-- Null Record Fallback Block -->
+        <div class="empty-state-card">
+            <div style="font-size: 54px; margin-bottom: 16px; opacity: 0.5;">🎖️</div>
+            <h2>No Certificates Allocated</h2>
+            <p>Complete academic tracks or events to start cataloging your official credentials.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

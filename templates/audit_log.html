@@ -1,0 +1,242 @@
+{% extends 'base.html' %} 
+{% load static %} 
+
+{% block title %}
+System Intelligence | Audit Log
+{% endblock %} 
+
+{% block content %}
+<style>
+    :root { 
+        --primary: #38bdf8; 
+        --primary-glow: rgba(56, 189, 248, 0.15);
+        --bg-dark: #090716; 
+        --surface: #0f172a;
+        --card-glass: rgba(30, 41, 59, 0.4); 
+        --text-main: #f8fafc; 
+        --text-muted: #94a3b8;
+        --border-glow: rgba(255, 255, 255, 0.06);
+        --blur-panel: blur(20px);
+        
+        --action-create: #10b981;
+        --action-update: #f59e0b;
+        --action-delete: #ef4444;
+        --action-auth: #a855f7;
+    }
+
+    * { box-sizing: border-box; }
+    
+    .workspace-container { 
+        max-width: 1400px; 
+        margin: 40px auto 0 auto; 
+        padding: 0 40px; 
+    }
+    
+    .workspace-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-end; 
+        margin-bottom: 35px; 
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+        padding-bottom: 20px; 
+    }
+    
+    .workspace-title-area h2 { 
+        font-weight: 800; 
+        font-size: 2.2rem; 
+        letter-spacing: -1px; 
+        background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%); 
+        -webkit-background-clip: text; 
+        -webkit-text-fill-color: transparent; 
+        margin-bottom: 4px; 
+    }
+    
+    .workspace-title-area p { 
+        color: var(--text-muted); 
+        font-size: 14px; 
+    }
+    
+    .header-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .counter-pill { 
+        background: var(--primary-glow); 
+        color: var(--primary); 
+        border: 1px solid rgba(56, 189, 248, 0.2); 
+        font-weight: 700; 
+        padding: 8px 16px; 
+        border-radius: 30px; 
+        font-size: 13px; 
+        letter-spacing: -0.2px; 
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-back {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+        color: var(--text-main);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+    
+    .filter-bar {
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid var(--border-glow);
+        padding: 14px 24px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        font-size: 13px;
+        color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .audit-table-wrapper {
+        background: var(--card-glass);
+        backdrop-filter: var(--blur-panel);
+        -webkit-backdrop-filter: var(--blur-panel);
+        border-radius: 24px;
+        border: 1px solid var(--border-glow);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        overflow: hidden;
+        margin-bottom: 40px;
+    }
+
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th { background: rgba(15, 23, 42, 0.6); padding: 18px 24px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); border-bottom: 1px solid var(--border-glow); }
+    td { padding: 18px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); vertical-align: middle; color: #cbd5e1; }
+    tr:hover td { background: rgba(255, 255, 255, 0.01); }
+    
+    .timestamp { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #cbd5e1; white-space: nowrap; }
+    .actor-name { font-weight: 700; color: #ffffff; display: block; }
+    .actor-role { font-size: 11px; color: var(--text-muted); display: block; margin-top: 3px; font-weight: 500; }
+    
+    .action-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .action-badge-create { background: rgba(16, 185, 129, 0.12); color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.25); }
+    .action-badge-update { background: rgba(245, 158, 11, 0.12); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.25); }
+    .action-badge-delete { background: rgba(239, 68, 68, 0.12); color: #fecdd3; border: 1px solid rgba(239, 68, 68, 0.25); }
+    .action-badge-auth { background: rgba(168, 85, 247, 0.12); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.25); }
+
+    .target-container { font-weight: 600; color: #f1f5f9; }
+    .notes-container { font-size: 13px; color: var(--text-muted); max-width: 300px; line-height: 1.5; }
+
+    .ip-address { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #94a3b8; background: rgba(15, 23, 42, 0.4); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.03); }
+
+    .empty-logs {
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--text-muted);
+    }
+    .empty-logs i { font-size: 3rem; opacity: 0.3; margin-bottom: 16px; display: block; }
+</style>
+
+<div class="workspace-container">
+    <div class="workspace-header">
+        <div class="workspace-title-area">
+            <h2>Security & Audit Logs</h2>
+            <p>Immutable ledger of operational adjustments, system threats, and administrative actions</p>
+        </div>
+        <div class="header-actions-group">
+            <span class="counter-pill">
+                <i class="bi bi-shield-fill-check"></i> Cluster Status: Secure
+            </span>
+            
+            {% if user.is_authenticated %}
+                {% if user.profile.college_data.role == 'Admin' or user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn-back"><i class="bi bi-arrow-left"></i> Dashboard</a>
+                {% elif user.profile.college_data.role == 'Teacher' %}
+                    <a href="{% url 'teacher_dashboard' %}" class="btn-back"><i class="bi bi-arrow-left"></i> Dashboard</a>
+                {% elif user.profile.college_data.role == 'Student' %}
+                    <a href="{% url 'student_dashboard' %}" class="btn-back"><i class="bi bi-arrow-left"></i> Dashboard</a>
+                {% else %}
+                    <a href="{% url 'main_page' %}" class="btn-back"><i class="bi bi-house"></i> Home</a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'login' %}" class="btn-back"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <i class="bi bi-cpu text-info"></i>
+        <span>Showing live deployment event ledger metrics. Chronological parity verified.</span>
+    </div>
+
+    <div class="audit-table-wrapper">
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Actor Profile</th>
+                        <th>Action Matrix</th>
+                        <th>Event Target</th>
+                        <th>Supplemental Parameters</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="timestamp">
+                            <i class="bi bi-clock-history text-muted me-1"></i> {{ log.timestamp|date:"Y-m-d H:i:s" }}
+                        </td>
+                        <td>
+                            <span class="actor-name">{{ log.actor.get_full_name|default:log.actor.username }}</span>
+                            <span class="actor-role">{{ log.actor.groups.first.name|default:"System Operator" }}</span>
+                        </td>
+                        <td>
+                            <span class="action-badge {% if log.action == 'CREATE' %}action-badge-create{% elif log.action == 'UPDATE' %}action-badge-update{% elif log.action == 'DELETE' %}action-badge-delete{% else %}action-badge-auth{% endif %}">
+                                {% if log.action == 'CREATE' %}<i class="bi bi-plus-circle-fill"></i>
+                                {% elif log.action == 'UPDATE' %}<i class="bi bi-pencil-square"></i>
+                                {% elif log.action == 'DELETE' %}<i class="bi bi-trash3-fill"></i>
+                                {% else %}<i class="bi bi-key-fill"></i>{% endif %}
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td class="target-container">
+                            {{ log.event_name|default:log }}
+                        </td>
+                        <td class="notes-container">
+                            {{ log.notes|default:"No supplemental parameters captured." }}
+                        </td>
+                        <td>
+                            <span class="ip-address"><i class="bi bi-hdd-network me-1 opacity-50"></i>{{ log.ip_address|default:"0.0.0.0" }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-logs">
+                                <i class="bi bi-database-dash"></i>
+                                <p>No cluster modifications or system activities recorded in this block sequence.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

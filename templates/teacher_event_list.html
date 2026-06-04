@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Events | NexusFlow{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Premium Isolated Portal Workspace --- */
+    .nexus-portal-viewport {
+        max-width: 1200px;
+        margin: 40px auto 80px auto;
+        padding: 0 24px;
+        box-sizing: border-box;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* --- Responsive Header Unit --- */
+    .portal-header-row {
+        margin-bottom: 32px;
+    }
+    
+    .portal-header-row h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.02em;
+        margin-top: 6px;
+    }
+
+    .portal-badge { 
+        display: inline-flex; 
+        padding: 4px 12px; 
+        border-radius: 100px; 
+        font-size: 11px; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px;
+        background: rgba(56, 189, 248, 0.1); 
+        color: var(--neon-cyan, #00f0ff);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    /* --- Filter Panel --- */
+    .filter-bar {
+        background: var(--surface-card, #1a202c);
+        padding: 24px;
+        border-radius: 16px;
+        margin-bottom: 40px;
+        border: 1px solid var(--border-ether, #2d3748);
+        display: flex;
+        gap: 20px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+        flex: 1; 
+        min-width: 220px; 
+    }
+    
+    .filter-group label { 
+        font-size: 11px; 
+        font-weight: 700; 
+        color: var(--neon-cyan, #00f0ff); 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+    }
+    
+    .filter-input {
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid var(--border-ether, #2d3748);
+        padding: 12px 16px;
+        border-radius: 10px;
+        color: #ffffff;
+        font-size: 14.5px;
+        outline: none;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    
+    .filter-input:focus { 
+        border-color: var(--neon-cyan, #00f0ff); 
+        box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.12); 
+    }
+    
+    select.filter-input {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+
+    .filter-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 46px;
+    }
+
+    .btn-search {
+        background: #38bdf8;
+        color: #070513;
+        border: none;
+        padding: 12px 28px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        height: 100%;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .btn-search:hover { 
+        background: #0284c7; 
+        color: #ffffff;
+    }
+
+    .btn-reset {
+        color: var(--slate-muted, #a0aec0); 
+        font-size: 14px; 
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    .btn-reset:hover {
+        color: #ffffff;
+    }
+
+    /* --- Responsive Event Cards Layout --- */
+    .portal-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+        gap: 24px; 
+    }
+    
+    .portal-card { 
+        background: var(--surface-card, #1a202c); 
+        border: 1px solid var(--border-ether, #2d3748); 
+        border-radius: 16px; 
+        padding: 24px; 
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .portal-card:hover { 
+        border-color: #38bdf8; 
+        transform: translateY(-4px); 
+        box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+    
+    .status { 
+        font-size: 11px; 
+        font-weight: 800; 
+        text-transform: uppercase; 
+        margin-bottom: 12px; 
+        display: inline-block; 
+        letter-spacing: 0.5px;
+    }
+    
+    .status.PENDING { color: #fbbf24; }
+    .status.APPROVED { color: #10b981; }
+
+    .event-title { 
+        font-size: 1.25rem; 
+        font-weight: 700; 
+        margin-bottom: 8px; 
+        color: #ffffff; 
+        letter-spacing: -0.01em;
+        line-height: 1.4;
+    }
+
+    .event-description {
+        font-size: 13.5px;
+        color: var(--slate-muted, #a0aec0);
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+    
+    .meta-info { 
+        font-size: 14px; 
+        color: var(--slate-muted, #a0aec0); 
+        margin-bottom: 24px; 
+        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        padding-top: 14px;
+    }
+    
+    .meta-info div { 
+        margin-bottom: 8px; 
+        display: flex; 
+        justify-content: space-between; 
+    }
+    
+    .meta-info b { 
+        color: #f1f5f9; 
+        font-weight: 500;
+    }
+
+    .btn-update { 
+        display: block; 
+        width: 100%; 
+        padding: 12px; 
+        border-radius: 10px;
+        background: rgba(56, 189, 248, 0.04); 
+        border: 1px solid #38bdf8;
+        color: #38bdf8; 
+        text-decoration: none; 
+        text-align: center;
+        font-weight: 700; 
+        font-size: 13px; 
+        transition: all 0.2s ease;
+    }
+    
+    .btn-update:hover { 
+        background: #38bdf8; 
+        color: #070513; 
+        box-shadow: 0 6px 20px rgba(56, 189, 248, 0.2); 
+    }
+
+    /* --- Blank Workspaces Container --- */
+    .empty-state-card { 
+        text-align: center; 
+        padding: 80px 24px; 
+        color: var(--slate-muted, #a0aec0); 
+        border: 2px dashed var(--border-ether, #2d3748); 
+        border-radius: 20px; 
+        grid-column: 1 / -1; 
+    }
+    
+    .empty-state-card h3 {
+        color: #ffffff;
+        font-size: 1.25rem;
+        margin-bottom: 8px;
+    }
+    
+    /* --- Modern Alert Toast Wrapper --- */
+    .messages-container {
+        position: fixed;
+        top: 32px;
+        right: 32px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .message-toast { 
+        padding: 16px 24px; 
+        border-radius: 12px; 
+        font-size: 14.5px; 
+        font-weight: 600; 
+        color: #ffffff;
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between;
+        gap: 20px;
+        min-width: 320px;
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(12px);
+        animation: toastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes toastIn {
+        from { transform: translateX(40px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .msg-success { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; }
+    .msg-error { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; }
+    .msg-info { background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; }
+
+    .close-msg {
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+    }
+    .close-msg:hover { opacity: 1; }
+</style>
+
+<div class="nexus-portal-viewport">
+
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="message-toast msg-{{ message.tags }}">
+            <span>{{ message }}</span>
+            <span class="close-msg" onclick="this.parentElement.remove()">&times;</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Top Management Context Block -->
+    <div class="portal-header-row">
+        <span class="portal-badge">Management Workspace</span>
+        <h1>Review Scheduled Events</h1>
+    </div>
+
+    <!-- Active Structural Filtering Toolset -->
+    <form method="GET" action="{% url 'upcoming_events' %}" class="filter-bar">
+        <div class="filter-group">
+            <label for="search">Search Events</label>
+            <input type="text" id="search" name="search" class="filter-input" placeholder="Search title or details..." value="{{ search_query }}">
+        </div>
+
+        <div class="filter-group">
+            <label for="venue">Venue Location</label>
+            <select id="venue" name="venue" class="filter-input">
+                <option value="">All Venues</option>
+                {% for venue in venues %}
+                    <option value="{{ venue.id }}" {% if selected_venue == venue.id|stringformat:"s" %}selected{% endif %}>
+                        {{ venue.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="date_sort">Order By Date</label>
+            <select id="date_sort" name="date_sort" class="filter-input">
+                <option value="soonest" {% if selected_sort == 'soonest' %}selected{% endif %}>Soonest First</option>
+                <option value="latest" {% if selected_sort == 'latest' %}selected{% endif %}>Latest Created</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="btn-search">Apply Filters</button>
+            <a href="{% url 'upcoming_events' %}" class="btn-reset">Reset</a>
+        </div>
+    </form>
+
+    <!-- Response Grid Cluster -->
+    <div class="portal-grid">
+        {% for event in events %}
+        <div class="portal-card">
+            <div>
+                <span class="status {{ event.status }}">{{ event.status }}</span>
+                <div class="event-title">{{ event.title }}</div>
+                
+                <p class="event-description">
+                    {{ event.description|truncatewords:15 }}
+                </p>
+                
+                <div class="meta-info">
+                    <div>Location: <b>{{ event.venue.name|default:"Venue TBD" }}</b></div>
+                    <div>Scheduled Date: <b>{{ event.date|date:"M d, Y" }}</b></div>
+                    <div>Time Frame: <b>{{ event.start_time|time:"H:i" }} - {{ event.end_time|time:"H:i" }}</b></div>
+                </div>
+            </div>
+
+            <a href="{% url 'update_event_teacher' event.id %}" class="btn-update">Update Event Details</a>
+        </div>
+        {% empty %}
+        <div class="empty-state-card">
+            <h3>No matching events discovered</h3>
+            <p>Try clearing your active filters or revising your search keyword terms.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // System Lifecycle: Toast Auto Dismissal
+    document.addEventListener('DOMContentLoaded', () => {
+        const toasts = document.querySelectorAll('.message-toast');
+        toasts.forEach(toast => {
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,420 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Explore Events | Nexus{% endblock %}
+
+{% block extrahead %}
+<style>
+    :root { 
+        --primary: #38bdf8; 
+        --accent: #818cf8; 
+        --bg-hub: #020617; 
+        --card-bg: rgba(15, 23, 42, 0.6); 
+        --glass-border: rgba(255, 255, 255, 0.08);
+    }
+    
+    /* Main Content Layout Wrapper */
+    .hub-workspace-container {
+        max-width: 1200px; 
+        margin: 0 auto; 
+        padding: 0 20px;
+    }
+
+    /* Typography */
+    .hub-title { font-size: 3.2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px; color: #ffffff; }
+    .hub-subtitle { color: #94a3b8; margin-bottom: 40px; font-size: 1.15rem; font-weight: 300; }
+
+    /* Interactive Live Filtering Form Component */
+    .search-section {
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding: 24px;
+        border-radius: 24px;
+        border: 1px solid var(--glass-border);
+        margin-bottom: 44px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .search-form { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 16px; }
+    
+    .search-form input, .search-form select {
+        background: rgba(3, 7, 18, 0.6);
+        border: 1px solid var(--glass-border);
+        padding: 16px 22px;
+        border-radius: 16px;
+        color: white;
+        outline: none;
+        font-size: 14px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .search-form input:focus, .search-form select:focus { 
+        border-color: var(--primary); 
+        background: rgba(3, 7, 18, 0.9);
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+
+    .btn-search {
+        background: linear-gradient(135deg, var(--primary), #0284c7);
+        color: white;
+        border: none;
+        padding: 0 44px;
+        border-radius: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    .btn-search:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 10px 25px rgba(56, 189, 248, 0.35); 
+    }
+
+    /* Event Catalog Listing Cards Grid */
+    .events-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 28px; }
+    
+    .event-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 32px;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .event-card:hover { 
+        border-color: rgba(56, 189, 248, 0.4); 
+        transform: translateY(-6px) scale(1.01);
+        background: rgba(15, 23, 42, 0.8);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    
+    .card-top-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    .card-date { color: var(--primary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; }
+    .card-college { font-size: 0.8rem; color: var(--accent); font-weight: 600; }
+    
+    .card-title { font-size: 1.55rem; font-weight: 700; color: #ffffff; margin: 4px 0 12px 0; line-height: 1.3; }
+    .card-text-snippet { color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; }
+    
+    .card-footer-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+    }
+    .venue-badge { font-size: 0.75rem; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 20px; background: rgba(255,255,255,0.03); }
+    .status-badge { font-size: 0.75rem; font-weight: 700; padding: 6px 14px; border-radius: 20px; }
+    .status-registered { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .status-open { background: rgba(56, 189, 248, 0.08); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.2); }
+
+    /* Blurred Backdrop Dimmer View Component */
+    .modal-overlay { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(16px); 
+        -webkit-backdrop-filter: blur(16px);
+        display: none; z-index: 1500; opacity: 0; transition: opacity 0.4s ease;
+    }
+    .modal-overlay.active { display: block; opacity: 1; }
+    
+    /* Advanced Interactive Glass Modal Window */
+    .interactive-modal { 
+        position: fixed; top: 50%; left: 50%; 
+        transform: translate(-50%, -50%) scale(0.85); 
+        width: 90%; max-width: 600px; max-height: 90vh;
+        background: radial-gradient(circle at top left, #0f172a, #020617);
+        border: 1px solid rgba(255, 255, 255, 0.12); 
+        border-radius: 32px; z-index: 2000; opacity: 0; pointer-events: none;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.8), 0 0 60px rgba(56, 189, 248, 0.05);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        overflow-y: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .interactive-modal::-webkit-scrollbar { display: none; }
+    .interactive-modal.open { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+    
+    .modal-inner { padding: 44px; position: relative; }
+    
+    .close-modal-btn { 
+        position: absolute; top: 32px; right: 32px; background: rgba(255,255,255,0.03); 
+        border: 1px solid rgba(255,255,255,0.08); color: #94a3b8; cursor: pointer; 
+        font-weight: 700; font-size: 0.85rem; padding: 8px 16px; border-radius: 14px; transition: all 0.2s ease; 
+        z-index: 10;
+    }
+    .close-modal-btn:hover { color: white; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3); }
+
+    .s-poster { 
+        width: 100%; height: 240px; object-fit: cover; border-radius: 20px; 
+        margin-bottom: 32px; border: 1px solid rgba(255, 255, 255, 0.08); 
+    }
+    
+    /* Interactive Tactile Info Row Cards */
+    .info-group { 
+        margin-bottom: 16px; 
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        padding: 16px 20px;
+        border-radius: 18px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .info-group:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(56, 189, 248, 0.2);
+        transform: scale(1.015) translateY(-1px);
+    }
+    .info-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; margin-bottom: 4px; font-weight: 700; letter-spacing: 1px; }
+    .info-value { color: white; font-size: 1rem; font-weight: 500; }
+
+    /* Form and Action Elements Container */
+    .registration-action-box {
+        margin-top: 24px;
+        padding: 24px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+    }
+    .checkbox-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        font-size: 13.5px;
+        color: #cbd5e1;
+        cursor: pointer;
+        line-height: 1.5;
+        user-select: none;
+        margin-bottom: 20px;
+    }
+    .checkbox-label input {
+        margin-top: 4px;
+        accent-color: #ff007a;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+    .action-btn {
+        width: 100%;
+        padding: 16px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+    /* Keyframes Sequences for Inner Element Staggering */
+    @keyframes entryFadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .interactive-modal.open .animate-element {
+        animation: entryFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .interactive-modal.open .seq-1 { animation-delay: 0.04s; }
+    .interactive-modal.open .seq-2 { animation-delay: 0.08s; }
+    .interactive-modal.open .seq-3 { animation-delay: 0.12s; }
+    .interactive-modal.open .seq-4 { animation-delay: 0.16s; }
+    .interactive-modal.open .seq-5 { animation-delay: 0.20s; }
+    .interactive-modal.open .seq-6 { animation-delay: 0.24s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+
+<div class="hub-workspace-container">
+    <header style="margin-top: 20px;">
+        <h1 class="hub-title">Explore <span style="color:var(--primary)">Events</span></h1>
+        <p class="hub-subtitle">Connected through Nexus — Browse opportunities and university gatherings.</p>
+    </header>
+
+    <section class="search-section">
+        <form method="GET" action="{% url 'upcoming_events' %}" class="search-form" id="searchFilterForm">
+            <input type="text" name="search" id="liveSearchInput" placeholder="Type to filter instantly..." value="{{ search_query }}">
+            <select name="venue" id="venueSelect">
+                <option value="">All Venues</option>
+                {% for venue in venues %}
+                <option value="{{ venue.id }}" {% if selected_venue == venue.id|stringformat:"s" %}selected{% endif %}>{{ venue.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="date_sort" id="sortSelect">
+                <option value="soonest" {% if selected_sort == 'soonest' %}selected{% endif %}>Soonest First</option>
+                <option value="latest" {% if selected_sort == 'latest' %}selected{% endif %}>Latest First</option>
+            </select>
+            <button type="submit" class="btn-search">FIND</button>
+        </form>
+    </section>
+
+    <div class="events-grid" id="eventsContainer">
+        {% for event in events %}
+        <div class="event-card" data-title="{{ event.title|lower }}" data-desc="{{ event.description|lower }}" onclick="openModal(
+            '{{ event.id }}',
+            '{{ event.title|escapejs }}', 
+            '{{ event.description|escapejs }}', 
+            '{{ event.date|date:'l, d F Y' }}', 
+            '{{ event.start_time|time:'g:i A' }} - {{ event.end_time|time:'g:i A' }}', 
+            '{{ event.venue.name|escapejs }}',
+            '{{ event.college_profile.college_name|escapejs }}',
+            '{{ event.organizer.get_full_name|default:event.organizer.username|escapejs }}',
+            {% if event.poster %}'{{ event.poster.url }}'{% else %}''{% endif %},
+            '{% if event.id in registered_event_ids %}True{% else %}False{% endif %}'
+        )">
+            <div>
+                <div class="card-top-meta">
+                    <span class="card-date">{{ event.date|date:"d M, Y" }}</span>
+                    <span class="card-college">{{ event.college_profile.college_name }}</span>
+                </div>
+                <h2 class="card-title">{{ event.title }}</h2>
+                <p class="card-text-snippet">{{ event.description|truncatewords:14 }}</p>
+            </div>
+            
+            <div class="card-footer-meta">
+                <div class="venue-badge">📍 {{ event.venue.name|default:"Venue TBD" }}</div>
+                {% if event.id in registered_event_ids %}
+                    <span class="status-badge status-registered">✓ Registered</span>
+                {% else %}
+                    <span class="status-badge status-open">Open</span>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div id="noEventsFallback" style="grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: #64748b;">
+            <h3 style="color: white; margin-bottom: 8px;">No Events Found</h3>
+            <p>Try modifying your search criteria or changing the venue settings.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="interactive-modal" id="eventDetailModal">
+    <div class="modal-inner">
+        <button class="close-modal-btn" onclick="closeModal()">✕ CLOSE</button>
+        
+        <img id="m-poster" class="s-poster animate-element seq-1" src="" style="display: none;">
+
+        <span style="color: var(--accent); font-weight: 800; font-size: 0.75rem; letter-spacing: 2px; display: block; margin-bottom: 8px;" class="animate-element seq-2">EVENT DESCRIPTION CENTER</span>
+        <h2 id="m-title" style="font-size: 2.1rem; font-weight: 800; margin: 0 0 24px; line-height: 1.2; color: var(--primary);" class="animate-element seq-2"></h2>
+        
+        <div class="info-group animate-element seq-3">
+            <div class="info-label">Schedule &amp; Timing</div>
+            <div class="info-value" id="m-date"></div>
+            <div class="info-value" id="m-time" style="color:var(--accent); font-size: 14px; margin-top: 4px;"></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;" class="animate-element seq-4">
+            <div class="info-group">
+                <div class="info-label">Host Organizer</div>
+                <div id="m-organizer" class="info-value"></div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">Location / Venue</div>
+                <div id="m-venue" class="info-value"></div>
+            </div>
+        </div>
+
+        <div class="info-group animate-element seq-5">
+            <div class="info-label">Hosting Campus Institution</div>
+            <div id="m-college_name" class="info-value"></div>
+        </div>
+
+        <div class="info-group animate-element seq-5">
+            <div class="info-label">About the Event</div>
+            <p id="m-desc" style="line-height: 1.7; color: #cbd5e1; font-size: 0.95rem; white-space: pre-line; font-weight: 300; margin: 0;"></p>
+        </div>
+
+        <div class="registration-action-box animate-element seq-6">
+            <form id="registrationForm" method="POST" action="">
+                {% csrf_token %}
+                <label class="checkbox-label" for="confirm">
+                    <input type="checkbox" id="confirm" required>
+                    <span>I verify that I plan to attend this campus event and agree to follow student attendee rules.</span>
+                </label>
+                <div id="actionBtnContainer">
+                    </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Instant Dynamic Live Filtering Logic System ---
+    const searchInput = document.getElementById('liveSearchInput');
+    const cards = document.querySelectorAll('.event-card');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title') || '';
+                const desc = card.getAttribute('data-desc') || '';
+                
+                if (title.includes(query) || desc.includes(query)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // --- Dynamic Pop-up Modal Controls With Forms Redirection Layer ---
+    function openModal(id, title, desc, date, time, venue, college_name, organizer, posterUrl, isRegistered) {
+        document.getElementById('m-title').innerText = title;
+        document.getElementById('m-desc').innerText = desc;
+        document.getElementById('m-date').innerText = date;
+        document.getElementById('m-time').innerText = time;
+        document.getElementById('m-venue').innerText = venue;
+        document.getElementById('m-organizer').innerText = organizer;
+        document.getElementById('m-college_name').innerText = college_name;
+
+        const posterImg = document.getElementById('m-poster');
+        if (posterUrl && posterUrl !== '') {
+            posterImg.src = posterUrl;
+            posterImg.style.display = "block";
+        } else {
+            posterImg.style.display = "none";
+        }
+
+        // Dynamically assign post destination to intercept student bookings via standard endpoint routing layouts
+        const registrationForm = document.getElementById('registrationForm');
+        registrationForm.action = "/student_dashboard/events/" + id + "/";
+
+        const btnContainer = document.getElementById('actionBtnContainer');
+        const confirmCheckbox = document.getElementById('confirm');
+
+        if (isRegistered === 'True') {
+            btnContainer.innerHTML = `
+                <button type="button" class="action-btn" style="background: #1e293b; color: #64748b; border: 1px solid rgba(255,255,255,0.05); cursor: not-allowed;" disabled>
+                    Already Registered For This Event
+                </button>`;
+            confirmCheckbox.checked = true;
+            confirmCheckbox.disabled = true;
+        } else {
+            btnContainer.innerHTML = `
+                <button type="submit" class="action-btn" style="background: linear-gradient(90deg, #ff007a, #ff4d97); color: #ffffff; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 0, 122, 0.3);">
+                    Confirm Event Registration
+                </button>`;
+            confirmCheckbox.checked = false;
+            confirmCheckbox.disabled = false;
+        }
+
+        document.getElementById('eventDetailModal').classList.add('open');
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('eventDetailModal').classList.remove('open');
+        document.getElementById('modalOverlay').classList.remove('active');
+    }
+</script>
+{% endblock %}

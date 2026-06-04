@@ -1,0 +1,721 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}College Events | Event Tracking Dashboard{% endblock %}
+
+{% block extrahead %}
+<style>
+    /* --- College Theme Palette Fallback Layer --- */
+    :root {
+        --theme-cyan: #00d4ff;
+        --theme-emerald: #10b981;
+        --theme-amber: #f59e0b;
+        --theme-red: #ef4444;
+        --border-color: rgba(255, 255, 255, 0.08);
+        --text-muted: #94a3b8;
+        --text-light: #cbd5e1;
+        --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.25);
+        --panel-bg: rgba(15, 23, 42, 0.65);
+    }
+
+    /* --- Page Architecture --- */
+    .event-dashboard-container {
+        width: 100%;
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* --- Top Dashboard Header --- */
+    .dashboard-header-block {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+    }
+    .dashboard-header-block h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0 0 6px 0;
+        color: #ffffff;
+    }
+    .dashboard-header-block p {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .system-sync-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(16, 185, 129, 0.05);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--theme-emerald);
+        letter-spacing: 0.5px;
+    }
+    .status-pulse-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--theme-emerald);
+        border-radius: 50%;
+        animation: simplePulse 2s infinite ease-in-out;
+    }
+
+    @keyframes simplePulse {
+        0% { opacity: 0.4; transform: scale(0.9); }
+        50% { opacity: 1; transform: scale(1.1); }
+        100% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    /* --- Professional Split Dashboard Layout --- */
+    .dashboard-grid-layout {
+        display: grid;
+        grid-template-columns: 1.8fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    /* --- Content Cards --- */
+    .table-card-wrapper {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        overflow: hidden;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .sidebar-stats-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .stats-summary-card {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 24px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        transition: border-color 0.3s ease, transform 0.3s ease;
+    }
+    .stats-summary-card:hover {
+        border-color: rgba(0, 212, 255, 0.2);
+    }
+
+    .stats-summary-card h3 {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--theme-cyan);
+        margin: 0 0 16px 0;
+    }
+
+    /* --- Sidebar Info Rows --- */
+    .stats-data-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .stats-data-row:last-child {
+        border-bottom: none;
+    }
+    .stats-row-label {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+    .stats-row-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #ffffff;
+    }
+
+    /* --- Clean Event Tracking Data Table --- */
+    .events-ledger-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .events-ledger-table th {
+        background: rgba(0, 212, 255, 0.02);
+        padding: 16px 24px;
+        color: var(--theme-cyan);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .events-ledger-table td {
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        vertical-align: middle;
+        transition: background-color 0.25s ease;
+    }
+
+    .events-ledger-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .events-ledger-table tr:hover td {
+        background: rgba(0, 212, 255, 0.02);
+    }
+
+    /* --- Event Details Cells --- */
+    .event-info-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .event-main-title {
+        font-weight: 600;
+        color: #ffffff;
+        font-size: 15px;
+    }
+    .event-sub-meta {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .meta-dot {
+        color: rgba(255, 255, 255, 0.15);
+    }
+    .venue-text-highlight {
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    /* --- Action Triggers --- */
+    .action-button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .btn-view-analytics {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: rgba(0, 212, 255, 0.04);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        color: var(--theme-cyan);
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        width: 100%;
+    }
+
+    .btn-view-analytics:hover {
+        background: rgba(0, 212, 255, 0.12);
+        border-color: var(--theme-cyan);
+        color: #ffffff;
+        box-shadow: var(--shadow-glow);
+        transform: translateY(-2px);
+    }
+    .btn-view-analytics:active {
+        transform: translateY(-0.5px);
+    }
+
+    /* --- Clean Inline Rows Warning --- */
+    .row-warning-alert {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(245, 158, 11, 0.04);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: #fca5a5;
+        margin-top: 6px;
+    }
+
+    /* --- Status Badges --- */
+    .status-capsule-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .approval-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        width: s-resize;
+        text-align: center;
+    }
+
+    .badge-approved { background: rgba(16, 185, 129, 0.06); color: var(--theme-emerald); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .badge-pending { background: rgba(245, 158, 11, 0.06); color: var(--theme-amber); border: 1px solid rgba(245, 158, 11, 0.2); }
+    .badge-rejected { background: rgba(239, 64, 64, 0.06); color: var(--theme-red); border: 1px solid rgba(239, 64, 64, 0.2); }
+
+    .rejection-reason-box {
+        font-size: 11px;
+        color: #f87171;
+        background: rgba(239, 64, 64, 0.04);
+        border: 1px solid rgba(239, 64, 64, 0.15);
+        border-radius: 6px;
+        padding: 6px 10px;
+        line-height: 1.4;
+    }
+
+    /* --- Clean Analytics Info Modal Display Card Component --- */
+    .analytics-modal-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(2, 6, 23, 0.6);
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), backdrop-filter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .analytics-modal-overlay.active-state {
+        opacity: 1;
+        pointer-events: auto;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+    .analytics-modal-window {
+        background: #0f172a;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        width: 92%;
+        max-width: 560px;
+        padding: 28px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        transform: scale(0.92) translateY(10px);
+        transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s ease;
+        max-height: 80vh;
+        overflow-y: auto;
+        
+        /* Hides standard browser scrollbars gracefully */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* IE and Edge */
+    }
+    
+    /* Hides chrome, safari, and opera scrollbars */
+    .analytics-modal-window::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .analytics-modal-overlay.active-state .analytics-modal-window {
+        transform: scale(1) translateY(0);
+        border-color: rgba(0, 212, 255, 0.3);
+    }
+    .modal-head-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 12px;
+    }
+    .modal-head-row h3 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .modal-close-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 26px;
+        cursor: pointer;
+        line-height: 1;
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+    .modal-close-btn:hover {
+        color: var(--theme-red);
+        transform: scale(1.1);
+    }
+
+    /* --- Insight Dashboard Metric Boxes --- */
+    .metrics-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .metric-data-block {
+        background: rgba(255, 255, 255, 0.02);
+        padding: 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        transition: background-color 0.2s ease;
+    }
+    .metric-data-block:hover {
+        background: rgba(255, 255, 255, 0.04);
+    }
+    .metric-block-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+    }
+    .metric-block-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #ffffff;
+    }
+    
+    /* --- Insights Reasoning Sub-Panels --- */
+    .insights-reasoning-card {
+        background: rgba(0, 0, 0, 0.15);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+    }
+    .insights-card-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--theme-cyan);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .insights-card-text {
+        font-size: 13px;
+        color: var(--text-light);
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+
+    /* --- System Warning Wrapper --- */
+    .popup-warnings-card {
+        background: rgba(239, 64, 64, 0.03);
+        border: 1px solid rgba(239, 64, 64, 0.15);
+        border-radius: 10px;
+        padding: 14px;
+    }
+    .popup-warnings-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--theme-red);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .popup-warnings-text {
+        font-size: 13px;
+        color: #fca5a5;
+        line-height: 1.4;
+        white-space: pre-wrap;
+    }
+
+    .highlight-cyan { color: var(--theme-cyan); text-shadow: 0 0 8px rgba(0, 212, 255, 0.2); }
+    .highlight-amber { color: var(--theme-amber); text-shadow: 0 0 8px rgba(245, 158, 11, 0.2); }
+    .highlight-emerald { color: var(--theme-emerald); text-shadow: 0 0 8px rgba(16, 185, 129, 0.2); }
+
+    .empty-ledger-view { text-align: center; padding: 48px 24px; }
+    .empty-ledger-view h3 { color: #ffffff; font-weight: 600; margin-top: 0; font-size: 16px; }
+    .empty-ledger-view p { color: var(--text-muted); font-size: 14px; margin: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="event-dashboard-container">
+    
+    <!-- Top Action Info Header Banner -->
+    <div class="dashboard-header-block">
+        <div>
+            <h2>Event Tracking</h2>
+            <p>Review event approval statuses, assigned venue limits, and smart turnout insights.</p>
+        </div>
+        <div class="system-sync-pill">
+            <div class="status-pulse-dot"></div>
+            System Active
+        </div>
+    </div>
+
+    <!-- Dual Column Main Layout Frame Grid -->
+    <div class="dashboard-grid-layout">
+        
+        <!-- Left Side Panel: Core Data Ledger Table Component -->
+        <div class="table-card-wrapper">
+            <table class="events-ledger-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45%;">Event Details</th>
+                        <th style="width: 30%;">Venue & Date</th>
+                        <th style="width: 25%;">Approval Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>
+                            <div class="event-info-stack">
+                                <div class="event-main-title">{{ event.title }}</div>
+                                <div class="event-sub-meta">
+                                    <span>ID: {{ event.id}}</span>
+                                    <span class="meta-dot">•</span>
+                                    <span>Organizer: {{ event.organizer.get_full_name|default:event.organizer.username }}</span>
+                                </div>
+                                {% if event.ai_warnings %}
+                                    <div class="row-warning-alert">
+                                        <span>⚠️</span>
+                                        <span class="inline-warning-label" data-raw-warning="{{ event.ai_warnings|escapejs }}">Checking event alert flags...</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="venue-text-highlight">{{ event.venue.name|default:"Venue TBD" }}</div>
+                            <div class="event-sub-meta">{{ event.date|date:"l, d M Y" }}</div>
+                        </td>
+                        <td>
+                            <div class="status-capsule-stack">
+                                {% if event.status == 'APPROVED' %}
+                                    <span class="approval-badge badge-approved">Approved</span>
+                                {% elif event.status == 'REJECTED' %}
+                                    <span class="approval-badge badge-rejected">Rejected</span>
+                                    {% if event.rejection_reason %}
+                                        <div class="rejection-reason-box">
+                                            {{ event.rejection_reason }}
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="approval-badge badge-pending">Pending</span>
+                                {% endif %}
+                                
+                                <button class="btn-view-analytics" 
+                                        type="button"
+                                        data-event-title="{{ event.title|escapejs }}"
+                                        data-venue-name="{{ event.venue.name|escapejs }}"
+                                        data-venue-capacity="{{ event.venue.capacity|default:'Uncapped' }}"
+                                        data-expected-crowd="{{ event.expected_crowd }}"
+                                        data-predicted-crowd="{{ event.predicted_crowd|default:'Not Computed' }}"
+                                        data-crowd-confidence="{{ event.crowd_confidence|default:'PENDING' }}"
+                                        data-ai-crowd-reason="{{ event.ai_crowd_reason|default:''|escapejs }}"
+                                        data-ai-venue-reason="{{ event.ai_venue_reason|default:''|escapejs }}"
+                                        data-ai-warnings="{{ event.ai_warnings|default:''|escapejs }}"
+                                        onclick="openAnalyticsModal(this)">
+                                    📊 View Insights
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">
+                            <div class="empty-ledger-view">
+                                <h3>No Event Records Listed</h3>
+                                <p>There are currently no scheduled events matching this dashboard view configuration.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Right Side Panel: System Meta Summary Metrics Deck Component -->
+        <div class="sidebar-stats-panel">
+            <div class="stats-summary-card">
+                <h3>📊 Portal Overview</h3>
+                <div class="stats-data-row">
+                    <span class="stats-row-label">Total Scheduled Events</span>
+                    <span class="stats-row-value" style="color: var(--theme-cyan);">{{ events|length }} Items</span>
+                </div>
+                <div class="stats-data-row">
+                    <span class="stats-row-label">Dashboard Status</span>
+                    <span class="stats-row-value" style="color: var(--theme-emerald);">Online</span>
+                </div>
+            </div>
+
+            <div class="stats-summary-card" style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.02) 0%, rgba(15, 23, 42, 0.65) 100%);">
+                <h3>💡 Quick Guide</h3>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;">
+                    Click the <b>View Insights</b> button on any event row to audit crowd turnout models, capacity reviews, or automated system alerts.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- --- Clean Analytics Info Modal Display Card Component --- -->
+<div id="analyticsModalOverlay" class="analytics-modal-overlay" onclick="closeAnalyticsModalFromOutside(event)">
+    <div class="analytics-modal-window" onclick="event.stopPropagation()">
+        <div class="modal-head-row">
+            <h3>📊 Event Review & Insights</h3>
+            <button class="modal-close-btn" type="button" onclick="dismissAnalyticsModal()">&times;</button>
+        </div>
+        <div class="modal-body-content">
+            <h4 style="color: #ffffff; font-size: 16px; margin: 0 0 2px 0; font-weight: 600;" id="modalEventTitle">Event Title</h4>
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;" id="modalVenueLabel">Assigned Venue</div>
+            
+            <div class="metrics-summary-grid">
+                <div class="metric-data-block">
+                    <div class="metric-block-label">Predicted Turnout</div>
+                    <div class="metric-block-value highlight-cyan" id="modalPredictedCrowd">--</div>
+                </div>
+                <div class="metric-data-block">
+                    <div class="metric-block-label">Insight Confidence</div>
+                    <div class="metric-block-value" id="modalCrowdConfidence">--</div>
+                </div>
+                <div class="metric-data-block">
+                    <div class="metric-block-label">Expected Registrations</div>
+                    <div class="metric-block-value" style="color: var(--text-light);" id="modalExpectedCrowd">--</div>
+                </div>
+                <div class="metric-data-block">
+                    <div class="metric-block-label">Venue Capacity</div>
+                    <div class="metric-block-value" style="color: var(--text-light);" id="modalVenueCapacity">--</div>
+                </div>
+            </div>
+
+            <div class="insights-reasoning-card" id="blockCrowdReason" style="display: none;">
+                <div class="insights-card-title">Turnout Forecast Notes</div>
+                <div class="insights-card-text" id="textCrowdReason"></div>
+            </div>
+
+            <div class="insights-reasoning-card" id="blockVenueReason" style="display: none;">
+                <div class="insights-card-title">Venue Selection Review</div>
+                <div class="insights-card-text" id="textVenueReason"></div>
+            </div>
+
+            <div class="popup-warnings-card" id="blockAiWarnings" style="display: none;">
+                <div class="popup-warnings-title">⚠️ Event Alert Flags</div>
+                <div class="popup-warnings-text" id="textAiWarnings"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // Clean string serialization formats safely
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".inline-warning-label").forEach(function(element) {
+            const rawData = element.getAttribute("data-raw-warning");
+            if (rawData) {
+                let cleanText = rawData.replace(/[\[\]]/g, '');
+                cleanText = cleanText.replace(/\\u0022/g, '');
+                cleanText = cleanText.replace(/["']/g, '');
+                cleanText = cleanText.trim();
+                
+                if (cleanText.length > 45) {
+                    element.innerText = cleanText.substring(0, 42) + "...";
+                } else {
+                    element.innerText = cleanText;
+                }
+            }
+        });
+    });
+
+    function openAnalyticsModal(element) {
+        const title = element.getAttribute("data-event-title") || "Untitled Event";
+        const venue = element.getAttribute("data-venue-name") || "TBD Venue";
+        const capacity = element.getAttribute("data-venue-capacity") || "Uncapped Limit";
+        const expected = element.getAttribute("data-expected-crowd") || "0";
+        const predicted = element.getAttribute("data-predicted-crowd") || "Pending Calculation";
+        const confidence = (element.getAttribute("data-crowd-confidence") || "PENDING").toUpperCase();
+        
+        const crowdReason = (element.getAttribute("data-ai-crowd-reason") || "").trim();
+        const venueReason = (element.getAttribute("data-ai-venue-reason") || "").trim();
+        const warnings = (element.getAttribute("data-ai-warnings") || "").trim();
+
+        document.getElementById("modalEventTitle").innerText = title;
+        document.getElementById("modalVenueLabel").innerText = "Location: " + venue;
+        document.getElementById("modalExpectedCrowd").innerText = expected;
+        document.getElementById("modalVenueCapacity").innerText = capacity;
+        document.getElementById("modalPredictedCrowd").innerText = predicted;
+
+        const confNode = document.getElementById("modalCrowdConfidence");
+        confNode.innerText = confidence;
+        confNode.className = "metric-block-value";
+        
+        if (confidence === "HIGH") {
+            confNode.classList.add("highlight-emerald");
+        } else if (confidence === "MEDIUM") {
+            confNode.classList.add("highlight-cyan");
+        } else {
+            confNode.classList.add("highlight-amber");
+        }
+
+        toggleDataBlock("blockCrowdReason", "textCrowdReason", crowdReason);
+        toggleDataBlock("blockVenueReason", "textVenueReason", venueReason);
+        toggleDataBlock("blockAiWarnings", "textAiWarnings", warnings);
+
+        const overlay = document.getElementById("analyticsModalOverlay");
+        if (overlay) {
+            overlay.classList.add("active-state");
+        }
+    }
+
+    function toggleDataBlock(blockId, textId, dataPayload) {
+        const blockNode = document.getElementById(blockId);
+        const textNode = document.getElementById(textId);
+        
+        if (dataPayload && dataPayload !== "None" && dataPayload !== "") {
+            let cleanText = dataPayload;
+            cleanText = cleanText.replace(/[\[\]]/g, '');          
+            cleanText = cleanText.replace(/\\u0022/g, '');         
+            cleanText = cleanText.replace(/["']/g, '');            
+            cleanText = cleanText.trim();  
+                                                 
+            textNode.innerText = cleanText;
+            blockNode.style.display = "block";
+        } else {
+            blockNode.style.display = "none";
+        }
+    }
+
+    function dismissAnalyticsModal() {
+        const overlay = document.getElementById("analyticsModalOverlay");
+        if (overlay) overlay.classList.remove("active-state");
+    }
+
+    function closeAnalyticsModalFromOutside(event) {
+        const overlay = document.getElementById("analyticsModalOverlay");
+        if (event.target === overlay) {
+            dismissAnalyticsModal();
+        }
+    }
+
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+            dismissAnalyticsModal();
+        }
+    });
+</script>
+{% endblock %}

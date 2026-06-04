@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Registrations | Nexus{% endblock %}
+
+{% block extrahead %}
+<style>
+    :root { 
+        --primary: #38bdf8; 
+        --accent: #818cf8; 
+        --bg-hub: #020617; 
+        --card-bg: rgba(15, 23, 42, 0.6); 
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --danger: #ef4444;
+        --success: #10b981;
+    }
+    
+    /* Layout Framework Alignment */
+    .hub-workspace-container {
+        max-width: 1200px; 
+        margin: 0 auto; 
+        padding: 0 20px;
+    }
+
+    /* Back Trigger Navigation Elements */
+    .dashboard-back-link {
+        color: var(--primary); 
+        text-decoration: none; 
+        font-size: 14px; 
+        display: inline-block; 
+        margin-top: 20px;
+        margin-bottom: 12px;
+        transition: transform 0.2s ease;
+    }
+    .dashboard-back-link:hover {
+        transform: translateX(-4px);
+    }
+
+    /* Typography Overhauls */
+    .hub-title { font-size: 3.2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px; color: #ffffff; }
+    .hub-subtitle { color: #94a3b8; margin-bottom: 40px; font-size: 1.15rem; font-weight: 300; }
+
+    /* Modern Glass Ledger Data Table Design */
+    .event-ledger-table { 
+        width: 100%; 
+        border-collapse: separate; 
+        border-spacing: 0;
+        background: var(--card-bg); 
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 24px; 
+        overflow: hidden; 
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        margin-top: 16px;
+    }
+
+    .event-ledger-table th { 
+        background: rgba(15, 23, 42, 0.8); 
+        color: var(--primary); 
+        text-align: left; 
+        padding: 18px 24px; 
+        font-size: 11px; 
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .event-ledger-table td { 
+        padding: 24px; 
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03); 
+        font-size: 14px;
+        background: rgba(15, 23, 42, 0.2);
+        transition: background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .event-ledger-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .event-ledger-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Inline Core Content Typography */
+    .event-main-title {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #ffffff;
+    }
+
+    .event-sub-meta {
+        color: #64748b;
+        font-size: 13px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    /* Tactile Interactive Action Button Structures */
+    .action-flex-layout {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        margin-top: 16px;
+    }
+
+    .action-item-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .btn-action-base {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-rate-event {
+        background: rgba(129, 140, 248, 0.08);
+        color: var(--accent);
+        border: 1px solid rgba(129, 140, 248, 0.25);
+    }
+    .btn-rate-event:hover {
+        background: var(--accent);
+        color: #ffffff;
+        box-shadow: 0 10px 20px rgba(129, 140, 248, 0.25);
+        transform: translateY(-2px);
+    }
+
+    .link-cancel-registration {
+        background: rgba(239, 68, 68, 0.06);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .link-cancel-registration:hover {
+        background: var(--danger);
+        color: #ffffff;
+        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.25);
+        transform: translateY(-2px);
+    }
+
+    /* Meta Action Alert Hints */
+    .action-hint {
+        font-size: 11px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .hint-alert { color: rgba(239, 68, 68, 0.8); }
+    .hint-success { color: rgba(16, 185, 129, 0.8); }
+
+    .badge-locked-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748b;
+        background: rgba(255, 255, 255, 0.02);
+        padding: 8px 16px;
+        border-radius: 10px;
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* Core Layout Utility Badges */
+    .status-badge-confirmed {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(16, 185, 129, 0.08);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* Clean Fallback Workspace Screen */
+    .empty-state-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        text-align: center; 
+        padding: 80px 24px; 
+        margin-top: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .empty-state-card h2 { color: #ffffff; font-size: 1.8rem; margin-bottom: 8px; font-weight: 700; }
+    .empty-state-card p { color: #94a3b8; font-size: 1.05rem; margin-bottom: 0; }
+    .empty-state-card a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 700;
+        border-bottom: 1px dashed var(--primary);
+        padding-bottom: 2px;
+        transition: all 0.2s ease;
+    }
+    .empty-state-card a:hover {
+        color: white;
+        border-bottom-color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hub-workspace-container">
+    
+    <!-- Unified Authentication Role Navigation Redirect Map -->
+    {% if user.is_authenticated %}
+        {% if user.profile.college_data.role == 'Admin' %}
+            <a href="{% url 'admin_dashboard' %}" class="dashboard-back-link" id="globalBackBtn">← Return to Dashboard</a>
+        {% elif user.profile.college_data.role == 'Teacher' %} 
+            <a href="{% url 'teacher_dashboard' %}" class="dashboard-back-link" id="globalBackBtn">← Return to Dashboard</a>
+        {% elif user.profile.college_data.role == 'Student' %}
+            <a href="{% url 'student_dashboard' %}" class="dashboard-back-link" id="globalBackBtn">← Return to Dashboard</a>
+        {% endif %}
+    {% else %}
+        <a href="{% url 'login' %}" class="dashboard-back-link" id="globalBackBtn">← Return to Login</a>
+    {% endif %}
+
+    <!-- Top Headline Section Block Component -->
+    <header>
+        <h1 class="hub-title">My Registered <span style="color: var(--primary)">Events</span></h1>
+        <p class="hub-subtitle">Manage your upcoming campus schedules, attendance verification tokens, and feedback tools.</p>
+    </header>
+
+    {% if registrations %}
+    <!-- Main Interactive Schedule Data Table Display Component -->
+    <table class="event-ledger-table">
+        <thead>
+            <tr>
+                <th style="width: 50%;">Event Details</th>
+                <th style="width: 23%;">Schedule Timeline</th>
+                <th style="width: 15%;">Assigned Venue</th>
+                <th style="width: 12%;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registrations %}
+            <tr>
+                <td>
+                    <div class="event-main-title">{{ reg.event.title }}</div>
+                    <!-- Fixed typo: Corrected display from 'reg.event.title' to 'reg.event.organizer' meta records properties -->
+                    <span class="event-sub-meta">Hosted by: {{ reg.event.organizer.get_full_name|default:reg.event.organizer.username }}</span>
+                    
+                    <!-- Dynamic Interactive Student Action Execution Row -->
+                    <div class="action-flex-layout">
+                        {% if reg.verified and not reg.event_feedback_exists %}
+                            <div class="action-item-wrapper">
+                                <a href="{% url 'submit_feedback' reg.event.id %}" class="btn-action-base btn-rate-event">
+                                    ★ Rate Event
+                                </a>
+                                <span class="action-hint hint-success">
+                                    ● Verified Attendance Perk
+                                </span>
+                            </div>
+                        {% endif %}
+
+                        {% if not reg.pass_active %}
+                            <div class="action-item-wrapper">
+                                <a href="{% url 'cancel_registration' reg.event.id %}" class="btn-action-base link-cancel-registration">
+                                    ✕ Cancel Registration
+                                </a>
+                                <span class="action-hint hint-alert">
+                                    ⚠️ Lockout applies within 24h of kickoff
+                                </span>
+                            </div>
+                        {% else %}
+                            <div class="action-item-wrapper">
+                                <span class="badge-locked-action" title="Active digital passes lock out self-service cancellations. Contact administration if an emergency occurs.">
+                                    🔒 Pass Active / Cancellation Locked
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <div style="font-weight: 700; color: #ffffff; font-size: 14px;">{{ reg.event.date|date:"l, d F" }}</div>
+                    <span class="event-sub-meta" style="color: var(--primary); font-weight: 500; margin-top: 2px;">🕒 {{ reg.event.start_time|time:"g:i A" }}</span>
+                </td>
+                <td>
+                    <div style="color: #cbd5e1; font-weight: 500; font-size: 13.5px;">📍 {{ reg.event.venue.name|default:"TBD" }}</div>
+                </td>
+                <td>
+                    <span class="status-badge-confirmed">Confirmed</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <!-- Empty Fallback Interface Block Grid Layout Component -->
+    <div class="empty-state-card">
+        <h2>No Registered Events</h2>
+        <p>You haven't signed up for any events yet. Head over to the <a href="{% url 'student_events' %}">Browse Events Catalog</a> to see what's happening around campus.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

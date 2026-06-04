@@ -1,0 +1,24 @@
+{% extends "emails/base_email.html" %}
+{% block title %}Proposal Not Approved — {{ event.title }}{% endblock %}
+{% block badge %}<span class="badge" style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)">&#9888; Proposal Not Approved</span>{% endblock %}
+{% block body %}
+  <p class="greeting">Hi {{ user.first_name|default:user.username }},</p>
+  <p class="text">Your event proposal has been reviewed by the admin team. Unfortunately, it has <span class="warn">not been approved</span> at this time.</p>
+
+  <div class="event-card" style="border-color:rgba(251,191,36,0.15)">
+    <p class="event-title">{{ event.title }}</p>
+    <p class="meta">
+      <strong>Proposed Date:</strong> {{ event.start_datetime|date:"l, d F Y" }}<br>
+      <strong>Proposed Venue:</strong> {{ event.venue.name }}<br>
+    </p>
+  </div>
+
+  <div style="background:#0c1a0c;border-left:3px solid #fbbf24;border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0">
+    <p style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#78716c;margin:0 0 6px">Reason for rejection</p>
+    <p style="font-size:14px;color:#e2e8f0;margin:0;line-height:1.6">{{ reason }}</p>
+  </div>
+
+  <p class="text">You're welcome to revise your proposal and resubmit it through the portal. Please address the feedback above before resubmitting.</p>
+  <div class="divider"></div>
+  <p class="text" style="font-size:12px;color:#475569">If you believe this decision was made in error, please reach out to your campus administrator directly.</p>
+{% endblock %}

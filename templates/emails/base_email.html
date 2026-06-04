@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}NexusFlow{% endblock %}</title>
+<style>
+  body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+  table,td{mso-table-lspace:0pt;mso-table-rspace:0pt}
+  img{-ms-interpolation-mode:bicubic;border:0;height:auto;line-height:100%;outline:none;text-decoration:none}
+  body{background-color:#070513;margin:0!important;padding:40px 0!important;width:100%!important;font-family:'Segoe UI',Helvetica,Arial,sans-serif}
+  .wrap{max-width:520px;margin:0 auto;background:#0f1235;border-radius:24px;border:1px solid rgba(255,255,255,0.08);overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.5)}
+  .header{background:linear-gradient(135deg,#0f1235 0%,#1a1f4e 100%);padding:36px 40px 28px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06)}
+  .logo{font-size:28px;font-weight:800;letter-spacing:-0.03em;color:#fff;margin:0}
+  .logo span{color:#38bdf8}
+  .tagline{font-size:12px;color:#475569;margin:6px 0 0;letter-spacing:0.05em;text-transform:uppercase}
+  .badge{display:inline-block;margin-top:16px;padding:6px 16px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
+  .body{padding:36px 40px}
+  .greeting{font-size:18px;font-weight:700;color:#fff;margin:0 0 12px}
+  .text{font-size:14px;line-height:1.7;color:#94a3b8;margin:0 0 14px}
+  .event-card{background:#070f2a;border:1px solid rgba(56,189,248,0.15);border-radius:16px;padding:20px 24px;margin:24px 0}
+  .event-title{font-size:17px;font-weight:700;color:#fff;margin:0 0 12px}
+  .meta{font-size:13px;color:#64748b;line-height:1.8;margin:0}
+  .meta strong{color:#94a3b8;font-weight:600}
+  .btn-wrap{text-align:center;margin:28px 0 16px}
+  .btn{display:inline-block;padding:14px 36px;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:-0.01em}
+  .btn-primary{background:#38bdf8;color:#070513!important}
+  .btn-success{background:#22c55e;color:#fff!important}
+  .btn-danger{background:#f43f5e;color:#fff!important}
+  .pass-box{background:#070f2a;border:2px dashed rgba(56,189,248,0.3);border-radius:16px;padding:24px;text-align:center;margin:24px 0}
+  .pass-label{font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 8px}
+  .pass-code{font-size:28px;font-weight:800;font-family:monospace;letter-spacing:0.15em;color:#38bdf8;margin:0}
+  .pass-hint{font-size:12px;color:#475569;margin:10px 0 0}
+  .divider{height:1px;background:rgba(255,255,255,0.05);margin:24px 0}
+  .footer{padding:24px 40px;border-top:1px solid rgba(255,255,255,0.05);text-align:center}
+  .footer-text{font-size:12px;color:#334155;line-height:1.6;margin:0}
+  .footer-text a{color:#38bdf8;text-decoration:none}
+  .highlight{color:#38bdf8;font-weight:700}
+  .warn{color:#fbbf24;font-weight:600}
+  .success{color:#22c55e;font-weight:600}
+  .danger{color:#f43f5e;font-weight:600}
+</style>
+</head>
+<body>
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr><td align="center" style="padding:0 16px">
+<div class="wrap">
+  <div class="header">
+    <h1 class="logo">Nexus<span>Flow</span></h1>
+    <p class="tagline">Intelligent Event Management</p>
+    {% block badge %}{% endblock %}
+  </div>
+  <div class="body">
+    {% block body %}{% endblock %}
+  </div>
+  <div class="footer">
+    <p class="footer-text">
+      You received this email because you have an account on <strong style="color:#94a3b8">NexusFlow</strong>.<br>
+      If you have questions, contact your campus administrator.<br>
+      &copy; 2026 NexusFlow &mdash; Intelligent Event Management
+    </p>
+  </div>
+</div>
+</td></tr>
+</table>
+</body>
+</html>

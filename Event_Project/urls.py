@@ -1,0 +1,77 @@
+from django.contrib import admin
+from django.urls import path 
+from accounts import views
+from events import views as event_view
+from django.conf import settings
+from django.conf.urls.static import static
+from notifications import views as notif_view
+
+urlpatterns = [
+    path('dev_admin/', admin.site.urls),
+    path('',views.dashboard,name="main_page"),
+    path('register/', views.register_view, name='register'),
+    path('login/', views.login_view, name='login'),
+    path('admin_dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('teacher_dashboard/', views.teacher_dashboard, name='teacher_dashboard'),
+    path('student_dashboard/', views.student_dashboard, name='student_dashboard'),
+    path('reset_password/',views.reset_pass, name='reset_password'),
+    path('reset_password/<uidb64>/<token>/', views.reset_confirm, name='password_reset_confirm'),
+    path('profile/',views.profile,name= 'profile'),
+    path('logout/', views.logout_view, name='logout_view'),
+    path('schedule/',event_view.schedule_event,name='schedule_event'),
+    path('action/',event_view.action_event,name='action_event'),
+    path('update_event/<int:event_id>/<str:action>/',event_view.update_event,name='update_event'),
+    path('ajax/check-email/', views.check_email_exists, name='check_email_exists'),
+    path("student_dashboard/events/", event_view.upcoming_events, name="student_events"),
+    path("student_dashboard/events/<int:event_id>/", event_view.event_detail, name="event_detail"),
+    path("student_dashboard/my_registrations/",event_view.my_registrations,name="my_registrations"),
+    path("cancel_registration/<int:event_id>/", event_view.cancel_registration, name="cancel_registration"),
+    path("upcoming_events/",event_view.upcoming_events,name="upcoming_events"),
+    path("check_status/",event_view.check_status,name="check_status"),
+    path('cancel_event/', event_view.cancel_event_list, name='cancel_event_list'),
+    path('cancel_event/<int:event_id>/', event_view.cancel_event, name='cancel_event'), 
+    path('teachers_event_list/',event_view.teachers_event_list,name="teachers_event_list"),
+    path('update_event_teacher/<int:event_id>/', event_view.update_event_teacher,name="update_event_teacher"),
+    path('students_registered/', event_view.students_registered, name='students_registered'),
+    path('event/<int:event_id>/details/', event_view.event_student_details, name='event_student_details'),
+    path('event/<int:event_id>/export/', event_view.export_event_students, name='export_event_students'),
+    path('my_passes/', event_view.my_passes, name='my_passes'),
+    path('teacher_my_events/', event_view.teacher_events, name='teacher_my_events'),
+    path('publish_passes/<int:event_id>/', event_view.publish_passes, name='publish_passes'),
+    path('students_participated/<int:event_id>/', event_view.students_participated, name='students_participated'),
+    path("scanner/<int:event_id>/", event_view.scan_pass, name="scan_pass"),
+    path("verify_pass/<int:event_id>/", event_view.verify_pass, name="verify_pass"),
+    path('verify_event_passes/', event_view.verify_passes_list, name='verify_event_passes'),
+    path('manage_events/', event_view.manage_events, name='manage_events'),
+    path('upload_bus_route/<int:event_id>/', event_view.upload_bus_route, name='upload_bus_route'),
+    path('display_bus_routes/', event_view.display_bus_routes, name='display_bus_routes'),
+    path('upload_certificate/<int:event_id>/', event_view.upload_certificate, name='upload_certificate'),
+    path('ajax/get_event_students/<int:event_id>/', event_view.ajax_get_event_students, name='ajax_get_event_students'),
+    path('my_certificates/', event_view.my_certificates, name='my_certificates'), 
+    path('prev_events/', event_view.prev_events, name='prev_events'), 
+    path('notifications/', notif_view.all_notifications, name='all_notifications'),
+    path('notifications/<int:notification_id>/read/', notif_view.mark_notification_read, name='mark_notification_read'),
+    path('notifications/read-all/', notif_view.mark_all_read, name='mark_all_read'),
+    path('event/<int:event_id>/reassign-venue/', event_view.reassign_venue, name='reassign_venue'),
+    path('admin/ban_list/', views.student_ban_list, name='student_ban_list'),
+    path('admin/toggle_ban/<int:user_id>/', views.toggle_ban, name='toggle_ban'),
+    path('feedback/<int:event_id>/', event_view.submit_feedback, name='submit_feedback'),
+    path('feedback/<int:event_id>/summary/', event_view.event_feedback_summary, name='event_feedback_summary'),
+    path('event/<int:event_id>/broadcast/', event_view.broadcast_event_message, name='broadcast_event_message'),
+    path('admin/venues/', views.venue_management, name='venue_management'),
+    path('admin/venues/toggle/<int:venue_id>/', views.toggle_venue, name='toggle_venue'),
+    path('admin/audit-log/', views.audit_log_view, name='audit_log'),
+    path('admin/logistics/', event_view.admin_logistics_overview, name='admin_logistics_overview'),
+    path('logistics/', event_view.teacher_logistics_dashboard, name='teacher_logistics_dashboard'),
+    path('dashboard/logistics/verify/<int:event_id>/', event_view.verify_pass, name='ajax_verify_pass'),
+    path('admin/logistics/assign/<int:event_id>/', event_view.assign_logistics_teacher, name='assign_logistics_teacher'),
+    path('my_waitlist/', event_view.my_waitlist, name='my_waitlist'),
+    path('leave_waitlist/<int:event_id>/', event_view.leave_waitlist, name='leave_waitlist'),
+    path('admin/unpublish_passes/<int:event_id>/', event_view.unpublish_passes, name='unpublish_passes'),
+]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+
+    

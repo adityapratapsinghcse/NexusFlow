@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nexus | Browse Events{% endblock %}
+
+{% block extrahead %}
+<style>
+    /* --- Catalog Workspace Setup --- */
+    .catalog-stream-view {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    /* --- Structural Component Adjustments --- */
+    .clickable-event-card {
+        cursor: pointer;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    
+    .clickable-event-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--neon-cyan, #00d4ff) !important;
+        box-shadow: 0 12px 30px rgba(0, 212, 255, 0.15);
+    }
+
+    /* Refactored Card Top Badges */
+    .identity-meta-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        width: 100%;
+    }
+
+    .time-capsule-badge {
+        background: rgba(0, 212, 255, 0.08);
+        border: 1px solid rgba(0, 212, 255, 0.2);
+        color: #00d4ff;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* --- Centered Details Modal Window Overlay --- */
+    .modal-backdrop-blur {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(3, 5, 20, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+
+    .modal-backdrop-blur.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .inspection-center-modal {
+        background: #090c25;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        width: 90%;
+        max-width: 650px;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+        transform: scale(0.95);
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        
+        /* Hidden layout parameters to clean up disgusting slider/scrollbars */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* IE and Edge */
+    }
+
+    /* Webkit Engine Scrollbar Eraser (Chrome, Safari, Opera) */
+    .inspection-center-modal::-webkit-scrollbar {
+        display: none;
+        width: 0 !important;
+        height: 0 !important;
+        background: transparent;
+    }
+
+    .drawer-interior-pack {
+        padding: 36px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .close-modal-x {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #94a3b8;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+
+    .close-modal-x:hover {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #f87171;
+    }
+
+    /* --- Media & Presentation Typography Controls --- */
+    .event-poster-image {
+        width: 100%;
+        height: 260px;
+        object-fit: cover;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .detail-info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .info-card-node {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 14px 18px;
+    }
+
+    .info-card-node .node-label {
+        display: block;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #64748b;
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+
+    .info-card-node .node-value {
+        font-size: 15px;
+        color: #f8fafc;
+        font-weight: 500;
+    }
+
+    .warning-banner-callout {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 10px;
+        padding: 14px;
+        font-size: 13px;
+        color: #f87171;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Navigation Header Block Components -->
+<div class="dashboard-intro-block" style="margin-bottom: 32px;">
+    <a href="{% url 'student_dashboard' %}" class="matrix-escape-anchor" style="color: #38bdf8; text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 12px;">&larr; Back to Dashboard</a>
+    <h1 style="font-size: 32px; font-weight: 800; color: #ffffff; margin-bottom: 8px; letter-spacing: -0.01em;">Upcoming Campus Events</h1>
+    <p style="color: #94a3b8; font-size: 15px; line-height: 1.6;">Explore current campus listings. Select any event card to expand detailed requirements and confirm registration.</p>
+</div>
+<form method="GET" action="" style="margin-bottom:24px;display:flex;gap:10px;">
+  <input type="text" name="search" value="{{ request.GET.search }}"
+         placeholder="Search events by name or description..."
+         style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+                color:#fff;border-radius:10px;padding:10px 16px;font-size:13px;">
+  <button type="submit"
+          style="background:#00d4ff;color:#05071a;border:none;border-radius:10px;
+                 padding:10px 20px;font-weight:700;cursor:pointer;">Search</button>
+  {% if request.GET.search %}
+  <a href="{% url 'student_events' %}"
+     style="background:rgba(255,255,255,0.07);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);
+            border-radius:10px;padding:10px 16px;text-decoration:none;font-size:13px;">Clear</a>
+  {% endif %}
+</form>
+<!-- Layout Wrapper Structure -->
+<div class="catalog-stream-view" id="catalogStream">
+    <div class="catalog-deck-mesh">
+        {% for event in events %}
+        <div class="member-profile-capsule clickable-event-card {% if event.id in registered_event_ids %}flagged-state{% endif %}"
+             onclick="activateEventInspector(
+                '{{ event.id }}', 
+                '{{ event.title|escapejs }}', 
+                '{{ event.description|escapejs }}', 
+                {% if event.registration_start and event.registration_end %}
+                    <div style="font-size:11px;color:#94a3b8;margin-top:4px;">
+                        Reg. open: {{ event.registration_start|date:"d M, g:i A" }} – {{ event.registration_end|date:"d M, g:i A" }}
+                    </div>
+                    {% endif %}
+                '{{ event.date|date:"d M, Y" }}', 
+                '{{ event.start_time|time:"g:i A" }} - {{ event.end_time|time:"g:i A" }}',
+                '{{ event.venue.name|escapejs }}',
+                '{{ event.venue.capacity|default:"Unspecified" }}',
+                '{{ event.organizer.get_full_name|default:event.organizer.username|escapejs }}',
+                '{{ event.college_profile.college_name|escapejs }}',
+                '{% if event.id in registered_event_ids %}True{% else %}False{% endif %}',
+                {% if event.poster %}'{{ event.poster.url }}'{% else %}''{% endif %},
+                '{% if event.night_event_warning %}True{% else %}False{% endif %}'
+             )">
+            
+            <div class="identity-meta-summary">
+                <div class="time-capsule-badge">
+                    <span>🕒</span> {{ event.start_time|time:"g:i A" }}
+                </div>
+                {% if event.id in registered_event_ids %}
+                    <span class="operational-status-tag tag-suspended">✓ Registered</span>
+                {% else %}
+                    <span class="operational-status-tag tag-verified">Open</span>
+                {% endif %}
+            </div>
+
+            <h3 class="user-primary-title glow-field-cyan" style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">{{ event.title }}</h3>
+            <p class="user-digital-handle" style="font-size: 13px; margin-bottom: 16px; color: #38bdf8;">{{ event.college_profile.college_name }}</p>
+            
+            <div class="attribute-compact-ledger" style="margin-bottom: 16px;">
+                <div class="ledger-entry-row">
+                    <span class="ledger-field-name">Date & Time</span>
+                    <span class="ledger-field-data glow-field-rose">{{ event.date|date:"l, d F" }} | {{ event.start_time|time:"g:i A" }}</span>
+                </div>
+                <div class="ledger-entry-row">
+                    <span class="ledger-field-name">Venue</span>{{ event.venue.name|default:"Venue TBD" }}
+                    <span class="ledger-field-data" style="color: #ffffff;"></span>
+                </div>
+            </div>
+
+            <p style="font-size: 13.5px; color: #94a3b8; line-height: 1.6; margin: 0;">
+                {{ event.description|truncatewords:14 }}
+            </p>
+        </div>
+        {% empty %}
+        <div class="null-records-canvas" style="grid-column: 1/-1;">
+            <h2>No Events Available</h2>
+            <p>There are no upcoming college events registered inside the ecosystem right now.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Center Overlay Modal Layout Structure -->
+<div class="modal-backdrop-blur" id="modalBackdrop" onclick="closeEventInspectorOutside(event)">
+    <div class="inspection-center-modal" id="eventInspectorDrawer">
+        <div class="drawer-interior-pack">
+            
+            <!-- Floating close button -->
+            <button class="close-modal-x" onclick="closeEventInspector()">&times;</button>
+
+            <img id="ins-poster" class="event-poster-image" src="" style="display: none;">
+            
+            <div id="ins-warning-box" class="warning-banner-callout" style="display: none;">
+                ⚠️ <strong>Notice:</strong> Night event protocols active. Verify transit availability safely.
+            </div>
+
+            <div style="padding-right: 40px;">
+                <div style="color: #00d4ff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;">Event Workspace Hub</div>
+                <h2 id="ins-title" style="font-size: 26px; font-weight: 800; margin: 0 0 8px 0; line-height: 1.3; color: #ffffff; letter-spacing: -0.01em;"></h2>
+                <p id="ins-date" style="font-size: 15px; margin: 0; font-weight: 600; color: #38bdf8;"></p>
+            </div>
+            
+            <div class="detail-info-grid">
+                <div class="info-card-node">
+                    <span class="node-label">Event Description</span>
+                    <span id="ins-desc" style="line-height: 1.6; font-size: 14px; color: #cbd5e1; white-space: pre-line; display: block;"></span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="info-card-node">
+                        <span class="node-label">Venue Location</span>
+                        <span id="ins-venue" class="node-value"></span>
+                    </div>
+                    <div class="info-card-node">
+                        <span class="node-label">Seating Capacity</span>
+                        <span id="ins-capacity" class="node-value"></span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="info-card-node">
+                        <span class="node-label">Lead Host Organizer</span>
+                        <span id="ins-organizer" class="node-value"></span>
+                    </div>
+                    <div class="info-card-node">
+                        <span class="node-label">Host Institution</span>
+                        <span id="ins-college" class="node-value" style="color: #fbbf24;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Execution Action Block Area -->
+            <div style="background: rgba(0,0,0,0.3); padding: 24px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); margin-top: 10px;">
+                <form id="registrationForm" method="POST">
+                    {% csrf_token %}
+                    <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px;">
+                        <input type="checkbox" id="confirm" required style="margin-top: 4px; accent-color: #ff007a; cursor: pointer; width: 16px; height: 16px;">
+                        <label for="confirm" style="font-size: 13px; color: #cbd5e1; cursor: pointer; line-height: 1.5; user-select: none;">
+                            I verify that I plan to attend this event and promise to comply with standard student behavior guidelines.
+                        </label>
+                    </div>
+                    <div id="actionExecutionWrapper"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function activateEventInspector(id, title, desc, date, timeWindow, venue, capacity, organizer, collegeName, isRegistered, posterUrl, isNightEvent) {
+        document.getElementById('ins-title').innerText = title;
+        document.getElementById('ins-desc').innerText = desc;
+        document.getElementById('ins-date').innerText = date + " @ " + timeWindow;
+        document.getElementById('ins-venue').innerText = venue;
+        document.getElementById('ins-capacity').innerText = capacity + " seats";
+        document.getElementById('ins-organizer').innerText = organizer;
+        document.getElementById('ins-college').innerText = collegeName;
+
+        const posterImg = document.getElementById('ins-poster');
+        if (posterUrl) {
+            posterImg.src = posterUrl;
+            posterImg.style.display = "block";
+        } else {
+            posterImg.style.display = "none";
+        }
+
+        const warningBox = document.getElementById('ins-warning-box');
+        if (isNightEvent === 'True') {
+            warningBox.style.display = "flex";
+        } else {
+            warningBox.style.display = "none";
+        }
+
+        const form = document.getElementById('registrationForm');
+        form.action = "/student_dashboard/events/" + id + "/";
+
+        const actionWrapper = document.getElementById('actionExecutionWrapper');
+        const confirmBox = document.getElementById('confirm');
+
+        if (isRegistered === 'True') {
+            actionWrapper.innerHTML = '<button type="button" class="interface-trigger-btn" style="width:100%; padding:14px; border-radius:10px; background:#1e293b; color:#64748b; border:1px solid rgba(255,255,255,0.05); font-weight:700; font-size:14px; cursor: not-allowed;" disabled>Already Registered</button>';
+            confirmBox.checked = true;
+            confirmBox.disabled = true;
+        } else {
+            actionWrapper.innerHTML = '<button type="submit" class="interface-trigger-btn" style="width:100%; padding:14px; border-radius:10px; background:linear-gradient(90deg, #ff007a, #ff4d97); color:#ffffff; border:none; font-weight:700; font-size:14px; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; box-shadow: 0 4px 15px rgba(255, 0, 122, 0.3);">Confirm Event Registration</button>';
+            confirmBox.checked = false;
+            confirmBox.disabled = false;
+        }
+
+        document.getElementById('modalBackdrop').classList.add('open');
+    }
+
+    function closeEventInspector() {
+        document.getElementById('modalBackdrop').classList.remove('open');
+    }
+
+    function closeEventInspectorOutside(event) {
+        if (event.target === document.getElementById('modalBackdrop')) {
+            closeEventInspector();
+        }
+    }
+</script>
+{% endblock %}

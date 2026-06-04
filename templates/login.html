@@ -1,0 +1,309 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="{% static 'nexusflow_icon.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <title>Login — NexusFlow</title>
+    <style>
+        :root {
+            --primary-bg: #05071a;
+            --card-bg: #0f1235;
+            --accent-pink: #ff007a;
+            --accent-blue: #00d4ff;
+            --text-gray: #b0b3c1;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            width: 90%;
+            max-width: 900px;
+            height: 95vh;
+            /* Slightly taller to accommodate the extra field */
+            display: flex;
+            background: var(--card-bg);
+            border-radius: 30px;
+            overflow: hidden;
+            border: 1px solid var(--glass);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* LEFT SIDE */
+        .illustration-side {
+            flex: 1;
+            background-color: rgb(10, 6, 31);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+            border-right: 1px solid var(--glass);
+        }
+
+        .logo-top {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            height: 45px;
+        }
+
+        .hero-img {
+            width: 100%;
+            max-width: 320px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        /* RIGHT SIDE */
+        /* RIGHT SIDE – FIXED ALIGNMENT */
+        .form-side {
+            flex: 1;
+            padding: 40px 50px;
+            background: #0a0d28;
+
+            display: flex;
+            flex-direction: column;
+
+            /* IMPORTANT FIX */
+            justify-content: flex-start;
+            /* instead of center */
+            overflow-y: auto;
+
+            /* ensures heading never goes out */
+            max-height: 100%;
+        }
+
+        /* Give breathing room at top */
+        .form-side h2 {
+            margin-top: 10px;
+        }
+
+        1 .subtitle {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        /* Alerts */
+        .error-banner,
+        .success-banner {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            border-left: 5px solid;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .error-banner {
+            background: rgba(255, 0, 122, 0.15);
+            border-left-color: var(--accent-pink);
+            color: #fff;
+        }
+
+        .success-banner {
+            background: rgba(0, 212, 255, 0.15);
+            border-left-color: var(--accent-blue);
+            color: #fff;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Input Styling */
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 18px;
+        }
+
+        .input-box label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .input-box input,
+        .input-box select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass);
+            padding: 14px;
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-box select option {
+            background: #0a0d28;
+            color: white;
+        }
+
+        .input-box input:focus,
+        .input-box select:focus {
+            border-color: var(--accent-blue);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(90deg, var(--accent-pink), #ff4d97);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 10px 20px rgba(255, 0, 122, 0.2);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(255, 0, 122, 0.4);
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: var(--text-gray);
+        }
+
+        .footer-text a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @media (max-width: 850px) {
+            .illustration-side {
+                display: none;
+            }
+
+            .main-container {
+                height: auto;
+                padding: 20px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <div class="illustration-side">
+            <img src="{% static 'loginnn.svg' %}" class="hero-img">
+            <h3 style="margin-top: 20px;">Welcome <span style="color: var(--accent-pink);">Back</span></h3>
+        </div>
+
+        <div class="form-side">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+            <img src="{% static 'nexusflow_icon.svg' %}"
+                style="height:44px;width:44px;border-radius:10px;">
+            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;
+                        font-weight:800;color:#fff;letter-spacing:-0.5px;">
+                Nexus<span style="color:#00d4ff;">Flow</span>
+            </span>
+            </div>
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Sign in to your NexusFlow account</p>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="{% if message.tags == 'success' %}success-banner{% else %}error-banner{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="input-box">
+                    <label>College Name</label>
+                    <select name="college_name" required>
+                        <option value="" disabled selected>-- Select Your College --</option>
+                        {% for code, full_name in colleges %}
+                        <option value="{{ code }}">{{ full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-box">
+                    <label>College ID</label>
+                    <input type="text" name="username" placeholder="Enter your ID" required>
+                </div>
+
+                <div class="input-box">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <div style="text-align: right; margin-bottom: 20px;">
+                    <a href="{% url 'reset_password' %}"
+                        style="color: var(--text-gray); font-size: 0.75rem; text-decoration: none;">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="login-btn">Sign In</button>
+            </form>
+
+            <p class="footer-text">
+                New here? <a href="{% url 'register' %}">Create an Account</a>
+            </p>
+        </div>
+    </div>
+
+</body>
+
+</html>

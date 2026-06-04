@@ -1,0 +1,776 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard — NexusFlow</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'nexusflow_icon.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.12);
+            --primary-hover: #0ea5e9;
+            --accent-pink: #ff007a;
+            --bg-dark: #070513;
+            --card-glass: rgba(15, 23, 42, 0.55);
+            --text-main: #f9fbff;
+            --text-muted: #94a3b8;
+            --success: #00ff99;
+            --success-glow: rgba(0, 255, 153, 0.12);
+            --error: #ef4444;
+            --border-glow: rgba(255, 255, 255, 0.06);
+            --border-ether: rgba(255, 255, 255, 0.08);
+            --blur-panel: blur(20px);
+            --sidebar-width: 290px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            display: flex;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 60% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 80%, rgba(255, 0, 122, 0.02) 0%, transparent 35%);
+            height: 100vh;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* --- Premium Sidebar Hub Layer --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 24px;
+            z-index: 100;
+            background: #090718;
+            border-right: 1px solid var(--border-glow);
+        }
+
+        .logo-section {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 28px;
+            padding-left: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-ether);
+            padding-bottom: 16px;
+        }
+
+        .nav-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+        
+        .nav-container::-webkit-scrollbar { width: 4px; }
+        .nav-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 12px;
+            gap: 14px;
+        }
+
+        .nav-links li a svg {
+            height: 20px;
+            width: 20px;
+            flex-shrink: 0;
+            stroke: var(--text-muted);
+            fill: none;
+            stroke-width: 2;
+            transition: stroke 0.2s ease;
+        }
+
+        .nav-links li a:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-links li a:hover svg { stroke: #ffffff; }
+
+        .nav-links li a.active {
+            color: #ffffff;
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 3px solid var(--primary);
+            font-weight: 700;
+        }
+
+        .nav-links li a.active svg { stroke: var(--primary); }
+
+        .btn-secondary-node {
+            color: var(--primary) !important;
+            background: rgba(56, 189, 248, 0.03) !important;
+            border: 1px dashed rgba(56, 189, 248, 0.2);
+            margin-top: 12px;
+        }
+
+        .btn-secondary-node:hover {
+            background: rgba(56, 189, 248, 0.08) !important;
+        }
+
+        /* --- Profile & Footer Systems --- */
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid var(--border-ether);
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 14px;
+            border: 1px solid var(--border-glow);
+            transition: all 0.2s ease;
+        }
+
+        .profile-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .profile-btn svg {
+            height: 34px;
+            width: 34px;
+            border-radius: 10px;
+            background: var(--primary-glow);
+            stroke: var(--primary);
+            fill: none;
+            stroke-width: 2;
+            padding: 6px;
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px 16px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover { 
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--error);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+
+        /* --- Main Content Core Container & Top Header Navigation System --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            padding: 32px 48px 40px 48px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .top-utility-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .top-nav-bell-link {
+            position: relative;
+            display: inline-flex;
+            padding: 10px;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .top-nav-bell-link:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .top-nav-bell-link svg {
+            height: 20px;
+            width: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .bell-unread-dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* Message Banner Processing Overlay */
+        #message-wrapper { flex-shrink: 0; }
+        .message-container {
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 32px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border: 1px solid transparent;
+            animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .msg-success { background: rgba(0, 255, 153, 0.05); color: var(--success); border-color: rgba(0, 255, 153, 0.15); border-left: 5px solid var(--success); }
+        .msg-error { background: rgba(239, 68, 68, 0.05); color: var(--error); border-color: rgba(239, 68, 68, 0.15); border-left: 5px solid var(--error); }
+
+        @keyframes slideDown {
+            from { transform: translateY(-16px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 24px;
+            flex-shrink: 0;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- Horizontal Scrolling Operational Deck Strip --- */
+        .week-strip {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+        .week-strip::-webkit-scrollbar { height: 6px; }
+        .week-strip::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .week-card {
+            min-width: 320px;
+            max-width: 320px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+            backdrop-filter: var(--blur-panel);
+            -webkit-backdrop-filter: var(--blur-panel);
+            border: 1px solid var(--border-glow);
+            padding: 24px;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .week-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(56, 189, 248, 0.3);
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .week-card .date-tag {
+            background: var(--primary-glow);
+            color: var(--primary);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            align-self: flex-start;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .week-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.4;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .week-card .venue-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+        }
+
+        .week-card .time-stamp {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 12px;
+            border-radius: 8px;
+            width: fit-content;
+            border: 1px solid var(--border-glow);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .empty-strip-msg {
+            color: var(--text-muted);
+            padding: 40px;
+            background: rgba(255,255,255,0.01);
+            border-radius: 24px;
+            border: 1px dashed var(--border-glow);
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* --- Dashboard Split Panel Matrix --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1.4fr;
+            gap: 36px;
+            margin-top: 20px;
+            align-items: start;
+            flex-grow: 1;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .stat-box {
+            background: var(--card-glass);
+            backdrop-filter: var(--blur-panel);
+            -webkit-backdrop-filter: var(--blur-panel);
+            padding: 24px;
+            border-radius: 24px;
+            border: 1px solid var(--border-glow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 140px;
+        }
+
+        .stat-box .count {
+            font-size: 2.6rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -1px;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .stat-box .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+        }
+
+        .stat-box.highlight {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0.02) 100%);
+            border-color: rgba(56, 189, 248, 0.25);
+        }
+        .stat-box.highlight .count { color: var(--primary); }
+
+        /* --- Real-Time Unified Log Stream Panel Modules --- */
+        .notif-panel {
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 24px;
+            border: 1px solid var(--border-glow);
+            padding: 12px;
+            max-height: 360px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .notif-panel::-webkit-scrollbar { width: 4px; }
+        .notif-panel::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 4px; }
+
+        .notif-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            transition: all 0.25s ease;
+        }
+        
+        .notif-unread {
+            background: rgba(56, 189, 248, 0.02);
+            border-left: 3px solid var(--primary);
+            border-color: rgba(56, 189, 248, 0.15);
+        }
+
+        .notif-bell-wrapper {
+            width: 40px; 
+            height: 40px; 
+            background: var(--primary-glow); 
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        
+        .notif-bell-wrapper svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .notif-text { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+        .notif-text b { color: #ffffff; font-size: 0.95rem; font-weight: 700; }
+        .notif-text p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.45; margin: 0; }
+        
+        .highlight-event-title {
+            color: #818cf8;
+            font-weight: 600;
+        }
+
+        .empty-notif-msg {
+            color: var(--text-muted);
+            padding: 48px 16px;
+            text-align: center;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .empty-notif-msg svg {
+            width: 32px;
+            height: 32px;
+            stroke: rgba(255, 255, 255, 0.15);
+            fill: none;
+            stroke-width: 1.5;
+        }
+        
+        .mark-read-btn {
+            font-size: 0.78rem;
+            padding: 8px 16px;
+            cursor: pointer;
+            background: rgba(56, 189, 248, 0.06);
+            color: var(--primary);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+        .mark-read-btn:hover { background: var(--primary); color: #020617; }
+
+        @media (max-width: 1200px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; width: 100%; padding: 24px; }
+            .dashboard-grid { grid-template-columns: 1fr; gap: 24px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar Component Layer -->
+    <div class="sidebar">
+        <div class="logo-section">
+            <img src="{% static 'nexusflow_icon.svg' %}" style="height:34px; width:34px; border-radius:8px; flex-shrink:0;">
+            <span>Nexus<span style="color:var(--primary);">Flow</span></span>
+        </div>
+        
+        <div class="nav-container">
+            <ul class="nav-links">
+                <li>
+                    <a href="{% url 'profile' %}" class="active">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        User Profile Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'my_registrations' %}">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        My Core Registrations
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'my_waitlist' %}" title="My Waitlist">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Waitlist Allocations
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'upcoming_events' %}">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        Upcoming Event Matrix
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'my_passes' %}">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        Gate Access Passes
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'display_bus_routes' %}">
+                        <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="12" rx="2"/><path d="M7 20h2v2H7z"/><path d="M15 20h2v2h-2z"/><circle cx="8" cy="12" r="1"/><circle cx="16" cy="12" r="1"/></svg>
+                        Logistics & Bus Routes
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'my_certificates' %}">
+                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Earned Certificates
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'prev_events' %}" class="btn-secondary-node">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Historical Archives
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'profile' %}" class="profile-btn">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <div class="profile-info">
+                    <span style="color: #ffffff; font-size: 13px; font-weight: 700;">{{ name }}</span>
+                    <span style="font-size: 10px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px;">STUDENT</span>
+                </div>
+            </a>
+            <form method="POST" action="{% url 'logout_view' %}" style="display:block; width: 100%;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <span>Sign Out Session</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Workspace Frame Layer Container -->
+    <div class="main-content">
+
+        <!-- Unified Top Action Header Block -->
+        <div class="top-utility-header">
+            <a href="{% url 'all_notifications' %}" class="top-nav-bell-link" aria-label="View all notification stream archive">
+                <svg viewBox="0 0 24 24">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                {% if recent_notifications %}
+                    <span class="bell-unread-dot"></span>
+                {% endif %}
+            </a>
+        </div>
+
+        {% if messages %}
+        <div id="message-wrapper">
+            {% for message in messages %}
+            <div class="message-container msg-{{ message.tags }}">
+                <span>{% if message.tags == 'success' %}✅{% else %}⚠️{% endif %}</span>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Horizontal Timeline Strip Header Row -->
+        <div class="section-header">
+            <div>
+                <span style="font-size: 0.8rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;">Live Operations</span>
+                <h2>Happening This Week In {{ user.profile.college_name }}</h2>
+            </div>
+            <a href="{% url 'upcoming_events' %}" style="color: var(--primary); font-size: 13px; font-weight: 700; text-decoration: none; background: var(--primary-glow); padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.15);">View All Calendar &rarr;</a>
+        </div>
+
+        <!-- Horizontal Scroll Deck Strip Loop Grid -->
+        <div class="week-strip">
+            {% for event in events_this_week %}
+            <div class="week-card">
+                <span class="date-tag">🗓️ {{ event.date|date:"l, d M" }}</span>
+                <h3>{{ event.title }}</h3>
+                
+                <div class="venue-text">
+                    <span>📍</span> {{ event.venue.name|default:"Venue TBD" }}
+                </div>
+                <div class="time-stamp">⏱️ {{ event.start_time|time:"H:i" }} HRS</div>
+            </div>
+            {% empty %}
+            <div class="empty-strip-msg">No active track operations scheduled for the next 7 days.</div>
+            {% endfor %}
+        </div>
+
+        <!-- Lower Panel Grid Layer System Matrix Split -->
+        <div class="dashboard-grid">
+            
+            <!-- Statistics Cluster Column Area -->
+            <div class="stats-section">
+                <div class="section-header">
+                    <h2>My Activity Status</h2>
+                </div>
+                <div class="stats-container">
+                    <div class="stat-box highlight">
+                        <span class="count">{{ registration_count|default:"0" }}</span>
+                        <span class="label">Total Registered</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="count" style="color: var(--success);">{{ approved_events_count|default:"0" }}</span>
+                        <span class="label">Events Stream Live</span>
+                    </div>
+                    <div class="stat-box" style="grid-column: span 2; min-height: 120px;">
+                        <span class="count" style="color: var(--accent-pink);">{{ venue_count|default:"0" }}</span>
+                        <span class="label">Available College Venues Matrix</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Asynchronous Notifications Dispatch Core Panel Node Component Layer -->
+            <div class="notif-section">
+                <div class="section-header">
+                    <h2><h2><svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:#fbbf24; fill:none; stroke-width:2.5; display:inline-block; vertical-align:text-bottom; margin-right:6px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Recent Updates</h2></h2>
+                    {% if recent_notifications %}
+                    <button id="mark-all-btn" class="mark-read-btn" onclick="markAllRead()">
+                        Mark all read
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <div class="notif-panel">
+                    {% for notification in recent_notifications %}
+                    <div class="notif-item {% if not notification.is_read %}notif-unread{% endif %}">
+                        <div class="notif-bell-wrapper">
+                            <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div class="notif-text">
+                            <b>{{ notification.title }}</b>
+                            <p>{{ notification.message }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-notif-msg">
+                        <svg viewBox="0 0 24 24"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8c0-3.33-2-6-5-6s-5 2.67-5 6a17.89 17.89 0 0 1-.63 5A4 4 0 0 0 4 17h16a4 4 0 0 0-3.37-4z"/></svg>
+                        System updates fully synchronized. No pending alerts.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Interface Pipeline Script Processing Engines -->
+    <script>
+        setTimeout(function () {
+            const wrapper = document.getElementById('message-wrapper');
+            if (wrapper) {
+                wrapper.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+                wrapper.style.opacity = '0';
+                wrapper.style.transform = 'translateY(-10px)';
+                setTimeout(() => wrapper.remove(), 500);
+            }
+        }, 5000);
+
+        function markAllRead() {
+            fetch("{% url 'mark_all_read' %}", {
+                method: "POST",
+                headers: {"X-CSRFToken": "{{ csrf_token }}"}
+            }).then(r => r.json()).then(data => {
+                if (data.status === "ok") {
+                    document.querySelectorAll('.notif-unread').forEach(el => {
+                        el.classList.remove('notif-unread');
+                    });
+                    const btn = document.getElementById('mark-all-btn');
+                    if (btn) btn.textContent = 'All read';
+                    
+                    const dot = document.querySelector('.bell-unread-dot');
+                    if (dot) dot.remove();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

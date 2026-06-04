@@ -1,0 +1,286 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="{% static 'nexusflow_icon.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <title>{% block title %}Campus Event Portal{% endblock %}</title>
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- Root Color Variables --- */
+        :root {
+            --surface-deep: #060913;
+            --surface-card: #0b1120;
+            --brand-primary: #00f0ff;
+            --accent-rose: #ff007f;
+            --status-success: #39ff14;
+            --status-warning: #ffaa00;
+            --status-error: #ef4444;
+            --text-muted: #64748b;
+            --text-light: #cbd5e1;
+            --border-line: rgba(255, 255, 255, 0.08);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: var(--surface-deep);
+            font-family: 'Space Grotesk', sans-serif;
+            color: #ffffff;
+            scroll-behavior: smooth;
+        }
+
+        .viewport-shell {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Global Header Navigation --- */
+        .global-header {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 16px 40px; 
+            background: var(--surface-card); 
+            border-bottom: 1px solid var(--border-line);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .platform-branding h1 {
+            margin: 0; 
+            font-size: 18px; 
+            font-weight: 700;
+        }
+        .platform-branding a {
+            color: #ffffff; 
+            text-decoration: none; 
+            letter-spacing: 1px;
+            transition: text-shadow 0.2s ease, color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .platform-branding a:hover {
+            text-shadow: 0 0 10px var(--brand-primary);
+            color: var(--brand-primary);
+        }
+        
+        .navigation-controls {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .nav-link {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s ease;
+        }
+        .nav-link:hover {
+            color: var(--brand-primary);
+        }
+
+        .notification-pill {
+            background: var(--accent-rose);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 800;
+            border-radius: 20px;
+            padding: 2px 6px;
+            min-width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .user-status-widget {
+            font-size: 13px; 
+            color: var(--text-light);
+            border-left: 1px solid var(--border-line);
+            padding-left: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Dynamic Context Back Button (Integrated Subheader Bar) --- */
+        .context-navigation-bar {
+            max-width: 1320px;
+            width: 100%;
+            margin: 24px auto 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-nav-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .back-nav-trigger:hover {
+            color: var(--brand-primary);
+            border-color: rgba(0, 240, 255, 0.2);
+            background: rgba(0, 240, 255, 0.04);
+            transform: translateX(-4px);
+        }
+
+        /* --- Workspace Core Containers --- */
+        .core-workspace-stage {
+            flex: 1 0 auto;
+            padding: 5px 24px 64px 24px;
+            max-width: 1320px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .platform-footer {
+            flex-shrink: 0;
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-size: 11px;
+            letter-spacing: 1px;
+            border-top: 1px solid var(--border-line);
+            background: rgba(6, 9, 19, 0.8);
+        }
+
+        /* Common Styling across Views */
+        .structural-profile-matrix { display: flex; flex-direction: column; gap: 14px; }
+        .structural-matrix-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: rgba(0, 0, 0, 0.2); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.02); font-size: 14px; }
+        .matrix-row-label { color: var(--text-muted); }
+        .matrix-row-value { color: #ffffff; font-weight: 500; }
+        .glow-field-cyan { color: var(--brand-primary) !important; font-family: monospace; }
+        .glow-field-rose { color: var(--accent-rose) !important; font-weight: 600; }
+        .glow-field-emerald { color: var(--status-success) !important; font-weight: 600; }
+        .glow-field-amber { color: var(--status-warning) !important; font-weight: 600; }
+        .extended-block-layout { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .matrix-unbounded-value { color: var(--text-light); line-height: 1.6; font-size: 14px; width: 100%; }
+
+        @media(max-width: 768px) {
+            .global-header { flex-direction: column; gap: 16px; padding: 20px; text-align: center; }
+            .navigation-controls { flex-direction: column; gap: 12px; width: 100%; }
+            .user-status-widget { border-left: none; padding-left: 0; margin-top: 4px; }
+        }
+    </style>
+    {% block extrahead %}{% endblock %}
+</head>
+<body>
+
+    {% if messages %}
+    <div style="position: fixed; top: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 12px;">
+        {% for message in messages %}
+            <div style="background: var(--surface-card); border: 1px solid var(--border-line); border-left: 4px solid var(--brand-primary); padding: 16px 20px; color: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); cursor: pointer;" onclick="this.remove()">
+                <span>{{ message }}</span>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="viewport-shell">
+        <header class="global-header">
+            <div class="platform-branding">
+                <h1>
+                    <a href="/">
+                        <i class="fa-solid fa-calendar-days" style="color: var(--brand-primary);"></i> CAMPUS EVENT PORTAL
+                    </a>
+                </h1>
+            </div>
+            
+            <div class="navigation-controls">
+                <a href="{% url 'all_notifications' %}" class="nav-link">
+                    <i class="fa-solid fa-bell"></i> Notifications
+                    {% if unread_notification_count > 0 %}
+                    <span class="notification-pill">{{ unread_notification_count }}</span>
+                    {% endif %}
+                </a>
+                
+                <div class="user-status-widget">
+                    <i class="fa-solid fa-circle-user" style="color: var(--text-muted); font-size: 14px;"></i>
+                    {% if user.is_authenticated %}
+                        User: <strong style="color: var(--brand-primary); margin-left: 4px;">{{ user.username }}</strong>
+                    {% else %}
+                        <span style="color: var(--text-muted);">Guest View</span>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <div class="context-navigation-bar">
+            {% if user.is_authenticated %}
+                {% if user.profile.college_data.role == 'Admin' %}
+                    <a id="globalBackBtn" href="{% url 'admin_dashboard' %}" class="back-nav-trigger">
+                        <i class="fa-solid fa-chevron-left"></i> Go to Dashboard
+                    </a>
+                {% elif user.profile.college_data.role == 'Teacher' %}
+                    <a id="globalBackBtn" href="{% url 'teacher_dashboard' %}" class="back-nav-trigger">
+                        <i class="fa-solid fa-chevron-left"></i> Go to Dashboard
+                    </a>
+                {% else %}
+                    <a id="globalBackBtn" href="{% url 'student_dashboard' %}" class="back-nav-trigger">
+                        <i class="fa-solid fa-chevron-left"></i> Go to Dashboard
+                    </a>
+                {% endif %}
+            {% else %}
+                <a id="globalBackBtn" href="{% url 'login' %}" class="back-nav-trigger">
+                    <i class="fa-solid fa-right-to-bracket"></i> Log In
+                </a>
+            {% endif %}
+        </div>
+
+        <main class="core-workspace-stage">
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <footer class="platform-footer">
+            &copy; 2026 CAMPUS EVENT MANAGEMENT PORTAL | ALL PRIVILEGES SECURED
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const currentPath = window.location.pathname;
+            const backBtn = document.getElementById('globalBackBtn');
+            // Hide the system back strip entirely if already sitting directly on landing indexes 
+            if (currentPath === '/' || currentPath === '/admin/' || currentPath.includes('dashboard')) {
+                if (backBtn) backBtn.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

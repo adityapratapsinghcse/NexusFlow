@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #38bdf8;
+        --primary-glow: rgba(56, 189, 248, 0.15);
+        --danger: #f43f5e;
+        --danger-glow: rgba(244, 63, 94, 0.15);
+        --success: #10b981;
+        --success-glow: rgba(16, 185, 129, 0.15);
+        --bg-dark: #050714;
+        --card-bg: #0f172a;
+        --input-bg: #1e293b;
+        --text-main: #f8fafc;
+        --text-muted: #64748b;
+        --border: rgba(255, 255, 255, 0.06);
+    }
+
+    .management-container {
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    /* Top Bar & Navigation Layout */
+    .top-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .panel-header h1 {
+        font-weight: 800;
+        font-size: 1.75rem;
+        letter-spacing: -0.5px;
+        background: linear-gradient(135deg, #ffffff 40%, var(--primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .panel-header p {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-top: 4px;
+        font-weight: 500;
+    }
+
+    .btn-dashboard-back {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        color: var(--text-main);
+        padding: 10px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-dashboard-back:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--primary);
+        box-shadow: 0 0 20px var(--primary-glow);
+        transform: translateX(-2px);
+    }
+
+    /* Core Panel Layout */
+    .management-panel {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .management-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+
+    /* Responsive Table */
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .student-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+
+    .student-table th {
+        color: var(--text-muted);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 12px 20px;
+        text-align: left;
+    }
+
+    .student-row {
+        background-color: rgba(255, 255, 255, 0.01);
+        transition: all 0.2s ease;
+    }
+
+    .student-row:hover {
+        background-color: rgba(255, 255, 255, 0.03);
+        transform: translateY(-1px);
+    }
+
+    .student-row td {
+        padding: 18px 20px;
+        vertical-align: middle;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .student-row td:first-child {
+        border-left: 1px solid var(--border);
+        border-top-left-radius: 14px;
+        border-bottom-left-radius: 14px;
+    }
+
+    .student-row td:last-child {
+        border-right: 1px solid var(--border);
+        border-top-right-radius: 14px;
+        border-bottom-right-radius: 14px;
+    }
+
+    /* Info Tags & Badges */
+    .student-name {
+        font-weight: 600;
+        font-size: 15px;
+        color: #ffffff;
+    }
+
+    .student-id {
+        font-family: 'JetBrains Mono', monospace, sans-serif;
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--primary-glow);
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .status-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .ban-status-badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        width: max-content;
+    }
+
+    .status-banned {
+        background: var(--danger-glow);
+        color: var(--danger);
+        border: 1px solid rgba(244, 63, 94, 0.2);
+    }
+
+    .status-active {
+        background: var(--success-glow);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .ban-reason-text {
+        color: var(--text-muted);
+        font-size: 13px;
+        max-width: 240px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Interactive Forms Elements */
+    .action-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .ban-input {
+        background: var(--input-bg);
+        color: var(--text-main);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 13px;
+        outline: none;
+        transition: all 0.25s ease;
+        width: 220px;
+    }
+
+    .ban-input:focus {
+        border-color: var(--danger);
+        box-shadow: 0 0 15px var(--danger-glow);
+        background: rgba(30, 41, 59, 0.8);
+    }
+
+    /* Interactive Action Buttons */
+    .btn-action {
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        white-space: nowrap;
+    }
+
+    .btn-ban {
+        background: var(--danger);
+        color: white;
+    }
+
+    .btn-ban:hover {
+        background: #e11d48;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px var(--danger-glow);
+    }
+
+    .btn-unban {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border: 1px solid var(--border);
+    }
+
+    .btn-unban:hover {
+        background: var(--success);
+        color: var(--bg-dark);
+        border-color: var(--success);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px var(--success-glow);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 0;
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    /* System Feedback Alert Framework */
+    .system-messages {
+        margin-bottom: 24px;
+    }
+    .alert-wrapper {
+        padding: 14px 20px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid var(--border);
+        background: rgba(30, 41, 59, 0.5);
+    }
+</style>
+
+<div class="management-container">
+    
+    <!-- System Django Messages Layer -->
+    {% if messages %}
+        <div class="system-messages">
+            {% for message in messages %}
+                <div class="alert-wrapper" style="border-left: 4px solid {% if message.tags == 'error' %}var(--danger){% else %}var(--success){% endif %}; color: {% if message.tags == 'error' %}var(--danger){% else %}var(--success){% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- Header & Flexible Dashboard Route Area -->
+    <div class="top-navigation">
+        <div class="panel-header">
+            <h1>Student Ban Management</h1>
+            <p>Revoke or grant platform privileges across system roles</p>
+        </div>
+    </div>
+
+    <!-- Management Workspace Data Grid -->
+    <div class="management-panel">
+        <div class="table-responsive">
+            <table class="student-table">
+                <thead>
+                    <tr>
+                        <th style="width: 28%;">Student Details</th>
+                        <th style="width: 18%;">College ID</th>
+                        <th style="width: 26%;">Status & System Notes</th>
+                        <th style="width: 28%; text-align: right;">Contextual Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in profiles %}
+                    <tr class="student-row">
+                        <td>
+                            <div class="student-name">{{ p.user.get_full_name }}</div>
+                        </td>
+                        <td>
+                            <span class="student-id">{{ p.college_data.college_id }}</span>
+                        </td>
+                        <td>
+                            <div class="status-container">
+                                {% if p.is_banned %}
+                                    <span class="ban-status-badge status-banned">Banned</span>
+                                    {% if p.ban_reason %}
+                                        <span class="ban-reason-text" title="{{ p.ban_reason }}">{{ p.ban_reason }}</span>
+                                    {% else %}
+                                        <span class="ban-reason-text" style="font-style: italic; opacity: 0.6;">No reason provided</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="ban-status-badge status-active">Active Account</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if p.is_banned %}
+                                <form method="post" action="{% url 'toggle_ban' p.user.id %}" class="action-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-action btn-unban">Unban Student</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url 'toggle_ban' p.user.id %}" class="action-form">
+                                    {% csrf_token %}
+                                    <input name="reason" class="ban-input" placeholder="Specify ban reason (optional)">
+                                    <button type="submit" class="btn-action btn-ban">Ban Student</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            No active student profiles registered within the ecosystem.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

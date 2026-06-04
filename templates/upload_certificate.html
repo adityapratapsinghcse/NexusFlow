@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nexus Admin | Release Certificates{% endblock %}
+
+{% block extrahead %}
+<style>
+    /* --- Core Structural Scope Wrapper --- */
+    body {
+        background: #0b0f19;
+    }
+
+    .nexus-matrix-container {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 40px 16px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* --- Workspace Master Card --- */
+    .nexus-matrix-card {
+        background: var(--surface-card, #1a202c);
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 16px;
+        padding: 36px 32px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    /* --- Heading Component Blocks --- */
+    .matrix-card-header {
+        margin-bottom: 28px;
+        border-bottom: 1px solid var(--border-ether, #2d3748);
+        padding-bottom: 20px;
+    }
+
+    .matrix-card-header h1 {
+        color: #ffffff;
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+    }
+
+    .matrix-card-header p {
+        color: var(--slate-muted, #a0aec0);
+        font-size: 14px;
+    }
+
+    .matrix-highlight-tag {
+        color: var(--neon-cyan, #00f0ff);
+        font-weight: 600;
+    }
+
+    /* --- Interactive Navigation Segment Controls (Tabs) --- */
+    .nexus-segmented-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 32px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--border-ether, #2d3748);
+        padding: 5px;
+        border-radius: 10px;
+    }
+
+    .matrix-tab-trigger {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--slate-muted, #a0aec0);
+        background: transparent;
+    }
+
+    .matrix-tab-trigger:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .matrix-tab-trigger.active {
+        background: linear-gradient(135deg, rgba(0, 198, 255, 0.15), rgba(0, 114, 255, 0.15));
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        color: var(--neon-cyan, #00f0ff);
+        text-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+
+    /* --- Dynamic Form Structural Blocks --- */
+    .matrix-form-section {
+        display: none;
+        animation: nexusSectionFade 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .matrix-form-section.active {
+        display: block;
+    }
+
+    @keyframes nexusSectionFade {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .matrix-form-group {
+        margin-bottom: 24px;
+        position: relative;
+    }
+
+    .matrix-form-group label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #ffffff;
+    }
+
+    /* --- Form Component Input Systems Override --- */
+    .matrix-form-group input[type="text"],
+    .matrix-form-group input[type="file"],
+    .matrix-form-group select {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 6px;
+        font-size: 14px;
+        color: #ffffff;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+    }
+
+    .matrix-form-group input[type="text"]::placeholder {
+        color: #4a5568;
+    }
+
+    .matrix-form-group input:focus,
+    .matrix-form-group select:focus {
+        outline: none;
+        border-color: var(--neon-cyan, #00f0ff);
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 14px rgba(0, 240, 255, 0.1);
+    }
+
+    /* Django Form Field Rendering Hooks */
+    .matrix-form-group input[type="file"] {
+        padding: 10px 12px;
+        font-size: 13px;
+        color: var(--slate-muted, #a0aec0);
+        cursor: pointer;
+    }
+
+    /* --- Dynamic Suggestions Autocomplete Framework --- */
+    .autocomplete-matrix-panel {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #171e2e;
+        border: 1px solid rgba(0, 240, 255, 0.2);
+        border-radius: 6px;
+        z-index: 1000;
+        max-height: 220px;
+        overflow-y: auto;
+        margin-top: 4px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .autocomplete-matrix-panel div {
+        padding: 12px 16px;
+        cursor: pointer;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #ffffff;
+        border-bottom: 1px solid var(--border-ether, #2d3748);
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .autocomplete-matrix-panel div:hover {
+        background: rgba(0, 240, 255, 0.08);
+        color: var(--neon-cyan, #00f0ff);
+    }
+
+    .autocomplete-matrix-panel div:last-child {
+        border-bottom: none;
+    }
+
+    /* --- Bulk Student Matrix Multi-Selection View --- */
+    .student-scroller-viewport {
+        max-height: 180px;
+        overflow-y: auto;
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 6px;
+        padding: 14px;
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    /* Adjusting Django's multi-checkbox rendering if output as list */
+    .student-scroller-viewport ul { list-style: none; padding: 0; margin: 0; }
+    .student-scroller-viewport li { margin-bottom: 8px; display: flex; align-items: center; color: #ffffff; font-size: 13.5px; }
+    .student-scroller-viewport input[type="checkbox"] { margin-right: 10px; accent-color: var(--neon-cyan, #00f0ff); }
+
+    /* --- Action Configuration CTA Elements --- */
+    .action-trigger-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        box-sizing: border-box;
+        border: none;
+        transition: filter 0.2s ease, transform 0.1s ease;
+        cursor: pointer;
+        margin-top: 8px;
+    }
+    .action-trigger-btn:hover { filter: brightness(1.15); }
+    .action-trigger-btn:active { transform: translateY(1px); }
+
+    .btn-style-cyan { 
+        background: linear-gradient(135deg, #00c6ff, #0072ff); 
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(0, 114, 255, 0.25);
+    }
+
+    .cancel-return-link {
+        display: inline-block;
+        margin-top: 24px;
+        color: var(--slate-muted, #a0aec0);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: color 0.15s ease;
+    }
+    .cancel-return-link:hover {
+        color: #ff4d4d;
+    }
+
+    /* --- System Matrix Pipeline Diagnostic Alerts --- */
+    .system-alert-banner {
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 24px;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: left;
+    }
+    .system-alert-banner.success {
+        background: rgba(57, 255, 20, 0.08);
+        border: 1px solid rgba(57, 255, 20, 0.2);
+        color: var(--neon-emerald, #39ff14);
+    }
+    .system-alert-banner.error {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ff4d4d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nexus-matrix-container">
+    <div class="nexus-matrix-card">
+        
+        <!-- Header Info Segment -->
+        <header class="matrix-card-header">
+            <h1>Release Certificates</h1>
+            <p>Target System Deployment: <span class="matrix-highlight-tag">{{ event.title }}</span></p>
+        </header>
+
+        <!-- Message Pipeline Channels -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="system-alert-banner {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Navigation Segment Selectors -->
+        <div class="nexus-segmented-tabs">
+            <button class="matrix-tab-trigger active" id="btn-bulk" onclick="switchMatrixTab('bulk')">Bulk Release</button>
+            <button class="matrix-tab-trigger" id="btn-individual" onclick="switchMatrixTab('individual')">Single Student</button>
+        </div>
+
+        <!-- Mode Workspace: Bulk Output Process -->
+        <section id="bulk-section" class="matrix-form-section active">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="matrix-form-group">
+                    <label>Master Certificate Template</label>
+                    {{ bulk_form.bulk_file }}
+                </div>
+                <div class="matrix-form-group">
+                    <label>Target Candidate Filter</label>
+                    <div class="student-scroller-viewport">
+                        {{ bulk_form.selected_students_bulk }}
+                    </div>
+                    <p style="font-size: 11px; color: var(--slate-muted, #a0aec0); margin-top: 8px;">
+                        * Null values fallback automatically: leaving unchecked maps release array to all system-registered students.
+                    </p>
+                </div>
+                <button type="submit" name="bulk_file" class="action-trigger-btn btn-style-cyan">
+                    Generate Bulk Credentials
+                </button>
+            </form>
+        </section>
+
+        <!-- Mode Workspace: Single Pipeline Target Process -->
+        <section id="individual-section" class="matrix-form-section">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="matrix-form-group">
+                    <label for="student_username">Search Student Matrix Directory</label>
+                    <input type="text" name="student_username" id="student_username" placeholder="Search parameters by identifier or credential tag..." autocomplete="off">
+                    <div id="student-suggestions" class="autocomplete-matrix-panel"></div>
+                </div>
+
+                <div class="matrix-form-group">
+                    <label>Isolated Candidate File Certificate</label>
+                    {{ individual_form.certificate_file }}
+                </div>
+
+                <div class="matrix-form-group">
+                    <label>Profile Achievement Visual Payload (Optional)</label>
+                    {{ individual_form.student_photo }}
+                </div>
+
+                <button type="submit" name="certificate_file" class="action-trigger-btn btn-style-cyan">
+                    Deploy to Profile Stream
+                </button>
+            </form>
+        </section>
+    </div>
+    
+    <!-- Workspace Footer Exit Redirect -->
+    <div style="text-align: center;">
+        <a href="{% url 'manage_events' %}" class="cancel-return-link">
+            ← Abort Uploading and Return to Logistics
+        </a>
+    </div>
+</div>
+
+<script>
+    // System Component Workspace Multi-Tab Routing Engine
+    function switchMatrixTab(targetChannel) {
+        document.getElementById('bulk-section').classList.remove('active');
+        document.getElementById('individual-section').classList.remove('active');
+        document.getElementById('btn-bulk').classList.remove('active');
+        document.getElementById('btn-individual').classList.remove('active');
+
+        document.getElementById(targetChannel + '-section').classList.add('active');
+        document.getElementById('btn-' + targetChannel).classList.add('active');
+    }
+
+    // Dynamic Micro-Query Autocomplete Interceptor Routing System
+    const inputField = document.getElementById("student_username");
+    const recommendationBox = document.getElementById("student-suggestions");
+
+    inputField.addEventListener("input", function() {
+        const queryPayload = this.value.trim();
+        if (queryPayload.length < 1) {
+            recommendationBox.innerHTML = "";
+            return;
+        }
+
+        fetch(`/ajax/get_event_students/{{ event.id }}/?q=` + encodeURIComponent(queryPayload))
+            .then(res => res.json())
+            .then(dataStream => {
+                recommendationBox.innerHTML = "";
+                dataStream.forEach(resolvedIdentity => {
+                    const abstractRow = document.createElement("div");
+                    abstractRow.textContent = resolvedIdentity;
+                    abstractRow.addEventListener("click", () => {
+                        inputField.value = resolvedIdentity;
+                        recommendationBox.innerHTML = "";
+                    });
+                    recommendationBox.appendChild(abstractRow);
+                });
+            })
+            .catch(err => console.error("Identity query array failure:", err));
+    });
+
+    // Window Context Focus Observer: Closes Suggestion Tree upon Outside Selection Blur
+    document.addEventListener("click", function(eventEvent) {
+        if (!inputField.contains(eventEvent.target) && !recommendationBox.contains(eventEvent.target)) {
+            recommendationBox.innerHTML = "";
+        }
+    });
+</script>
+{% endblock %}

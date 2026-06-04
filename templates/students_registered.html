@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Nexus | Registration Tracker{% endblock %}
+
+{% block extrahead %}
+<style>
+    /* --- Layout & Structural Containers --- */
+    .dashboard-workspace-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 20px 40px 20px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    /* Header Action Layout */
+    .dashboard-header-flex {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-start; 
+        gap: 20px;
+        border-bottom: 1px solid var(--border-ether, #2d3748);
+        padding-bottom: 24px;
+        margin-bottom: 32px;
+    }
+
+    .header-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    /* --- Premium Data Table Styling --- */
+    .table-workspace-card {
+        background: var(--surface-card, #1a202c);
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .nexus-data-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .nexus-data-table th {
+        background: rgba(255, 255, 255, 0.02);
+        padding: 20px 24px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--neon-cyan, #00f0ff);
+        border-bottom: 1px solid var(--border-ether, #2d3748);
+    }
+
+    .nexus-data-table td {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-ether, #2d3748);
+        color: var(--slate-light, #e2e8f0);
+        font-size: 15px;
+        vertical-align: middle;
+    }
+
+    .nexus-data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .nexus-data-table tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .nexus-data-table tr:hover {
+        background: rgba(0, 240, 255, 0.02);
+    }
+
+    /* --- Dynamic Metrics, Statuses & Badges --- */
+    .metric-badge-pill {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-ether, #2d3748);
+        color: #ffffff;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-open {
+        background: rgba(57, 255, 20, 0.08);
+        border: 1px solid rgba(57, 255, 20, 0.25);
+        color: var(--neon-emerald, #39ff14);
+    }
+
+    .status-closed {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        color: #f87171;
+    }
+
+    /* --- Navigation Elements --- */
+    .nav-action-btn {
+        text-decoration: none; 
+        padding: 10px 20px; 
+        font-size: 13px; 
+        font-weight: 600;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-ether, #3d4a5d);
+        color: #ffffff;
+    }
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    }
+
+    /* --- Solid Bold Actions Buttons --- */
+    .action-link-btn {
+        display: inline-block;
+        text-align: center;
+        box-sizing: border-box;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.25px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: filter 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+        border: none;
+        color: #ffffff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    }
+    .action-link-btn:hover {
+        filter: brightness(1.2);
+        transform: translateY(-1px);
+    }
+    .action-link-btn:active {
+        transform: translateY(1px);
+    }
+    
+    .btn-style-cyan { 
+        background: linear-gradient(135deg, #00c6ff, #0072ff); 
+        box-shadow: 0 4px 14px rgba(0, 114, 255, 0.3);
+    }
+    .btn-style-cyan:hover {
+        box-shadow: 0 6px 20px rgba(0, 198, 255, 0.4);
+    }
+
+    /* --- Responsive Breaks --- */
+    @media (max-width: 900px) {
+        .dashboard-header-flex { flex-direction: column; align-items: flex-start; }
+        .header-actions-group { width: 100%; }
+        .nexus-data-table th:nth-child(2), .nexus-data-table td:nth-child(2) { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-workspace-container">
+    <!-- Main Header Action Component -->
+    <header class="dashboard-header-flex">
+        <div>
+            <h1 style="color: #ffffff; font-size: 2.2rem; font-weight: 700; margin: 0 0 8px 0; letter-spacing: -0.02em;">Registration Tracker</h1>
+            <p style="color: var(--slate-muted, #a0aec0); margin: 0; font-size: 15px; line-height: 1.5;">Monitor student deployment parameters, event schedules, and window states.</p>
+        </div>
+
+    </header>
+
+    <!-- Main Workspace Table Deck Card -->
+    <div class="table-workspace-card">
+        {% if events %}
+        <table class="nexus-data-table">
+            <thead>
+                <tr>
+                    <th>Event Details</th>
+                    {% if request.user.profile.college_data.role == 'Admin' %}
+                        <th>Organizer</th>
+                    {% endif %}
+                    <th>Timeline Status</th>
+                    <th>Roster Metrics</th>
+                    <th style="text-align: right;">System Operations</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <!-- Event title mapped from model logic -->
+                    <td style="font-weight: 600; color: #ffffff;">{{ event.title }}</td>
+                        
+                    <td style="font-weight: 600; color: #ffffff;">{{ event.organizer.get_full_name }}</td>
+                    <!-- Dynamic Operational Windows Validation -->
+                    <td>
+                        {% if event.registration_end and now > event.registration_end %}
+                            <span class="status-badge status-closed">🛑 Registration Closed</span>
+                        {% elif event.registration_start and now < event.registration_start %}
+                            <span class="status-badge status-closed" style="color: var(--neon-amber, #ffaa00); background: rgba(255,170,0,0.06); border-color: rgba(255,170,0,0.2);">⏳ Pre-Registration</span>
+                        {% else %}
+                            <span class="status-badge status-open">🟢 Registration Open</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Dynamic Annotated Metrics Roster count tracking -->
+                    <td>
+                        <span class="metric-badge-pill">
+                            <strong style="color: var(--neon-cyan, #00f0ff); font-weight: 700;">{{ event.student_count }}</strong> Active
+                        </span>
+                    </td>
+                    
+                    <!-- View Link configuration -->
+                    <td style="text-align: right;">
+                        <a href="{% url 'event_student_details' event.id %}" class="action-link-btn btn-style-cyan">
+                            View Roster
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <!-- Null Records Canvas Layout -->
+        <div class="null-records-canvas" style="text-align: center; padding: 60px 40px; background: rgba(6, 9, 19, 0.2);">
+            <h2 style="color: #ffffff; margin-bottom: 12px; font-size: 1.5rem;">No Active Metrics Found</h2>
+            <p style="margin-bottom: 0; color: var(--slate-muted, #a0aec0); font-size: 14px;">You haven't initialized or registered any operations on this timeline yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

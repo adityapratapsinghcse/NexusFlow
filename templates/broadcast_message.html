@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}NexusFlow | Broadcast Message{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Premium Isolated Broadcast Workspace --- */
+    .broadcast-workspace-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px 80px 20px;
+        min-height: 80vh;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .broadcast-card { 
+        background: var(--surface-card, #1a202c); 
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 20px; 
+        padding: 40px; 
+        max-width: 580px; 
+        width: 100%; 
+        box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6); 
+        position: relative;
+    }
+
+    /* --- Live Transmission Badge --- */
+    .broadcast-badge { 
+        font-size: 11px; 
+        font-weight: 800; 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+        background: rgba(16, 185, 129, 0.1); 
+        color: #10b981; 
+        padding: 6px 14px; 
+        border-radius: 100px; 
+        display: inline-flex; 
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 24px; 
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .broadcast-badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        background-color: #10b981;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #10b981;
+        animation: pulse-signal 2s infinite;
+    }
+
+    @keyframes pulse-signal {
+        0% { transform: scale(0.9); opacity: 0.6; }
+        50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 12px #10b981; }
+        100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    .broadcast-card h2 { 
+        font-size: 1.75rem; 
+        font-weight: 800; 
+        color: #ffffff; 
+        margin-bottom: 8px; 
+        letter-spacing: -0.02em;
+    }
+
+    .broadcast-sub { 
+        font-size: 14.5px; 
+        color: var(--slate-muted, #a0aec0); 
+        margin-bottom: 28px; 
+        line-height: 1.6;
+    }
+
+    .broadcast-sub strong { 
+        color: var(--neon-cyan, #00f0ff); 
+        font-weight: 600;
+    }
+
+    /* --- Informational Notice Box --- */
+    .broadcast-notice { 
+        background: rgba(56, 189, 248, 0.04); 
+        border: 1px solid rgba(56, 189, 248, 0.2); 
+        border-radius: 12px; 
+        padding: 16px 20px; 
+        font-size: 13.5px; 
+        color: #7dd3fc; 
+        margin-bottom: 28px; 
+        line-height: 1.6; 
+    }
+
+    .broadcast-label { 
+        font-size: 11px; 
+        font-weight: 700; 
+        color: var(--neon-cyan, #00f0ff); 
+        display: block; 
+        margin-bottom: 10px; 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* --- Form Field Control --- */
+    .broadcast-textarea { 
+        width: 100%; 
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid var(--border-ether, #2d3748); 
+        border-radius: 12px; 
+        padding: 16px; 
+        font-size: 15px; 
+        color: #ffffff;
+        font-family: inherit; 
+        resize: vertical; 
+        min-height: 150px; 
+        line-height: 1.5;
+        outline: none; 
+        transition: all 0.2s ease;
+    }
+
+    .broadcast-textarea::placeholder {
+        color: #4a5568;
+    }
+
+    .broadcast-textarea:focus { 
+        border-color: var(--neon-cyan, #00f0ff); 
+        box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.12); 
+        background: rgba(15, 23, 42, 0.6);
+    }
+
+    .broadcast-char-count { 
+        font-size: 12px; 
+        font-weight: 500;
+        color: var(--slate-muted, #a0aec0); 
+        text-align: right; 
+        margin-top: 8px; 
+        margin-bottom: 28px; 
+    }
+
+    /* --- Actions Button Strip --- */
+    .broadcast-actions { 
+        display: flex; 
+        gap: 16px; 
+        align-items: center;
+    }
+
+    .btn-cancel { 
+        flex: 1; 
+        background: rgba(255, 255, 255, 0.03); 
+        color: var(--slate-muted, #a0aec0); 
+        border: 1px solid var(--border-ether, #2d3748); 
+        border-radius: 12px; 
+        padding: 14px; 
+        font-size: 14px; 
+        font-weight: 700; 
+        text-decoration: none; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        transition: all 0.2s ease; 
+    }
+
+    .btn-cancel:hover { 
+        border-color: rgba(255, 255, 255, 0.15); 
+        color: #ffffff; 
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .btn-send { 
+        flex: 1.6; 
+        background: #38bdf8; 
+        color: #070513; 
+        border: none; 
+        border-radius: 12px; 
+        padding: 14px; 
+        font-size: 14px; 
+        font-weight: 700; 
+        cursor: pointer; 
+        transition: all 0.2s ease; 
+        box-shadow: 0 4px 20px rgba(56, 189, 248, 0.2);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-send:hover { 
+        background: #0284c7;
+        color: #ffffff;
+        box-shadow: 0 6px 24px rgba(2, 132, 199, 0.35);
+    }
+</style>
+
+<div class="broadcast-workspace-wrapper">
+    <div class="broadcast-card">
+        <div class="broadcast-badge">Live Broadcast</div>
+        <h2>Message Registered Students</h2>
+        <p class="broadcast-sub">
+            Targeting <strong>{{ event.total_registrations }} student{{ event.total_registrations|pluralize }}</strong> 
+            enrolled in <strong>{{ event.title }}</strong>.
+        </p>
+
+        <div class="broadcast-notice">
+            <strong>Notification Update:</strong> This message will be delivered instantly as an in-app notice to all registered students. Use this tool to cleanly update attendees regarding schedule shifts, room updates, or critical guidelines.
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <label for="msg" class="broadcast-label">Message Content</label>
+            <textarea id="msg" name="message" class="broadcast-textarea"
+                      placeholder="E.g. Reminder: The event begins at 10:00 AM tomorrow. Please remember to bring your student ID card..."
+                      maxlength="500"
+                      oninput="document.getElementById('cc').textContent = this.value.length + ' / 500 characters used'"
+                      required></textarea>
+            <div class="broadcast-char-count" id="cc">0 / 500 characters used</div>
+
+            <div class="broadcast-actions">
+                <a href="{% url 'teacher_my_events' %}" class="btn-cancel">Cancel</a>
+                <button type="submit" class="btn-send">Send Announcement</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "emails/base_email.html" %}
+{% block title %}Event Approved — {{ event.title }}{% endblock %}
+{% block badge %}<span class="badge" style="background:rgba(34,197,94,0.12);color:#22c55e;border:1px solid rgba(34,197,94,0.2)">&#10003; Proposal Approved</span>{% endblock %}
+{% block body %}
+  <p class="greeting">Hi {{ user.first_name|default:user.username }},</p>
+  <p class="text">Great news! Your event proposal has been reviewed and <span class="success">approved</span> by the admin team.</p>
+
+  <div class="event-card">
+    <p class="event-title">{{ event.title }}</p>
+    <p class="meta">
+      <strong>Date &amp; Time:</strong> {{ event.start_datetime|date:"l, d F Y" }} at {{ event.start_datetime|time:"g:i A" }}<br>
+      <strong>Venue:</strong> {{ event.venue.name }}<br>
+      <strong>Expected Capacity:</strong> {{ event.expected_crowd }} attendees<br>
+    </p>
+  </div>
+
+  <p class="text">Students can now view and register for your event. When you're ready, log in to the portal and <span class="highlight">publish passes</span> so attendees can collect their entry QR codes.</p>
+
+  <div class="divider"></div>
+  <p class="text" style="font-size:12px;color:#475569">If you have questions about your event setup, contact the NexusFlow admin team through the portal.</p>
+{% endblock %}

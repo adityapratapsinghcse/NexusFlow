@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Nexus | Pass Verification{% endblock %}
+
+{% block extrahead %}
+<style>
+    /* --- Layout & Structural Containers --- */
+    .dashboard-workspace-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 20px 40px 20px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    /* Header Action Layout */
+    .dashboard-header-flex {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-start; 
+        gap: 20px;
+        border-bottom: 1px solid var(--border-ether, #2d3748);
+        padding-bottom: 24px;
+        margin-bottom: 32px;
+    }
+
+    .header-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .event-management-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* --- Refined Verification Card Layout --- */
+    .event-display-card {
+        background: var(--surface-card, #1a202c);
+        border: 1px solid var(--border-ether, #2d3748);
+        border-radius: 14px;
+        padding: 28px;
+        display: grid;
+        grid-template-columns: 130px 1fr 240px;
+        gap: 20px;
+        align-items: center;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        position: relative;
+    }
+    .event-display-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--neon-cyan, #00f0ff);
+        box-shadow: var(--glare-effect, 0 0 20px rgba(0, 240, 255, 0.1));
+    }
+
+    /* --- Column Specific Custom Styles --- */
+    .card-date-column {
+        text-align: center;
+        border-right: 1px solid var(--border-ether, #2d3748);
+        padding-right: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .card-date-column .date-day {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #ffffff;
+        display: block;
+        line-height: 1;
+        letter-spacing: -1px;
+    }
+    .card-date-column .date-month {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--neon-cyan, #00f0ff);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-top: 4px;
+    }
+    .card-date-column .date-time {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--slate-muted, #a0aec0);
+        margin-top: 12px;
+        display: block;
+        font-family: monospace;
+    }
+
+    .card-details-column {
+        padding: 0 16px;
+        width: 100%;
+    }
+    
+    .card-details-column h3.user-primary-title {
+        color: #ffffff;
+        font-size: 1.5rem;
+        margin: 6px 0;
+        font-weight: 600;
+    }
+
+    .card-actions-column {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    /* --- Dynamic Badge Accents --- */
+    .verify-mode-tag {
+        display: inline-flex;
+        align-items: center;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        color: #a5b4fc;
+    }
+
+    /* --- Top Level Navigation Controls --- */
+    .nav-action-btn {
+        text-decoration: none; 
+        padding: 10px 20px; 
+        font-size: 13px; 
+        font-weight: 600;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-ether, #3d4a5d);
+        color: #ffffff;
+    }
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    }
+
+    /* --- Premium Solid Bold Action Buttons --- */
+    .action-link-btn {
+        display: block;
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+        padding: 14px 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.25px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: filter 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+        border: none;
+        color: #ffffff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    }
+    .action-link-btn:hover {
+        filter: brightness(1.2);
+        transform: translateY(-1px);
+    }
+    .action-link-btn:active {
+        transform: translateY(1px);
+    }
+    
+    .btn-style-cyan { 
+        background: linear-gradient(135deg, #00c6ff, #0072ff); 
+        box-shadow: 0 4px 14px rgba(0, 114, 255, 0.3);
+    }
+    .btn-style-cyan:hover {
+        box-shadow: 0 6px 20px rgba(0, 198, 255, 0.4);
+    }
+    
+    .btn-style-muted { 
+        background: #2d3748; 
+        border: 1px solid #4a5568; 
+        color: #718096; 
+        text-shadow: none;
+        cursor: not-allowed; 
+        box-shadow: none;
+    }
+    .btn-style-muted:hover {
+        filter: none;
+        transform: none;
+    }
+
+    /* --- Responsive Breaks --- */
+    @media (max-width: 900px) {
+        .dashboard-header-flex { flex-direction: column; align-items: flex-start; }
+        .header-actions-group { width: 100%; }
+        .event-display-card { grid-template-columns: 1fr; gap: 24px; padding: 24px; text-align: center; }
+        .card-date-column { border-right: none; padding-right: 0; border-bottom: 1px solid var(--border-ether, #2d3748); padding-bottom: 20px; }
+        .card-details-column { padding: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-workspace-container">
+    <header class="dashboard-header-flex">
+        <div>
+            <h1 style="color: #ffffff; font-size: 2.2rem; font-weight: 700; margin: 0 0 8px 0; letter-spacing: -0.02em;">Pass Verification</h1>
+            <p style="color: var(--slate-muted, #a0aec0); margin: 0; font-size: 15px; line-height: 1.5;">Select an active event schedule block below to open up access parameter scanning workflows.</p>
+        </div>
+        <div class="header-actions-group">
+            {% if request.user.groups.all.0.name == 'Admin' %}
+                <a href="{% url 'admin_dashboard' %}" class="nav-action-btn btn-secondary">← Back to Admin Dashboard</a>
+            {% elif request.user.groups.all.0.name == 'Teacher' %}
+                <a href="{% url 'teacher_dashboard' %}" class="nav-action-btn btn-secondary">← Back to Dashboard</a>
+            {% else %}
+                <a href="{% url 'main_page' %}" class="nav-action-btn btn-secondary">← Back</a>
+            {% endif %}
+            <div style="background: rgba(57, 255, 20, 0.06); border: 1px solid rgba(57, 255, 20, 0.2); padding: 10px 16px; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
+                <span style="color: var(--neon-emerald, #39ff14); font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;">● Scanner System Online</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="event-management-stack">
+        {% for event in events %}
+        <div class="event-display-card">
+            
+            <div class="card-date-column">
+                <span class="date-day">{{ event.date|date:"d" }}</span>
+                <span class="date-month">{{ event.date|date:"M" }}</span>
+                <span class="date-time">{{ event.start_time|time:"h:i A" }}</span>
+            </div>
+
+            <div class="card-details-column">
+                <span class="verify-mode-tag">Verification Mode</span>
+                <h3 class="user-primary-title">{{ event.title }}</h3>
+                <p style="font-size: 14px; color: var(--slate-light, #e2e8f0); margin: 0;">
+                    Expectation metric: <strong style="color: var(--neon-cyan, #00f0ff); font-weight: 600;">{{ event.total_registrations|default:"0" }}</strong> attendees expected
+                </p>
+            </div>
+
+            <div class="card-actions-column">
+                {% if event.is_published %}
+                    <a href="{% url 'scan_pass' event.id %}" class="action-link-btn btn-style-cyan">
+                        🔍 Verify Passes
+                    </a>
+                {% else %}
+                    <button class="action-link-btn btn-style-muted" disabled>
+                        Locked
+                    </button>
+                    <span style="font-size: 11px; color: var(--neon-amber, #ffaa00); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-top: 2px;">
+                        Passes not published
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+        {% empty %}
+        <div class="null-records-canvas" style="text-align: center; padding: 60px 40px; border: 1px dashed var(--border-ether, #2d3748); border-radius: 14px;">
+            <h2 style="color: #ffffff; margin-bottom: 12px; font-size: 1.5rem;">No Active Verification Sessions</h2>
+            <p style="margin-bottom: 0; color: var(--slate-muted, #a0aec0); font-size: 14px;">There are no open timeline blocks configured for verification passes right now.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

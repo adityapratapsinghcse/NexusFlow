@@ -1,0 +1,705 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard — Event Management System</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'nexusflow_icon.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <!-- Core Fonts & UI Icon Modules -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --primary: #38bdf8;
+            --primary-hover: #7dd3fc;
+            --primary-glow: rgba(56, 189, 248, 0.08);
+            --accent: #ff007a;
+            --bg-deep: #070513;
+            --surface-card: rgba(15, 23, 42, 0.6);
+            --border-ether: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            display: flex;
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 15% 80%, rgba(255, 0, 122, 0.02) 0%, transparent 40%);
+            height: 100vh;
+            color: var(--text-main);
+            overflow: hidden; /* Strictly locks viewport scroll */
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            z-index: 100;
+            background: linear-gradient(180deg, #0b0f19 0%, #070513 100%);
+            border-right: 1px solid var(--border-ether);
+        }
+
+        .logo-section {
+            padding: 0 12px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-section span span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            flex-grow: 1;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto;
+        }
+
+        .nav-links::-webkit-scrollbar {
+            width: 4px;
+        }
+        .nav-links::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+        }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links li a i {
+            font-size: 16px;
+        }
+
+        .nav-links li a:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .logistics-hub-link {
+            color: var(--primary) !important;
+            background: rgba(56, 189, 248, 0.03) !important;
+            border: 1px dashed rgba(56, 189, 248, 0.2);
+            margin-top: 6px;
+        }
+
+        .logistics-hub-link:hover {
+            background: rgba(56, 189, 248, 0.08) !important;
+        }
+
+        .logout-btn-wrapper {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-ether);
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.03);
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            font-size: 13.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        /* --- Fixed Workspace Main Screen Viewport --- */
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            padding: 24px 32px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Workspace Header Setup --- */
+        .workspace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-ether);
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .workspace-title h1 {
+            font-weight: 800;
+            font-size: 1.7rem;
+            letter-spacing: -0.5px;
+            margin-bottom: 2px;
+        }
+
+        .workspace-title h1 span.greeting {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .workspace-title p {
+            color: var(--text-muted);
+            font-size: 13.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bell-trigger-btn {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-ether);
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            text-decoration: none;
+        }
+
+        .bell-trigger-btn i { color: var(--text-main); font-size: 18px; }
+
+        .bell-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--accent);
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+
+        /* --- Key Metrics Summary Matrix --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .stat-card {
+            background: var(--surface-card);
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border-ether);
+        }
+
+        .stat-card h4 {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .stat-card .value {
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+
+        .stat-card.messages-card { text-decoration: none; }
+        .stat-card.messages-card .value { color: var(--primary); }
+
+        /* --- Master Screen Structural Three-Container Grid Framework --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            flex-grow: 1;
+            min-height: 0; /* Prevents rows from exploding flex heights */
+            margin-bottom: 10px;
+        }
+
+        /* Responsive Panel Locking System */
+        .panel {
+            background: var(--surface-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-ether);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* Vital structural property for interior content locking */
+        }
+
+        /* Left-Side Event Module Container */
+        .panel.events-panel {
+            grid-row: 1 / 2;
+            grid-column: 1 / 2;
+        }
+
+        /* Right-Side Full Height Unified Stream Panel Container */
+        .panel.notifications-panel {
+            grid-row: 1 / 3;
+            grid-column: 2 / 3;
+        }
+
+        /* Bottom Full Width Component Horizon Alignment */
+        .panel.logistics-panel {
+            grid-row: 2 / 3;
+            grid-column: 1 / 2;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-shrink: 0;
+        }
+
+        .panel-header h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Scroll Restricted Tables Layout --- */
+        .table-responsive {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        .table-responsive::-webkit-scrollbar, .activity-feed::-webkit-scrollbar {
+            width: 4px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb, .activity-feed::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+        }
+
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .event-table th {
+            text-align: left;
+            font-size: 10.5px;
+            font-weight: 800;
+            color: var(--primary);
+            padding: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-ether);
+            background: rgba(15, 23, 42, 0.4);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .event-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 13px;
+            color: #cbd5e1;
+            vertical-align: middle;
+        }
+
+        /* --- Component Badges --- */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-APPROVED, .status-Published { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+        .status-PENDING, .status-Pending { background: rgba(245, 158, 11, 0.1); color: #fbbf24; }
+
+        /* --- Local Container For Streams --- */
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border-ether);
+        }
+
+        .notif-unread {
+            background: rgba(56, 189, 248, 0.01);
+            border-left: 3px solid var(--primary);
+        }
+
+        .student-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--primary);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            flex-shrink: 0;
+        }
+
+        .activity-info p {
+            font-size: 13px;
+            color: #e2e8f0;
+            line-height: 1.4;
+        }
+
+        .activity-info p b { color: #ffffff; }
+
+        .activity-info span {
+            display: block;
+            font-size: 10.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* --- Primary and Utility Controls Cluster --- */
+        .btn-primary {
+            background: var(--primary);
+            color: #070513;
+            padding: 8px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-link {
+            color: var(--primary);
+            font-size: 11.5px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .mark-read-btn {
+            font-size: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.03);
+            color: #ffffff;
+            border: 1px solid var(--border-ether);
+            border-radius: 8px;
+            font-weight: 700;
+        }
+
+        .action-cluster {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .action-cluster .btn-ctrl {
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-ether);
+            color: var(--text-muted);
+        }
+
+        .btn-ctrl.scan { color: var(--primary); border-color: rgba(56, 189, 248, 0.2); background: rgba(56, 189, 248, 0.02); }
+        .btn-ctrl.publish { color: var(--accent); border-color: rgba(255, 0, 122, 0.2); background: rgba(255, 0, 122, 0.02); }
+        .btn-ctrl:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+    </style>
+</head>
+
+<body>
+
+    <!-- --- Sidebar Navigation Section --- -->
+    <div class="sidebar">
+        <div class="logo-section">
+            <img src="{% static 'nexusflow_icon.svg' %}" style="height:34px; width:34px; border-radius:8px; flex-shrink:0;">
+            <span>Nexus<span style="color:var(--primary);">Flow</span></span>
+        </div>
+        
+        <ul class="nav-links">
+            <li><a href="{% url 'profile' %}"><i class="bi bi-person-badge"></i> Profile</a></li>
+            <li><a href="{% url 'check_status' %}"><i class="bi bi-activity"></i>Check Approvals </a></li>
+            <li><a href="{% url 'upcoming_events' %}"><i class="bi bi-calendar-event"></i> Upcoming Events</a></li>
+            <li><a href="{% url 'teacher_my_events' %}"><i class="bi bi-folder2-open"></i> My Scheduled Events</a></li>
+            <li><a href="{% url 'cancel_event_list' %}"><i class="bi bi-x-circle"></i> Cancel Event</a></li>
+            <li><a href="{% url 'teachers_event_list' %}"><i class="bi bi-arrow-up-right-square"></i> Update Event</a></li>
+            <li><a href="{% url 'students_registered' %}"><i class="bi bi-people"></i> Registered Students</a></li>
+            <li><a href="{% url 'verify_event_passes' %}"><i class="bi bi-patch-check"></i> Scan Passes</a></li>
+            <li><a href="{% url 'manage_events' %}"><i class="bi bi-sliders"></i> Manage Event Logistics</a></li>
+            
+            <li>
+                <a href="{% url 'teacher_logistics_dashboard' %}" class="logistics-hub-link" title="Logistics Control Hub">
+                    <i class="bi bi-truck"></i> Assigned Events</a>
+            </li>
+            
+            <li><a href="{% url 'prev_events' %}"><i class="bi bi-clock-history"></i> Previous Events</a></li>
+        </ul>
+
+        <div class="logout-btn-wrapper">
+            <form method="POST" action="{% url 'logout_view' %}" style="display: block; width: 100%;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <i class="bi bi-box-arrow-left"></i> Terminate Session
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- --- Main Screen App Layout Matrix --- -->
+    <div class="main-content">
+
+        <div class="workspace-header">
+            <div class="workspace-title">
+                <h1>
+                    <span class="greeting">Welcome back,</span> 
+                    <span>Prof. {{ request.user.first_name }}</span>
+                </h1>
+                <p>Monitor event submissions, attendee updates, and logistics records from a single panel view.</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'all_notifications' %}" class="bell-trigger-btn">
+                    <i class="bi bi-bell"></i>
+                    {% if recent_notifications.count > 0 %}
+                    <span class="bell-badge" id="bell-notif-badge">{{ recent_notifications.count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'schedule_event' %}" class="btn-primary">
+                    <i class="bi bi-plus-lg"></i> Create New Event
+                </a>
+            </div>
+        </div>
+
+        <!-- --- Analytics Overview Matrix --- -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h4>Total Events</h4>
+                <div class="value">{{ total_events }}</div>
+            </div>
+            <div class="stat-card">
+                <h4>Pending Approval</h4>
+                <div class="value" style="color: var(--warning)">{{ pending_approvals }}</div>
+            </div>
+            <div class="stat-card">
+                <h4>Student Reach</h4>
+                <div class="value" style="color: var(--primary)">{{ total_reach }}</div>
+            </div>
+            <a href="{% url 'all_notifications' %}" class="stat-card messages-card">
+                <h4>Alert Message Stream</h4>
+                <div class="value">{{ recent_notifications.count|default:"0" }}</div>
+            </a>
+        </div>
+
+        <!-- --- Non-Scrollable Dashboard Framework Layout --- -->
+        <div class="dashboard-grid">
+            
+            <!-- 1. Top Left Panel: Recent Submissions -->
+            <div class="panel events-panel">
+                <div class="panel-header">
+                    <h3><i class="bi bi-collection text-primary"></i> Recent Event Submissions</h3>
+                    <a href="{% url 'check_status' %}" class="btn-link">All Events Summary →</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="event-table">
+                        <thead>
+                            <tr>
+                                <th>Event Details</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Registrations</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in my_recent_events %}
+                            <tr>
+                                <td style="font-weight: 700; color: #ffffff;">{{ event.title }}</td>
+                                <td style="font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-muted)">{{ event.date|date:"d M" }}</td>
+                                <td><span class="status-badge status-{{ event.status }}">{{ event.status }}</span></td>
+                                <td style="font-weight: 700; color: var(--primary);">{{ event.eventregistration_set.count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                    No active event records logged.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. Bottom Left Panel: Logistics Section (Perfectly Anchored & Visible) -->
+            <div class="panel logistics-panel">
+                <div class="panel-header">
+                    <h3><i class="bi bi-truck text-success"></i> Assigned Event Logistics</h3>
+                    <a href="{% url 'teacher_logistics_dashboard' %}" class="btn-link">Show All Assignments →</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="event-table">
+                        <thead>
+                            <tr>
+                                <th>Event Details</th>
+                                <th>Date</th>
+                                <th>Assigned Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if assigned_logistics %}
+                                {% for la in assigned_logistics %}
+                                <tr>
+                                    <td style="font-weight:700; color:#fff;">{{ la.event.title }}</td>
+                                    <td style="font-family: 'JetBrains Mono'; font-size:12px; color:var(--text-muted)">{{ la.event.date|date:"d M" }}</td>
+                                    <td style="color:var(--text-muted); font-size:12px; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        {{ la.notes|default:"—" }}
+                                    </td>
+  
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                        No upcoming logistics modules assigned to your account profile.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. Right Side Panel: Unified Live Notification Stream (Spans full height of grid) -->
+            <div class="panel notifications-panel">
+                <div class="panel-header">
+                    <h3><i class="bi bi-lightning-charge text-warning"></i> Recent Notification</h3>
+                    {% if recent_registrations or recent_notifications %}
+                    <button id="mark-all-btn" class="mark-read-btn" onclick="markAllRead()">Read All</button>
+                    {% endif %}
+                </div>
+                
+                <div class="activity-feed">
+                    {% for reg in recent_registrations %}
+                    <div class="activity-item {% if reg.is_read %}notif-read{% else %}notif-unread{% endif %}">
+                        <div class="student-avatar">{{ reg.student.first_name|first }}</div>
+                        <div class="activity-info">
+                            <p><b>{{ reg.student.get_full_name }}</b> registered into <b>{{ reg.event.title }}</b></p>
+                            <span><i class="bi bi-clock me-1"></i>{{ reg.registered_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% for notify in recent_notifications %}
+                    <div class="activity-item {% if notify.is_read %}notif-read{% else %}notif-unread{% endif %}">
+                        <div class="activity-info" style="padding-left: 4px;">
+                            <p><i class="bi bi-info-circle text-primary me-2"></i>{{ notify.message }}</p>
+                            <span><i class="bi bi-clock me-1"></i>{{ notify.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                        {% if not recent_registrations %}
+                        <p style="text-align: center; color: var(--text-muted); padding: 48px 0; margin: auto;">
+                            <i class="bi bi-bell-slash opacity-40" style="font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                            No notifications inbound.
+                        </p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+    <script>
+        function markAllRead() {
+            fetch("{% url 'mark_all_read' %}", {
+                method: "POST",
+                headers: {"X-CSRFToken": "{{ csrf_token }}"}
+            }).then(r => r.json()).then(data => {
+                if (data.status === "ok") {
+                    document.querySelectorAll('.notif-unread').forEach(el => {
+                        el.classList.remove('notif-unread');
+                    });
+                    const btn = document.getElementById('mark-all-btn');
+                    if (btn) btn.textContent = 'All are readed';
+                }
+            });
+        }
+    </script>
+
+</html>

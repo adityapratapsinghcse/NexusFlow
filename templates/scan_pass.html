@@ -1,0 +1,554 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nexus | Entry Scanner{% endblock %}
+
+{% block extrahead %}
+<style>
+    :root {
+        --primary: #00f0ff;
+        --primary-glow: rgba(0, 240, 255, 0.15);
+        --success: #39ff14;
+        --success-glow: rgba(57, 255, 20, 0.2);
+        --warning: #ffaa00;
+        --warning-glow: rgba(255, 170, 0, 0.2);
+        --danger: #ff007f;
+        --danger-glow: rgba(255, 0, 127, 0.2);
+        --bg-hub: #020617;
+        --surface-card: #0f172a;
+        --border-ether: rgba(255, 255, 255, 0.08);
+        --text-muted: #94a3b8;
+    }
+
+    /* --- Layout & Structural Containers --- */
+    .dashboard-workspace-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 16px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    /* Header Action Layout */
+    .dashboard-header-flex {
+        display: flex; 
+        flex-direction: column;
+        gap: 20px;
+        border-bottom: 1px solid var(--border-ether);
+        padding-bottom: 28px;
+        margin-bottom: 32px;
+    }
+
+    .header-top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .nav-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none; 
+        padding: 10px 18px; 
+        font-size: 0.85rem; 
+        font-weight: 600;
+        border-radius: 12px;
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-ether);
+        transition: all 0.2s ease;
+    }
+    .nav-action-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--primary);
+    }
+    .nav-action-btn svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+    }
+
+    .location-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px; 
+        font-weight: 700; 
+        color: var(--primary); 
+        background: rgba(0, 240, 255, 0.06); 
+        border: 1px solid rgba(0, 240, 255, 0.15); 
+        padding: 6px 14px; 
+        border-radius: 100px; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px;
+    }
+    .location-badge svg {
+        width: 12px;
+        height: 12px;
+        fill: currentColor;
+    }
+
+    /* --- Scanner Hardware Card Layout --- */
+    .scanner-workspace-card {
+        background: var(--surface-card);
+        border: 1px solid var(--border-ether);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        margin-bottom: 24px;
+    }
+
+    #reader {
+        width: 100% !important;
+        border: none !important;
+        background: #000000;
+    }
+
+    /* Clean default html5-qrcode UI overrides */
+    #reader__dashboard_section_swaplink,
+    #reader__dashboard_section_csr,
+    #reader__filescan_input,
+    #reader__scan_region img { 
+        display: none !important; 
+    }
+
+    /* --- Status Feedback Bar --- */
+    .scanner-status-strip {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 24px;
+        background: rgba(0, 0, 0, 0.2);
+        border-top: 1px solid var(--border-ether);
+    }
+
+    .status-pulse-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 12px var(--success);
+        animation: scannerGlow 1.8s infinite ease-in-out;
+        flex-shrink: 0;
+    }
+    .status-pulse-dot.paused { 
+        background: var(--warning); 
+        box-shadow: 0 0 12px var(--warning); 
+        animation: none; 
+    }
+
+    @keyframes scannerGlow {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.3; transform: scale(0.9); }
+    }
+
+    .status-strip-text {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        letter-spacing: 0.2px;
+    }
+
+    /* --- Live Metrics Dashboard --- */
+    .metrics-grid-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .metric-data-tile {
+        background: var(--surface-card);
+        border: 1px solid var(--border-ether);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .metric-tile-num {
+        font-size: 2.25rem;
+        font-weight: 800;
+        font-family: monospace;
+        line-height: 1.2;
+    }
+    .metric-tile-num.state-valid { color: var(--success); }
+    .metric-tile-num.state-invalid { color: var(--danger); }
+
+    .metric-tile-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 6px;
+    }
+
+    /* --- Dynamic Response Display Cards --- */
+    #result-card {
+        display: none;
+        background: var(--surface-card);
+        border: 1px solid var(--border-ether);
+        border-radius: 24px;
+        padding: 32px 24px;
+        text-align: center;
+        margin-bottom: 24px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+    #result-card.valid {
+        background: rgba(57, 255, 20, 0.04);
+        border-color: rgba(57, 255, 20, 0.25);
+        box-shadow: 0 15px 35px var(--success-glow);
+    }
+    #result-card.already {
+        background: rgba(255, 170, 0, 0.04);
+        border-color: rgba(255, 170, 0, 0.25);
+        box-shadow: 0 15px 35px var(--warning-glow);
+    }
+    #result-card.invalid {
+        background: rgba(255, 0, 127, 0.04);
+        border-color: rgba(255, 0, 127, 0.25);
+        box-shadow: 0 15px 35px var(--danger-glow);
+    }
+    #result-card.loading {
+        background: var(--surface-card);
+        border-color: var(--border-ether);
+    }
+
+    .card-response-icon { 
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px; 
+    }
+    .card-response-icon svg {
+        width: 48px;
+        height: 48px;
+    }
+    .valid .card-response-icon svg { fill: var(--success); }
+    .already .card-response-icon svg { fill: var(--warning); }
+    .invalid .card-response-icon svg { fill: var(--danger); }
+    .loading .card-response-icon svg { fill: var(--primary); }
+
+    .card-response-label { font-size: 1.4rem; font-weight: 800; color: #ffffff; margin-bottom: 6px; letter-spacing: -0.5px; }
+    .card-response-name { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+    .card-response-detail { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+    .card-response-countdown { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 20px; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* --- Keyboard Fallback Section --- */
+    .manual-entry-dropdown {
+        background: var(--surface-card);
+        border: 1px solid var(--border-ether);
+        border-radius: 16px;
+        padding: 6px 20px;
+    }
+    .manual-entry-dropdown[open] {
+        padding-bottom: 20px;
+    }
+    .manual-entry-dropdown summary {
+        cursor: pointer;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 12px 0;
+        list-style: none;
+        outline: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .manual-entry-dropdown summary::-webkit-details-marker { display: none; }
+    
+    .manual-input-flex-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 10px;
+    }
+    .manual-input-flex-row input {
+        flex: 1;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-ether);
+        border-radius: 10px;
+        padding: 14px 18px;
+        color: #ffffff;
+        font-size: 14px;
+        font-family: monospace;
+        letter-spacing: 1px;
+    }
+    .manual-input-flex-row input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .action-link-btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        color: var(--bg-hub);
+        background: #ffffff;
+        transition: all 0.2s ease;
+    }
+    .action-link-btn:hover { background: var(--primary); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-workspace-container">
+    
+    <!-- Workspace Header Block -->
+    <header class="dashboard-header-flex">
+        <div class="header-top-row">
+            {% if request.user.groups.all.0.name == 'Admin' %}
+            <a href="{% url 'admin_logistics_overview' %}" class="nav-action-btn">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                Logistics
+            </a>
+            {% else %}
+            <div></div>
+            {% endif %}
+            
+            <span class="location-badge">
+                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                {{ event.title }}
+            </span>
+        </div>
+        <div>
+            <h1 style="color: #ffffff; font-size: 2rem; font-weight: 800; margin: 4px 0 4px 0; letter-spacing: -1px;">Entry Gate Scanner</h1>
+            <p style="color: var(--text-muted); margin: 0; font-size: 14px; line-height: 1.5;">Align the target validation QR payload inside the scanner matrix preview area.</p>
+        </div>
+    </header>
+
+    <!-- Main Active Scanner Card -->
+    <div class="scanner-workspace-card">
+        <div id="reader"></div>
+        <div class="scanner-status-strip">
+            <div class="status-pulse-dot" id="status-dot"></div>
+            <span class="status-strip-text" id="status-text">Optical array online — waiting for capture…</span>
+        </div>
+    </div>
+
+    <!-- Async Verification Response Deck Display Card -->
+    <div id="result-card">
+        <div class="card-response-icon" id="result-icon"></div>
+        <div class="card-response-label" id="result-label">Running Parameters…</div>
+        <div class="card-response-name" id="result-name"></div>
+        <div class="card-response-detail" id="result-detail"></div>
+        <div class="card-response-countdown" id="result-timer"></div>
+    </div>
+
+    <!-- Diagnostics Counter Arrays -->
+    <div class="metrics-grid-row">
+        <div class="metric-data-tile">
+            <div class="metric-tile-num state-valid" id="count-valid">0</div>
+            <div class="metric-tile-label">Verified Inside</div>
+        </div>
+        <div class="metric-data-tile">
+            <div class="metric-tile-num state-invalid" id="count-invalid">0</div>
+            <div class="metric-tile-label">Rejected Errors</div>
+        </div>
+    </div>
+
+    <!-- Fallback Terminal Manual Override Inputs -->
+    <details class="manual-entry-dropdown">
+        <summary>
+            <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm1-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/></svg>
+            Manual Override Code Entry
+        </summary>
+        <div class="manual-input-flex-row">
+            <input type="text" id="manual-code" placeholder="ENTER UNIQUE PASS KEYHASH" maxlength="20">
+            <button class="action-link-btn" onclick="processEntry(document.getElementById('manual-code').value)">
+                Verify Pass
+            </button>
+        </div>
+    </details>
+
+</div>
+
+<!-- QR Rendering Engine Asset -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+    const VERIFY_URL = "{% url 'verify_pass' event.id %}";
+    const CSRF_TOKEN = "{{ csrf_token }}";
+
+    let isProcessing = false;
+    let countValid   = 0;
+    let countInvalid = 0;
+
+    // Standard SVGs mapped cleanly inside script processing rules
+    const svgIcons = {
+        loading: `<svg viewBox="0 0 24 24" class="animate-spin"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26l1.46-1.46C6.27 13.41 6 12.74 6 12c0-3.31 2.69-6 6-6zm6.76 1.74l-1.46 1.46c.43.4-.73 1.07-.73 1.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/></svg>`,
+        valid: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`,
+        already: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`,
+        invalid: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>`
+    };
+
+    // --- Dynamic Target Sizing Matrix Calculations ---
+    function getResponsiveQrBox(width, height) {
+        const minEdge = Math.min(width, height);
+        const targetSize = Math.floor(minEdge * 0.65);
+        return {
+            width: targetSize < 220 ? 220 : targetSize,
+            height: targetSize < 220 ? 220 : targetSize
+        };
+    }
+
+    const scanner = new Html5Qrcode("reader");
+    
+    scanner.start(
+        { facingMode: "environment" },
+        {
+            fps: 20,
+            qrbox: getResponsiveQrBox,
+        },
+        (decodedText) => { 
+            console.log("RAW QR:", decodedText);
+            processEntry(decodedText); },
+        () => {}
+    ).catch(err => {
+        setStatus("Optical IO initialization failure: " + err, true);
+    });
+
+    // --- Core Verification Execution System ---
+    // FIX: Extracts the raw code from a full URL if the QR encodes one.
+    // e.g. "https://site.com/pass/ABC123" → "ABC123"
+    // Plain codes like "ABC123" are passed through unchanged.
+    function extractCode(raw) {
+    raw = (raw || "").trim();
+
+    // Case 1: Multi-line QR text with "Pass: XXXX" format
+    const passMatch = raw.match(/Pass:\s*([A-Z0-9]+)/i);
+    if (passMatch) {
+        return passMatch[1];
+    }
+
+    // Case 2: Full URL — extract last path segment
+    try {
+        const url = new URL(raw);
+        const parts = url.pathname.split('/').filter(Boolean);
+        if (parts.length > 0) return parts[parts.length - 1];
+    } catch (e) {}
+
+    // Case 3: Plain code — use as-is
+    return raw;
+    }
+
+    async function processEntry(raw) {
+        const code = extractCode(raw).toUpperCase();
+        if (!code || isProcessing) return;
+
+        isProcessing = true;
+        setStatus("Running verification handshake…", false);
+        showLoading();
+
+        try {
+            const resp = await fetch(VERIFY_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": CSRF_TOKEN,
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                body: new URLSearchParams({ code }),
+            });
+
+            if (!resp.ok) throw new Error("Gateway exception code " + resp.status);
+            const data = await resp.json();
+            handleResult(data);
+
+        } catch (err) {
+            showResult("invalid", svgIcons.invalid, "Pipeline Fault", "Communication timed out.", "", 2500);
+            countInvalid++;
+            updateStats();
+            
+            setTimeout(() => {
+                isProcessing = false;
+                setStatus("Optical array online — waiting for capture…", false);
+                hideResult();
+            }, 2500);
+        }
+    }
+
+    function handleResult(data) {
+        let icon, label, detail, cardClass, delay;
+
+        if (data.status === "valid") {
+            icon = svgIcons.valid; label = "Access Authorized"; cardClass = "valid"; delay = 3000;
+            countValid++; updateStats();
+            setStatus("✅ Entry cleared — channel resetting...", false);
+        } else if (data.status === "already_used") {
+            icon = svgIcons.already; label = "Duplicate Match"; cardClass = "already"; delay = 3500;
+            countInvalid++; updateStats();
+            setStatus("⚠️ Token expired — record logged.", false);
+        } else {
+            icon = svgIcons.invalid; label = "Invalid Token"; cardClass = "invalid"; delay = 2500;
+            countInvalid++; updateStats();
+            setStatus("❌ Clear failed — bad checksum.", false);
+        }
+
+        const name = data.student_name || "";
+        detail = data.status === "already_used" 
+            ? `Token validated previously at ${data.verified_at || 'unknown time'}` 
+            : (data.event_name || "");
+
+        showResult(cardClass, icon, label, name, detail, delay);
+
+        let countdown = Math.floor(delay / 1000);
+        const timerEl = document.getElementById("result-timer");
+        const interval = setInterval(() => {
+            countdown--;
+            if (timerEl && countdown > 0) timerEl.textContent = `Next evaluation window in ${countdown}s…`;
+        }, 1000);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            hideResult();
+            isProcessing = false;
+            setStatus("Optical array online — waiting for capture…", false);
+            const mi = document.getElementById("manual-code");
+            if (mi) mi.value = "";
+        }, delay);
+    }
+
+    function showLoading() {
+        const card = document.getElementById("result-card");
+        card.className = "loading";
+        card.style.display = "block";
+        document.getElementById("result-icon").innerHTML = svgIcons.loading;
+        document.getElementById("result-label").textContent = "Parsing Handshake…";
+        document.getElementById("result-name").textContent = "";
+        document.getElementById("result-detail").textContent = "";
+        document.getElementById("result-timer").textContent = "";
+    }
+
+    function showResult(cardClass, iconHtml, label, name, detail, delay) {
+        const card = document.getElementById("result-card");
+        card.className = cardClass;
+        card.style.display = "block";
+        document.getElementById("result-icon").innerHTML = iconHtml;
+        document.getElementById("result-label").textContent = label;
+        document.getElementById("result-name").textContent = name;
+        document.getElementById("result-detail").textContent = detail;
+        document.getElementById("result-timer").textContent = `Next evaluation window in ${Math.floor((delay||3000)/1000)}s…`;
+    }
+
+    function hideResult() { document.getElementById("result-card").style.display = "none"; }
+
+    function setStatus(msg, isPaused) {
+        document.getElementById("status-text").textContent = msg;
+        document.getElementById("status-dot").className = "status-pulse-dot" + (isPaused ? " paused" : "");
+    }
+
+    function updateStats() {
+        document.getElementById("count-valid").textContent = countValid;
+        document.getElementById("count-invalid").textContent = countInvalid;
+    }
+</script>
+{% endblock %}

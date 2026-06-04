@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    :root {
+        --primary: #38bdf8;
+        --accent: #ff007a;
+        --card-bg: rgba(30, 41, 59, 0.45);
+        --text-main: #f9fbff;
+        --text-muted: #94a3b8;
+        --border: rgba(255, 255, 255, 0.08);
+        --unread-glow: rgba(56, 189, 248, 0.15);
+        --panel-blur: blur(16px);
+    }
+
+    /* Module Container Wrapper */
+    .notif-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 650px;
+        margin: 0 auto;
+    }
+
+    .notif-header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .notif-count-badge {
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--primary);
+    }
+
+    .btn-mark-read {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-main);
+        border: 1px solid var(--border);
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-mark-read:hover {
+        background: rgba(56, 189, 248, 0.1);
+        border-color: rgba(56, 189, 248, 0.3);
+        color: var(--primary);
+        transform: translateY(-1px);
+    }
+
+    .btn-mark-read:active {
+        transform: translateY(0);
+    }
+
+    /* Core Item Cards */
+    .notif-list-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .notif-item {
+        background: var(--card-bg);
+        backdrop-filter: var(--panel-blur);
+        -webkit-backdrop-filter: var(--panel-blur);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px 20px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        transition: all 0.25s ease;
+        overflow: hidden;
+    }
+
+    .notif-item:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateX(4px);
+    }
+
+    /* Reactive Unread States Matrix */
+    .notif-item.unread {
+        border-left: 4px solid var(--primary);
+        background: rgba(56, 189, 248, 0.02);
+        box-shadow: inset 10px 0 20px -10px var(--unread-glow);
+    }
+
+    .notif-item.unread .notif-title {
+        color: #ffffff;
+        font-weight: 700;
+    }
+
+    .notif-item.unread::after {
+        content: '';
+        position: absolute;
+        top: 22px;
+        right: 20px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        box-shadow: 0 0 10px var(--primary);
+        animation: pulseIndicator 2s infinite;
+    }
+
+    @keyframes pulseIndicator {
+        0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+        70% { box-shadow: 0 0 0 6px rgba(56, 189, 248, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    }
+
+    /* Internal Text Structural Typography */
+    .notif-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-main);
+        padding-right: 24px; /* Space for unread indicator dot */
+    }
+
+    .notif-msg {
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: var(--text-muted);
+    }
+
+    .notif-meta-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .notif-time {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .notif-time::before {
+        content: '🕒';
+        font-size: 0.7rem;
+        opacity: 0.6;
+    }
+
+    .notif-action-link {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .notif-action-link:hover {
+        color: #7dd3fc;
+        text-decoration: underline;
+    }
+
+    /* Fallback State layout */
+    .notif-empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-muted);
+        border: 1px dashed var(--border);
+        border-radius: 16px;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="notif-container">
+    <div class="notif-header-actions">
+        <div class="notif-count-badge" id="unread-counter">
+            System Alerts Matrix
+        </div>
+        <button class="btn-mark-read" onclick="markAllRead()">
+            <span>✓</span> Mark All Read
+        </button>
+    </div>
+
+    <div class="notif-list-wrapper">
+        {% for n in notifications %}
+        <div class="notif-item {% if not n.is_read %}unread{% endif %}" data-id="{{ n.id }}">
+            <div class="notif-title">{{ n.title }}</div>
+            <div class="notif-msg">{{ n.message }}</div>
+            
+            <div class="notif-meta-row">
+                <div class="notif-time">{{ n.created_at|timesince }} ago</div>
+                {% if n.event %}
+                    {% if request.user.groups.all.0.name == 'Teacher' %}
+                        <a href="{% url 'teacher_logistics_dashboard' %}" class="notif-action-link">Go to Logistics Hub →</a>
+                    {% elif request.user.groups.all.0.name == 'Admin' %}
+                        <a href="{% url 'admin_logistics_overview' %}" class="notif-action-link">Go to Logistics →</a>
+                    {% else %}
+                        <a href="{% url 'student_events' %}" class="notif-action-link">View Event →</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="notif-empty-state">
+            <p>📡 No incoming data packets or notifications found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function markAllRead() {
+        const unreadItems = document.querySelectorAll('.notif-item.unread');
+        if (unreadItems.length === 0) return;
+
+        fetch("{% url 'mark_all_read' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                unreadItems.forEach(el => {
+                    // Smooth structural fade out transition of state status
+                    el.style.transition = "all 0.4s ease";
+                    el.classList.remove('unread');
+                });
+                
+                // Update badge text if necessary
+                const counter = document.getElementById('unread-counter');
+                if (counter) counter.innerText = "System Alerts Matrix (0)";
+            } else {
+                console.error("Transmission error updating notifications state status.");
+            }
+        })
+        .catch(error => console.error("Network interface pipeline error:", error));
+    }
+
+    // Dynamic runtime counter update execution routine block on initialization
+    document.addEventListener("DOMContentLoaded", () => {
+        const currentUnreadCount = document.querySelectorAll('.notif-item.unread').length;
+        const counter = document.getElementById('unread-counter');
+        if (counter) {
+            counter.innerText = `System Alerts Matrix (${currentUnreadCount})`;
+        }
+    });
+</script>
+{% endblock %}

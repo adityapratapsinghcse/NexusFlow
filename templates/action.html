@@ -1,0 +1,558 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #38bdf8;
+        --primary-glow: rgba(56, 189, 248, 0.15);
+        --bg-dark: #090716;
+        --surface: #0f172a;
+        --card-bg: rgba(30, 41, 59, 0.4);
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --success: #10b981;
+        --error: #ef4444;
+        --warning: #f59e0b;
+        --purple: #a855f7;
+    }
+
+    .workspace-container {
+        max-width: 1400px;
+        margin: 40px auto 0 auto;
+        padding: 0 40px;
+    }
+
+    .workspace-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 35px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 20px;
+    }
+
+    .workspace-title-area h2 {
+        font-weight: 800;
+        font-size: 2.2rem;
+        letter-spacing: -1px;
+        background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 4px;
+    }
+
+    .workspace-title-area p {
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+
+    .counter-pill {
+        background: var(--primary-glow);
+        color: var(--primary);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        font-weight: 700;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 13px;
+        letter-spacing: -0.2px;
+    }
+
+    /* --- Responsive View Grid --- */
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 30px;
+    }
+
+    .event-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+    }
+
+    .event-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(56, 189, 248, 0.3);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .card-banner {
+        height: 190px;
+        width: 100%;
+        position: relative;
+        background: #131b2e;
+    }
+
+    .card-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .fallback-banner {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.05);
+        font-size: 3.5rem;
+    }
+
+    .card-body-content {
+        padding: 28px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-main-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 6px;
+        line-height: 1.3;
+        letter-spacing: -0.3px;
+    }
+
+    .meta-subtitle {
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .info-grid-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+
+    .info-item label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+    }
+
+    .info-item span {
+        font-size: 14px;
+        font-weight: 600;
+        color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .info-item span.highlight {
+        color: var(--primary);
+    }
+
+    .description-box {
+        background: rgba(15, 23, 42, 0.4);
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 13px;
+        color: #94a3b8;
+        line-height: 1.6;
+        margin-bottom: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    /* --- Custom Dynamic Status Pill Blocks --- */
+    .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-warning-purple {
+        background: rgba(168, 85, 247, 0.12);
+        color: #d8b4fe;
+        border: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    /* --- Redesigned Agent Output Canvas Blocks --- */
+    .ai-engine-container {
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 41, 59, 0.3) 100%);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 24px;
+        position: relative;
+    }
+
+    .ai-engine-container::before {
+        content: '';
+        position: absolute;
+        top: -1px; left: -1px; right: -1px; bottom: -1px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), transparent 40%);
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    .ai-header-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .ai-agent-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--primary);
+    }
+
+    .ai-confidence-indicator {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        background: rgba(255,255,255,0.05);
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+
+    .ai-body-summary {
+        font-size: 13px;
+        line-height: 1.5;
+        color: #e0f2fe;
+        margin-bottom: 12px;
+    }
+
+    .ai-warnings-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .ai-warning-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        font-size: 12px;
+        color: #fecdd3;
+        background: rgba(239, 68, 68, 0.08);
+        padding: 6px 10px;
+        border-radius: 6px;
+        border-left: 3px solid var(--error);
+    }
+
+    /* Footer Controls */
+    .card-footer-controls {
+        margin-top: auto;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding-top: 20px;
+    }
+
+    .rejection-form .input-group {
+        display: flex;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 14px;
+        transition: border-color 0.2s;
+    }
+
+    .rejection-form .input-group:focus-within {
+        border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .rejection-form input {
+        background: transparent;
+        border: none;
+        padding: 12px 16px;
+        color: white;
+        font-size: 13px;
+        flex-grow: 1;
+        outline: none;
+    }
+
+    .rejection-form input::placeholder {
+        color: rgba(255,255,255,0.25);
+    }
+
+    .rejection-form button {
+        background: rgba(239, 68, 68, 0.08);
+        color: var(--error);
+        border: none;
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 0 18px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .rejection-form button:hover {
+        background: var(--error);
+        color: var(--bg-dark);
+    }
+
+    .actions-flex {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-action-base {
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-reassign {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-muted);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        flex-grow: 1;
+    }
+
+    .btn-reassign:hover {
+        color: var(--text-main);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-approve {
+        background: linear-gradient(135deg, var(--success), #059669);
+        color: #042f1a;
+        flex-grow: 2;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    }
+
+    .btn-approve:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Blank State View Layout */
+    .empty-workspace {
+        text-align: center;
+        grid-column: 1 / -1;
+        padding: 100px 20px;
+        background: rgba(30, 41, 59, 0.15);
+        border: 1px dashed rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+    }
+
+    .empty-workspace i {
+        font-size: 4rem;
+        color: var(--text-muted);
+        opacity: 0.3;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    .empty-workspace p {
+        color: var(--text-muted);
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    /* Alert Notifications Layout */
+    .django-messages {
+        margin-bottom: 30px;
+    }
+
+    .system-alert {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 16px 24px;
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .system-alert-success {
+        border-color: rgba(16, 185, 129, 0.2);
+        color: #a7f3d0;
+        background: rgba(16, 185, 129, 0.04);
+    }
+</style>
+
+<div class="workspace-container">
+    <div class="workspace-header">
+        <div class="workspace-title-area">
+            <h2>Pending Event Approvals</h2>
+            <p>Verify configurations, operational hazard markers, and AI intelligence analysis reports</p>
+        </div>
+        <span class="counter-pill">{{ events|length }} Pending Gate Decisions</span>
+    </div>
+
+    {% if messages %}
+    <div class="django-messages">
+        {% for message in messages %}
+            <div class="system-alert system-alert-{{ message.tags }}">
+                <i class="bi bi-info-circle me-2"></i> {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="cards-grid">
+        {% for event in events %}
+        <div class="event-card">
+            <div class="card-banner">
+                {% if event.poster %}
+                    <img src="{{ event.poster.url }}" alt="Event Poster Asset">
+                {% else %}
+                    <div class="fallback-banner">
+                        <i class="bi bi-image-alt"></i>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="card-body-content">
+                <h5 class="event-main-title">{{ event.title }}</h5>
+                <p class="meta-subtitle"><i class="bi bi-bookmark-fill text-muted"></i> {{ event.title }}</p>
+                
+                <div class="pill-row">
+                    {% if event.night_event_warning %}
+                    <div class="status-badge badge-warning-purple">
+                        <i class="bi bi-moon-stars-fill"></i> Night Warning Flag
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="info-grid-row">
+                    <div class="info-item">
+                        <label>Organizer</label>
+                        <span>{{ event.organizer.get_full_name|default:event.organizer.username }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Planned Crowd</label>
+                        <span class="highlight"><i class="bi bi-people-fill"></i> {{ event.expected_crowd }} Max</span>
+                    </div>
+                </div>
+
+                <div class="info-grid-row">
+                    <div class="info-item" style="grid-column: span 2;">
+                        <label>Assigned Venue Location</label>
+                        <span><i class="bi bi-geo-alt-fill text-danger"></i> {{ event.venue.name|default:"Venue TBD" }} <small class="text-muted">(Cap: {{ event.venue.capacity }})</small></span>
+                    </div>
+                </div>
+
+                <div class="info-item" style="margin-bottom: 20px;">
+                    <label>Operational Hours Schedule</label>
+                    <span style="font-size: 13px; color: #cbd5e1;">
+                        <i class="bi bi-calendar3 text-muted me-1"></i> {{ event.start_datetime|date:"D, d M Y" }} | 
+                        {{ event.start_datetime|time:"H:i" }} - {{ event.end_datetime|time:"H:i" }}
+                    </span>
+                </div>
+
+                {% if event.ai_warnings or event.ai_venue_reason or event.ai_crowd_reason %}
+                <div class="ai-engine-container">
+                    <div class="ai-header-meta">
+                        <div class="ai-agent-title">
+                            <i class="bi bi-cpu-fill"></i> AI Integrity Assessment
+                        </div>
+                        {% if event.crowd_confidence %}
+                        <div class="ai-confidence-indicator">
+                            Confidence: {{ event.crowd_confidence }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if event.ai_venue_reason %}
+                    <div class="ai-body-summary">
+                        <strong>Venue Recommendation context:</strong> {{ event.ai_venue_reason }}
+                    </div>
+                    {% endif %}
+
+                    {% if event.ai_crowd_reason %}
+                    <div class="ai-body-summary">
+                        <strong>Crowd Prediction Insight:</strong> Predicted {{ event.predicted_crowd }} metrics. {{ event.ai_crowd_reason }}
+                    </div>
+                    {% endif %}
+
+                    {% if event.ai_warnings %}
+                    <div class="ai-warnings-stack">
+                        <div class="ai-warning-row">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span>{{ event.ai_warnings }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="description-box">
+                    {{ event.description|truncatewords:18 }}
+                </div>
+
+                <div class="card-footer-controls">
+                    <form method="POST" action="{% url 'update_event' event.id 'reject' %}" class="rejection-form">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" name="rejection_reason" placeholder="State reason for authorization decline..." required>
+                            <button type="submit">Reject</button>
+                        </div>
+                    </form>
+                    
+                    <div class="actions-flex">
+                        {% if is_admin %}
+                        <a href="{% url 'reassign_venue' event.id %}" class="btn-action-base btn-reassign">
+                            <i class="bi bi-pencil-square"></i> Shift Venue
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'update_event' event.id 'approve' %}" class="btn-action-base btn-approve">
+                            <i class="bi bi-shield-check"></i> Grant Approval
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-workspace">
+            <i class="bi bi-shield-slash"></i>
+            <p>Clean operational state. There are no pending approvals requiring action right now.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

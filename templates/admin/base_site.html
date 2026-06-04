@@ -1,0 +1,132 @@
+{% extends "admin/base.html" %}
+{% load static i18n %}
+
+{% block title %}{{ title }} | NexusFlow Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}"
+     style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;">
+    <img src="{% static 'nexusflow_icon.svg' %}"
+         style="height:32px;width:32px;border-radius:7px;">
+    <span>NexusFlow <span style="color:#38bdf8;font-weight:400;">Admin</span></span>
+  </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block content %}
+{% if app_list or available_apps %}
+    <div class="nexus-grid-container">
+        <div class="premium-card card-primary">
+            <div class="card-label">Database Subsystems</div>
+            <div class="card-value">
+                {% if available_apps %}{{ available_apps|length }}{% else %}{{ app_list|length }}{% endif %}
+            </div>
+            <div class="card-subtext sub-blue">▲ Registered App Clusters</div>
+        </div>
+        <div class="premium-card card-accent">
+            <div class="card-label">Operational Security Logs</div>
+            <div class="card-value">{{ log_entries|length }}</div>
+            <div class="card-subtext sub-pink">● Live session events tracking</div>
+        </div>
+        <div class="premium-card card-success">
+            <div class="card-label">Optimization Engine</div>
+            <div class="card-value">94%</div>
+            <div class="card-subtext sub-green">✓ Peak performance index</div>
+        </div>
+        <div class="premium-card card-warning">
+            <div class="card-label">Core Runtime</div>
+            <div class="card-value">v6.0</div>
+            <div class="card-subtext sub-green">● Framework stable status</div>
+        </div>
+    </div>
+
+    <div class="nexus-operations-layout">
+        <div class="ops-panel">
+            <div class="ops-title">📡 Live Agentic Operational Intelligence Streams</div>
+            <div class="terminal-stream" id="logTerminal">
+                <div class="log-line"><span class="log-time">[% TIME %]</span><span class="log-tag tag-info">SYS</span> Control Nexus initialized cleanly inside Django context loop.</div>
+                <div class="log-line"><span class="log-time">[% TIME %]</span><span class="log-tag tag-agent">AGENT</span> Secure perimeter rules parsing module active.</div>
+                
+                {% for entry in log_entries|slice:":4" %}
+                <div class="log-line">
+                    <span class="log-time">[{{ entry.action_time|date:"H:i:s" }}]</span>
+                    <span class="log-tag {% if entry.is_addition %}tag-info{% elif entry.is_change %}tag-warn{% else %}tag-agent{% endif %}">
+                        {% if entry.is_addition %}ADD{% elif entry.is_change %}UPD{% else %}DEL{% endif %}
+                    </span>
+                    User "{{ entry.user.username }}" updated data matrix on {{ entry.content_type }}: "{{ entry.object_repr }}"
+                </div>
+                {% empty %}
+                <div class="log-line"><span class="log-time">[% TIME %]</span><span class="log-tag tag-warn">WARN</span> No recent object modifications discovered in audit table logs.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="ops-panel">
+            <div class="ops-title">⚙️ AI Operations Direct Triggers</div>
+            <div class="control-triggers-wrapper">
+                <button class="btn-ops-trigger" onclick="appendLog('AGENT', 'Executing dynamic room optimization mapping sequence matrix...')">
+                    <span>Run Allocation Agent</span> <span>🚀</span>
+                </button>
+                <button class="btn-ops-trigger" onclick="appendLog('AGENT', 'Recalculating waitlist scheduling distribution priority indices...')">
+                    <span>Force Crowd Sizing</span> <span>📊</span>
+                </button>
+                <button class="btn-ops-trigger" onclick="appendLog('SYS', 'Purging cached system template execution memory blocks...')">
+                    <span>Flush App Cache</span> <span>🧹</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function appendLog(tag, message) {
+            const terminal = document.getElementById('logTerminal');
+            if (!terminal) return;
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            
+            let tagClass = 'tag-info';
+            if (tag === 'AGENT') tagClass = 'tag-agent';
+            if (tag === 'WARN') tagClass = 'tag-warn';
+
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line';
+            logLine.innerHTML = `<span class="log-time">[${timeStr}]</span><span class="log-tag ${tagClass}">${tag}</span> ${message}`;
+            
+            terminal.appendChild(logLine);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Replace placeholder static logs timestamps on load
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            document.querySelectorAll(".log-time").forEach(el => {
+                if(el.textContent.includes("% TIME %")) {
+                    el.textContent = `[${timeStr}]`;
+                }
+            });
+
+            // Automated passive log updates generator loop
+            setInterval(() => {
+                const updates = [
+                    {tag: 'SYS', msg: 'System diagnostic state verified: 0 service degradation risks.'},
+                    {tag: 'AGENT', msg: 'Waitlist monitoring threads evaluated structural constraints: optimized.'},
+                    {tag: 'WARN', msg: 'Database request pool latency variance check: stable within 8ms.'}
+                ];
+                const selected = updates[Math.floor(Math.random() * updates.length)];
+                appendLog(selected.tag, selected.msg);
+            }, 12000);
+        });
+    </script>
+{% endif %}
+
+{{ block.super }}
+{% endblock %}

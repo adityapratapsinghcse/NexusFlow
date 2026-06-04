@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Events | NexusFlow{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Premium Isolated Management Workspace --- */
+    .nexus-management-viewport {
+        max-width: 1200px;
+        margin: 40px auto 80px auto;
+        padding: 0 24px;
+        box-sizing: border-box;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* --- Responsive Header Unit --- */
+    .management-header-row {
+        margin-bottom: 32px;
+    }
+    
+    .management-header-row h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.02em;
+        margin-top: 6px;
+    }
+
+    .role-badge { 
+        display: inline-flex; 
+        padding: 4px 12px; 
+        border-radius: 100px; 
+        font-size: 11px; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px;
+        background: rgba(56, 189, 248, 0.1); 
+        color: var(--neon-cyan, #00f0ff);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+    
+    .role-badge.admin-mode { 
+        background: rgba(168, 85, 247, 0.1); 
+        color: #a855f7; 
+        border-color: rgba(168, 85, 247, 0.2);
+    }
+
+    /* --- Filter Panel --- */
+    .filter-bar {
+        background: var(--surface-card, #1a202c);
+        padding: 24px;
+        border-radius: 16px;
+        margin-bottom: 40px;
+        border: 1px solid var(--border-ether, #2d3748);
+        display: flex;
+        gap: 20px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+        flex: 1; 
+        min-width: 220px; 
+    }
+    
+    .filter-group label { 
+        font-size: 11px; 
+        font-weight: 700; 
+        color: var(--neon-cyan, #00f0ff); 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+    }
+    
+    .filter-input {
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid var(--border-ether, #2d3748);
+        padding: 12px 16px;
+        border-radius: 10px;
+        color: #ffffff;
+        font-size: 14.5px;
+        outline: none;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    
+    .filter-input:focus { 
+        border-color: var(--neon-cyan, #00f0ff); 
+        box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.12); 
+    }
+    
+    select.filter-input {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+
+    .filter-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 46px;
+    }
+
+    .btn-search {
+        background: #38bdf8;
+        color: #070513;
+        border: none;
+        padding: 12px 28px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        height: 100%;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .btn-search:hover { 
+        background: #0284c7; 
+        color: #ffffff;
+    }
+
+    .btn-reset {
+        color: var(--slate-muted, #a0aec0); 
+        font-size: 14px; 
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    .btn-reset:hover {
+        color: #ffffff;
+    }
+
+    /* --- Responsive Event Cards Layout --- */
+    .cancel-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+        gap: 24px; 
+    }
+    
+    .cancel-card { 
+        background: var(--surface-card, #1a202c); 
+        border: 1px solid var(--border-ether, #2d3748); 
+        border-radius: 16px; 
+        padding: 24px; 
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .cancel-card:hover { 
+        border-color: #ef4444; 
+        transform: translateY(-4px); 
+        box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+    
+    .status { 
+        font-size: 11px; 
+        font-weight: 800; 
+        text-transform: uppercase; 
+        margin-bottom: 12px; 
+        display: inline-block; 
+        letter-spacing: 0.5px;
+    }
+    
+    .status.PENDING { color: #fbbf24; }
+    .status.APPROVED { color: #10b981; }
+
+    .event-title { 
+        font-size: 1.25rem; 
+        font-weight: 700; 
+        margin-bottom: 16px; 
+        color: #ffffff; 
+        letter-spacing: -0.01em;
+        line-height: 1.4;
+    }
+    
+    .meta-info { 
+        font-size: 14px; 
+        color: var(--slate-muted, #a0aec0); 
+        margin-bottom: 24px; 
+        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        padding-top: 14px;
+    }
+    
+    .meta-info div { 
+        margin-bottom: 8px; 
+        display: flex; 
+        justify-content: space-between; 
+    }
+    
+    .meta-info b { 
+        color: #f1f5f9; 
+        font-weight: 500;
+    }
+
+    .btn-delete { 
+        display: block; 
+        width: 100%; 
+        padding: 12px; 
+        border-radius: 10px;
+        background: rgba(239, 68, 68, 0.06); 
+        border: 1px solid #ef4444;
+        color: #ef4444; 
+        text-decoration: none; 
+        text-align: center;
+        font-weight: 700; 
+        font-size: 13px; 
+        transition: all 0.2s ease;
+    }
+    
+    .btn-delete:hover { 
+        background: #ef4444; 
+        color: white; 
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.25); 
+    }
+
+    /* --- Blank Workspaces Container --- */
+    .empty-state-card { 
+        text-align: center; 
+        padding: 80px 24px; 
+        color: var(--slate-muted, #a0aec0); 
+        border: 2px dashed var(--border-ether, #2d3748); 
+        border-radius: 20px; 
+        grid-column: 1 / -1; 
+    }
+    
+    .empty-state-card h3 {
+        color: #ffffff;
+        font-size: 1.25rem;
+        margin-bottom: 8px;
+    }
+    
+    /* --- Modern Alert Banners --- */
+    .messages-container { margin-bottom: 32px; }
+    
+    .alert { 
+        padding: 16px 20px; 
+        border-radius: 12px; 
+        font-size: 14.5px; 
+        font-weight: 600; 
+        margin-bottom: 12px; 
+        display: flex; 
+        align-items: center; 
+        gap: 10px;
+    }
+    
+    .alert-success { 
+        background: rgba(16, 185, 129, 0.05); 
+        color: #10b981; 
+        border: 1px solid rgba(16, 185, 129, 0.2); 
+    }
+</style>
+
+<div class="nexus-analytics-viewport">
+
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <span>Notice:</span> {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Top Management Context Block -->
+    <div class="management-header-row">
+        {% if request.user.groups.all.0.name == "Admin" %}
+            <span class="role-badge admin-mode">Administrator View</span>
+            <h1>Manage Cancellations</h1>
+        {% else %}
+            <span class="role-badge">Teacher View</span>
+            <h1>My Scheduled Events</h1>
+        {% endif %}
+    </div>
+
+    <!-- Active Structural Filtering Toolset -->
+    <form method="GET" action="{% url 'cancel_event_list' %}" class="filter-bar">
+        <div class="filter-group">
+            <label for="search">Search Events</label>
+            <input type="text" id="search" name="search" class="filter-input" placeholder="Search by title..." value="{{ search_query }}">
+        </div>
+
+        <div class="filter-group">
+            <label for="venue">Venue Location</label>
+            <select id="venue" name="venue" class="filter-input">
+                <option value="">All Venues</option>
+                {% for venue in venues %}
+                    <option value="{{ venue.id }}" {% if selected_venue == venue.id|stringformat:"i" %}selected{% endif %}>
+                        {{ venue.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="date_sort">Order By Date</label>
+            <select id="date_sort" name="date_sort" class="filter-input">
+                <option value="soonest" {% if selected_sort == 'soonest' %}selected{% endif %}>Soonest First</option>
+                <option value="latest" {% if selected_sort == 'latest' %}selected{% endif %}>Latest Created</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="btn-search">Apply Filters</button>
+            <a href="{% url 'cancel_event_list' %}" class="btn-reset">Reset</a>
+        </div>
+    </form>
+
+    <!-- Response Grid Cluster -->
+    <div class="cancel-grid">
+        {% for event in events %}
+        <div class="cancel-card">
+            <div>
+                <span class="status {{ event.status }}">{{ event.status }}</span>
+                <div class="event-title">{{ event.title }}</div>
+                
+                <div class="meta-info">
+                    <div>Location: <b>{{ event.venue.name|default:"Venue TBD" }}</b></div>
+                    <div>Scheduled Date: <b>{{ event.date|date:"M d, Y" }}</b></div>
+                    <div>Start Time: <b>{{ event.start_time|time:"H:i" }}</b></div>
+                    {% if request.user.groups.all.0.name == "Admin" %}
+                        <div>Organizer: <b>{{ event.organizer.last_name }}</b></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <a href="{% url 'cancel_event' event.id %}" class="btn-delete">
+                {% if request.user.groups.all.0.name == "Admin" %} Cancel Event {% else %} Remove Listing {% endif %}
+            </a>
+        </div>
+        {% empty %}
+        <div class="empty-state-card">
+            <h3>No matching events discovered</h3>
+            <p>Try clearing your active filters or revising your search keyword terms.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

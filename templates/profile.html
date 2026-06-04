@@ -1,0 +1,287 @@
+{% extends 'base.html' %} 
+{% load static %} 
+
+{% block title %}My Profile — Campus Event Portal{% endblock %} 
+
+{% block content %} 
+<style>
+    .matrix-full-workspace {
+        display: grid !important;
+        grid-template-columns: 320px 1fr 1fr !important;
+        gap: 24px !important;
+        align-items: start !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-top: 10px;
+    }
+    .nexus-workspace-panel {
+        background: #0b1120 !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+        padding: 24px !important;
+        position: relative;
+        box-shadow: 0 15px 45px rgba(0, 0, 0, 0.45) !important;
+    }
+    .section-separator-line {
+        border: 0;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+        margin: 20px 0;
+    }
+    .terminal-hud-menu {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-top: 15px;
+    }
+    .hud-menu-title {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+    .hud-vector-btn, .hud-logout-btn {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 12px 16px !important;
+        border-radius: 6px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        color: #cbd5e1 !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        transition: all 0.2s ease;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+    }
+    .hud-vector-btn svg, .hud-logout-btn svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+    .hud-vector-btn:hover {
+        background: rgba(0, 240, 255, 0.08) !important;
+        color: #00f0ff !important;
+        border-color: rgba(0, 240, 255, 0.3) !important;
+    }
+    .btn-dashboard svg { stroke: #00f0ff; }
+    .btn-password svg { stroke: #fbbf24; }
+    
+    .hud-logout-btn { color: #f87171 !important; }
+    .hud-logout-btn svg { stroke: #f87171; }
+    .hud-logout-btn:hover {
+        background: rgba(248, 113, 113, 0.08) !important;
+        color: #f87171 !important;
+        border-color: rgba(248, 113, 113, 0.3) !important;
+    }
+    
+    .matrix-role-chip {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .rank-tier-admin { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .rank-tier-teacher { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
+    .rank-tier-student { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
+    .condition-nominal { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+    .condition-banned { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+    @media (max-width: 1100px) {
+        .matrix-full-workspace { grid-template-columns: 1fr 1fr !important; }
+        .left-telemetry-dock { grid-column: span 2 !important; }
+    }
+    @media (max-width: 768px) {
+        .matrix-full-workspace { grid-template-columns: 1fr !important; }
+        .left-telemetry-dock { grid-column: span 1 !important; }
+    }
+</style>
+
+<div class="matrix-full-workspace">
+    <aside class="nexus-workspace-panel left-telemetry-dock">
+        
+        <div class="identity-text-cluster" style="text-align: center; padding: 10px 0;">
+            <h2 style="margin: 0 0 4px 0; font-size: 22px;">
+                {% if request.user.profile.college_data.f_name %}
+                    {{ request.user.profile.college_data.f_name }} {{ request.user.profile.college_data.l_name }}
+                {% else %}
+                    {{ request.user.username }}
+                {% endif %}
+            </h2>
+            <p style="color: #64748b; font-size: 13px; margin: 0 0 16px 0;">COLLEGE ID: {{ request.user.username }}</p>
+            
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                {% if request.user.profile.college_data.role == "Admin" %}
+                    <span class="matrix-role-chip rank-tier-admin">🛡️ Campus Admin</span>
+                {% elif request.user.profile.college_data.role == "Teacher" %}
+                    <span class="matrix-role-chip rank-tier-teacher">👨‍🏫 Faculty Coordinator</span>
+                {% else %}
+                    <span class="matrix-role-chip rank-tier-student">🎓 Student Member</span>
+                {% endif %}
+
+                {% if request.user.profile.is_banned %}
+                    <span class="matrix-role-chip condition-banned">⚠️ Account Restricted</span>
+                {% else %}
+                    <span class="matrix-role-chip condition-nominal">● Account Active</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if request.user.profile.is_banned %}
+        <div style="margin-top: 16px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 12px; border-radius: 6px;">
+            <div style="font-size: 11px; font-weight: 700; color: #ef4444; text-transform: uppercase;">Suspension Notice</div>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: #cbd5e1; font-style: italic;">"{{ request.user.profile.ban_reason }}"</p>
+        </div>
+        {% endif %}
+
+        <hr class="section-separator-line">
+
+        <div class="terminal-hud-menu">
+            {% if user.is_authenticated %}
+                {% if user.profile.college_data.role == 'Admin' %}
+                    <a href="{% url 'admin_dashboard' %}" class="hud-vector-btn btn-dashboard">
+                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        Main Workspace
+                    </a>
+                {% elif user.profile.college_data.role == 'Teacher' %}
+                    <a href="{% url 'teacher_dashboard' %}" class="hud-vector-btn btn-dashboard">
+                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        Teacher Dashboard
+                    </a>
+                {% elif user.profile.college_data.role == 'Student' %}
+                    <a href="{% url 'student_dashboard' %}" class="hud-vector-btn btn-dashboard">
+                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        Student Dashboard
+                    </a>
+                {% endif %}
+            {% endif %}
+            
+            <a href="{% url 'reset_password' %}" class="hud-vector-btn btn-password">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Update Password
+            </a>        
+            
+            <form method="POST" action="{% url 'logout_view' %}" style="display: block; width: 100%;">
+                {% csrf_token %}
+                <button type="submit" class="hud-logout-btn">
+                    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Logout Account
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="nexus-workspace-panel center-telemetry-dock">
+        <div style="margin-bottom: 20px;">
+            <h3 style="margin: 0 0 4px 0; font-size: 16px;">Campus Contact Profiles</h3>
+            <p style="margin: 0; font-size: 13px; color: #64748b;">Official contact details mapped inside the event module registry.</p>
+        </div>
+
+        <div class="structural-profile-matrix">
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">College ID / Registration ID</span>
+                <span class="matrix-row-value glow-field-cyan">{{ request.user.profile.college_data.college_id }}</span>
+            </div>
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Institution / College</span>
+                <span class="matrix-row-value">{{ request.user.profile.college_data.get_college_display }}</span>
+            </div>
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Academic Stream / Branch</span>
+                <span class="matrix-row-value glow-field-rose">{{ request.user.profile.college_data.branch|default:"Not Configured" }}</span>
+            </div>
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Email Address</span>
+                <span class="matrix-row-value" style="color: #ffffff;">{{ request.user.profile.college_data.email }}</span>
+            </div>
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Mobile Number</span>
+                <span class="matrix-row-value glow-field-cyan">{% firstof request.user.profile.phone request.user.profile.college_data.phone "No Verified Phone Link" %}</span>
+            </div>
+            
+            <form method="POST" action="{% url 'profile' %}" style="margin-top:16px;">
+                {% csrf_token %}
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <input type="tel" name="phone" value="{{ request.user.profile.phone|default:'' }}"
+                           placeholder="Enter new phone number"
+                           style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+                                  color:#fff;border-radius:8px;padding:9px 14px;font-size:13px;flex:1;">
+                    <button type="submit"
+                            style="background:#00d4ff;color:#05071a;border:none;border-radius:8px;
+                                   padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;">
+                        Update Contact
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <aside class="nexus-workspace-panel right-telemetry-dock">
+        <div style="margin-bottom: 20px;">
+            <h3 style="margin: 0 0 4px 0; font-size: 16px;">Personal Information</h3>
+            <p style="margin: 0; font-size: 13px; color: #64748b;">Identity parameters assigned to your profile record.</p>
+        </div>
+
+        <div class="structural-profile-matrix">
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Date of Birth</span>
+                <span class="matrix-row-value">{{ request.user.profile.college_data.dob|date:"Y-m-d"|default:"Not Set" }}</span>
+            </div>
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Gender</span>
+                <span class="matrix-row-value">{{ request.user.profile.college_data.gender|default:"Not Configured" }}</span>
+            </div>
+
+            {% if request.user.profile.college_data.role == "Teacher" %}
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Designation</span>
+                <span class="matrix-row-value glow-field-emerald">{{ request.user.profile.college_data.designation|default:"Faculty Member" }}</span>
+            </div>
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Event Approval Access</span>
+                <span class="matrix-row-value" style="color: #ffffff;">Authorized Coordinator</span>
+            </div>
+            
+            {% elif request.user.profile.college_data.role == "Admin" %}
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">System Access Access</span>
+                <span class="matrix-row-value glow-field-amber">Portal Administrator</span>
+            </div>
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Permission Rights</span>
+                <span class="matrix-row-value glow-field-emerald">Full Database Control</span>
+            </div>
+            
+            {% else %}
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Father's Name</span>
+                <span class="matrix-row-value">{{ request.user.profile.college_data.father_name|default:"Not Tracked" }}</span>
+            </div>
+            <div class="structural-matrix-row">
+                <span class="matrix-row-label">Mother's Name</span>
+                <span class="matrix-row-value">{{ request.user.profile.college_data.mother_name|default:"Not Tracked" }}</span>
+            </div>
+            {% endif %}
+
+            <div class="structural-matrix-row extended-block-layout">
+                <span class="matrix-row-label">Postal / Residential Address</span>
+                <div class="matrix-unbounded-value">
+                    {{ request.user.profile.college_data.address|default:"No residential address listed in current event tracking records." }}
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}

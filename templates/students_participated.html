@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Report — NexusFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f8fafc; padding: 40px; color: #1e293b; }
+        
+        .report-container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 24px; border: 1px solid #e2e8f0; overflow: hidden; }
+        .header { padding: 40px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: flex-end; }
+        .header h1 { font-size: 24px; font-weight: 800; }
+        .header p { color: #64748b; font-size: 14px; }
+        
+        .table-area { padding: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #f1f5f9; }
+        td { padding: 18px 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        
+        .badge { background: #dcfce7; color: #15803d; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+        
+        .print-btn { background: #0f172a; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .print-btn:hover { background: #334155; }
+
+        @media print { .print-btn { display: none; } body { padding: 0; } .report-container { border: none; } }
+    </style>
+</head>
+<body>
+    <div style="max-width:1000px; margin:20px auto 0; padding:0 20px;">
+    {% if request.user.groups.all.0.name == 'Admin' %}
+        <a href="{% url 'admin_logistics_overview' %}" style="color:#64748b; text-decoration:none; font-size:13px;">← Back to Logistics</a>
+    {% else %}
+        <a href="{% url 'teacher_my_events' %}" style="color:#64748b; text-decoration:none; font-size:13px;">← Back to My Events</a>
+    {% endif %}
+</div>
+    <div class="report-container">
+        <div class="header">
+            <div>
+                <h1>Final Participation Report</h1>
+                <p>Event: <strong>{{ registrations.0.event.title }}</strong> | Date: {{ registrations.0.event.date|date:"M d, Y" }}</p>
+            </div>
+            <button class="print-btn" onclick="window.print()">Print Report</button>
+        </div>
+        <div class="table-area">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Student Name</th>
+                        <th>Student ID</th>
+                        <th>Arrival Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registrations %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td style="font-weight: 700;">{{ reg.student.get_full_name }}</td>
+                        <td>{{ reg.student.username }}</td>
+                        <td>{{ reg.verified_at|date:"h:i A" }}</td>
+                        <td><span class="badge">{{reg.verified}}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" style="text-align:center; padding: 50px; color: #94a3b8;">No verified participants found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

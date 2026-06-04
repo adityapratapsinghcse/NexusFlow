@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entry Verification — NexusFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --bg: #f8fafc; 
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { 
+            background-color: var(--bg); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+        }
+
+        .result-card {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 32px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+        }
+
+        /* Status-specific Styling */
+        .card-valid { border-color: var(--success); }
+        .card-used { border-color: var(--warning); }
+        .card-invalid { border-color: var(--danger); }
+
+        .status-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+        }
+
+        .icon-valid { background: #dcfce7; color: var(--success); }
+        .icon-used { background: #fef3c7; color: var(--warning); }
+        .icon-invalid { background: #fee2e2; color: var(--danger); }
+
+        h1 { font-weight: 800; font-size: 28px; margin-bottom: 10px; }
+        .status-msg { color: #64748b; margin-bottom: 30px; font-weight: 500; }
+
+        /* Student Details Box */
+        .info-box {
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .info-row:last-child { border-bottom: none; }
+        
+        .label { color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .value { color: #1e293b; font-size: 14px; font-weight: 700; }
+
+        .btn-next {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: #0f172a;
+            color: white;
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 800;
+            transition: 0.3s;
+        }
+        .btn-next:hover { transform: translateY(-2px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    {% if status == "Valid" %}
+    <div class="result-card card-valid">
+        <div class="status-icon icon-valid">✅</div>
+        <h1 style="color: var(--success);">Valid Entry</h1>
+        <p class="status-msg">Attendance recorded successfully.</p>
+        
+        <div class="info-box">
+            <div class="info-row"><span class="label">Student</span><span class="value">{{ registration.student.get_full_name }}</span></div>
+            <div class="info-row"><span class="label">ID</span><span class="value">{{ registration.student.username }}</span></div>
+            <div class="info-row"><span class="label">Event</span><span class="value">{{ registration.event.title }}</span></div>
+        </div>
+        <a href="javascript:history.back()" class="btn-next">Scan Next Pass</a>
+    </div>
+
+    {% elif status == "Already used" %}
+    <div class="result-card card-used">
+        <div class="status-icon icon-used">⚠️</div>
+        <h1 style="color: var(--warning);">Already Used</h1>
+        <p class="status-msg">This pass was scanned previously.</p>
+        
+        <div class="info-box">
+            <div class="info-row"><span class="label">Student</span><span class="value">{{ registration.student.get_full_name }}</span></div>
+            <div class="info-row"><span class="label">Last Scan</span><span class="value">{{ registration.verified_at|date:"h:i A" }}</span></div>
+        </div>
+        <a href="javascript:history.back()" class="btn-next">Back to Scanner</a>
+    </div>
+
+    {% else %}
+    <div class="result-card card-invalid">
+        <div class="status-icon icon-invalid">❌</div>
+        <h1 style="color: var(--danger);">Invalid Pass</h1>
+        <p class="status-msg">No active registration found for this code.</p>
+        
+        <div style="margin: 40px 0; color: #94a3b8; font-size: 14px;">
+            The code may be expired, inactive, or typed incorrectly.
+        </div>
+        <a href="javascript:history.back()" class="btn-next">Try Again</a>
+    </div>
+    {% endif %}
+    <div style="text-align:center;margin-top:24px;">
+  <a href="javascript:history.back()"
+     style="display:inline-block;background:#00d4ff;color:#05071a;
+            border-radius:12px;padding:14px 32px;font-weight:800;
+            text-decoration:none;font-size:15px;">
+    ← Scan Next Pass
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,419 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* --- System Design Variable Core Registry --- */
+:root {
+    --bg-dark: #050816;
+    --bg-panel: rgba(15, 23, 42, 0.45);
+    --border-glow: rgba(255, 255, 255, 0.08);
+    --primary: #38bdf8;
+    --primary-glow: rgba(56, 189, 248, 0.15);
+    --accent: #ff007a;
+    --accent-glow: rgba(255, 0, 122, 0.15);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --success: #00ff99;
+    --warning: #fbbf24;
+    --danger: #dc2626;
+    --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Base Body Configurations --- */
+body, #container, html {
+    background: var(--bg-dark) !important;
+    background-image: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 50%) !important;
+    color: var(--text-main) !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+/* --- Global Navigation & Header --- */
+#header {
+    background: #090d22 !important;
+    border-bottom: 1px solid var(--border-glow) !important;
+    padding: 18px 40px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+}
+
+#branding h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 1.35rem !important;
+    letter-spacing: -0.5px !important;
+}
+
+#branding h1 a {
+    color: #ffffff !important;
+}
+
+#user-tools {
+    font-size: 12px !important;
+    color: var(--text-muted) !important;
+}
+
+#user-tools a {
+    color: var(--primary) !important;
+    border-bottom: none !important;
+    font-weight: 600 !important;
+}
+
+#user-tools a:hover {
+    color: var(--accent) !important;
+    text-shadow: 0 0 8px var(--accent-glow);
+}
+
+div.breadcrumbs {
+    background: rgba(9, 13, 34, 0.4) !important;
+    border-bottom: 1px solid var(--border-glow) !important;
+    padding: 12px 40px !important;
+    font-size: 12px !important;
+    color: var(--text-muted) !important;
+}
+
+div.breadcrumbs a {
+    color: var(--primary) !important;
+}
+
+/* --- Content Typography Headers --- */
+.content h1 {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 1.8rem !important;
+    letter-spacing: -0.5px !important;
+    margin-bottom: 24px !important;
+}
+
+/* --- Core Grid Panels & Site Modules --- */
+.module {
+    background: var(--bg-panel) !important;
+    border: 1px solid var(--border-glow) !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: var(--shadow-soft) !important;
+    margin-bottom: 28px !important;
+}
+
+.module caption, .module h2 {
+    background: rgba(30, 41, 59, 0.7) !important;
+    color: var(--primary) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+    font-size: 11px !important;
+    padding: 14px 20px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* --- Functional Tables Grid Structures --- */
+table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+table thead th {
+    background: rgba(0, 0, 0, 0.25) !important;
+    color: var(--text-muted) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+    letter-spacing: 0.5px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+th, td {
+    padding: 14px 20px !important;
+    font-size: 13px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+    color: var(--text-main) !important;
+}
+
+tr.model-admin-row:hover, table tr:hover, tr.row1:hover, tr.row2:hover {
+    background: rgba(56, 189, 248, 0.04) !important;
+}
+
+.row1 { background: rgba(255, 255, 255, 0.01) !important; }
+.row2 { background: rgba(255, 255, 255, 0.02) !important; }
+
+/* --- Action Controls & Anchors --- */
+.addlink, .changelink, .viewlink {
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 10px !important;
+    letter-spacing: 0.5px !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    display: inline-block !important;
+    transition: all 0.2s ease !important;
+}
+
+.addlink {
+    color: var(--success) !important;
+    background: rgba(0, 255, 153, 0.06) !important;
+    border: 1px solid rgba(0, 255, 153, 0.15) !important;
+}
+.addlink:hover {
+    background: var(--success) !important;
+    color: #050816 !important;
+}
+
+.changelink, .viewlink {
+    color: var(--primary) !important;
+    background: rgba(56, 189, 248, 0.06) !important;
+    border: 1px solid rgba(56, 189, 248, 0.15) !important;
+}
+.changelink:hover, .viewlink:hover {
+    background: var(--primary) !important;
+    color: #050816 !important;
+}
+
+/* --- Search Controls Customization --- */
+#searchbar {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    color: #ffffff !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+}
+#searchbar:focus {
+    border-color: var(--primary) !important;
+    outline: none !important;
+    box-shadow: 0 0 10px var(--primary-glow) !important;
+}
+#changelist-search input[type="submit"] {
+    background: var(--primary) !important;
+    color: #050816 !important;
+    font-weight: 700 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 6px 14px !important;
+    cursor: pointer !important;
+}
+
+/* --- RECENT ACTIONS SYSTEM LAYOUT OVERRIDES --- */
+#content-related {
+    background: var(--bg-panel) !important;
+    border: 1px solid var(--border-glow) !important;
+    border-radius: 20px !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: var(--shadow-soft) !important;
+    padding: 20px !important;
+    color: var(--text-muted) !important;
+}
+
+#content-related h2 {
+    background: transparent !important;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+    margin-bottom: 16px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 0 0 8px 0 !important;
+}
+
+ul.actionlist li {
+    font-size: 12px !important;
+    color: var(--text-muted) !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+    list-style-type: none !important;
+}
+
+ul.actionlist li a {
+    color: var(--text-main) !important;
+    font-weight: 600 !important;
+}
+
+/* --- PREMIUM TELEMETRY MODULES GRAPHICS --- */
+.nexus-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.premium-card {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.3));
+    border: 1px solid var(--border-glow);
+    border-radius: 16px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+}
+
+.premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 2px;
+}
+
+.card-primary::before { background: var(--primary); }
+.card-accent::before { background: var(--accent); }
+.card-success::before { background: var(--success); }
+.card-warning::before { background: var(--warning); }
+
+.card-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.card-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-top: 6px;
+    line-height: 1;
+}
+
+.card-subtext {
+    font-size: 11px;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+.sub-green { color: var(--success); }
+.sub-pink { color: var(--accent); }
+.sub-blue { color: var(--primary); }
+
+/* --- TWO COLUMN OPERATION FRAMEWORK --- */
+.nexus-operations-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+@media (max-width: 768px) {
+    .nexus-operations-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ops-panel {
+    background: rgba(9, 13, 34, 0.45);
+    border: 1px solid var(--border-glow);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.ops-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #ffffff;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Log Terminal Box CSS Layout */
+.terminal-stream {
+    background: #02040a;
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    height: 190px;
+    overflow-y: auto;
+    color: #a6b5c5;
+    text-align: left;
+}
+
+.log-line { margin-bottom: 6px; line-height: 1.4; border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 4px; }
+.log-time { color: rgba(56, 189, 248, 0.7); }
+.log-tag { padding: 1px 4px; border-radius: 3px; font-size: 10px; font-weight: 700; margin: 0 4px; text-transform: uppercase; }
+.tag-info { background: rgba(56,189,248,0.15); color: var(--primary); }
+.tag-warn { background: rgba(251,191,36,0.15); color: var(--warning); }
+.tag-agent { background: rgba(255,0,122,0.15); color: var(--accent); }
+
+/* Control Dashboard Form Operations */
+.btn-ops-trigger {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.btn-ops-trigger:hover {
+    background: rgba(56, 189, 248, 0.06);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateX(2px);
+}
+
+/* --- LOGIN PAGE STYLING LAYOUT --- */
+.login {
+    background: radial-gradient(circle at top left, rgba(56,189,248,0.12), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(255,0,122,0.06), transparent 30%),
+                #050816 !important;
+}
+
+.login #container {
+    background: rgba(15,23,42,0.75) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 24px !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5) !important;
+    overflow: hidden !important;
+    margin-top: 100px;
+}
+
+.login #header { background: transparent !important; box-shadow: none !important; }
+.login #content { padding: 30px 40px !important; }
+.login .form-row { padding: 12px 0 !important; }
+.login label { color: var(--text-muted) !important; font-size: 13px !important; }
+.login input[type="text"], .login input[type="password"] {
+    background: rgba(0,0,0,0.3) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 8px !important;
+    color: #fff !important;
+    padding: 8px 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+.login input[type="submit"] {
+    background: var(--primary) !important;
+    color: #050816 !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    border: none !important;
+    cursor: pointer !important;
+    width: 100% !important;
+}
+
+/* --- SCROLLBAR --- */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #050816; }
+::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.35); border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,0.6); }
+
+/* --- SELECTORS FOCUS MATRIX --- */
+select:focus, input:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(56,189,248,0.15) !important;
+}
