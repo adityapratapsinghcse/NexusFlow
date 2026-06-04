@@ -318,21 +318,21 @@ def event_detail(request, event_id):
         # 1. Registration Timeline Window Validations
         if event.registration_start and now_time < event.registration_start:
             messages.error(request, f"Registration opens on {event.registration_start.strftime('%d %b %Y at %I:%M %p')}.")
-            return redirect("event_detail", event_id=event.id)
+            return redirect("upcoming_events")
 
         if event.registration_end and now_time > event.registration_end:
             messages.error(request, "Registration for this event has closed.")
-            return redirect("event_detail", event_id=event.id)
+            return redirect("upcoming_events")
             
         # 2. Existing Registration Validation Safeguard
         if already_registered:
             messages.info(request, "You are already registered for this event.")
-            return redirect("event_detail", event_id=event.id)
+            return redirect("upcoming_events")
 
         # 3. User Restriction Status Verification Matrix
         elif hasattr(request.user, 'profile') and request.user.profile.is_banned:
             messages.error(request, "You are banned from registering for events.")
-            return redirect("event_detail", event_id=event.id)
+            return redirect("upcoming_events")
             
         else:
             # 4. Crowd Capacity & Waitlist Engine Routing Operations
@@ -346,7 +346,7 @@ def event_detail(request, event_id):
                     messages.info(request, "Event is full. You've been added to the waitlist.")
                 else:
                     messages.info(request, "You're already on the waitlist for this event.")
-                return redirect("event_detail", event_id=event.id)
+                return redirect("upcoming_events")
 
             # 5. Build Fresh Verified Registration Instance 
             reg = EventRegistration.objects.create(
@@ -368,7 +368,7 @@ def event_detail(request, event_id):
                                     message=f"'{event.title}' has reached its expected crowd size.")
 
             messages.success(request, "Successfully registered! Your pass will be issued soon.")
-            return redirect("event_detail", event_id=event.id)
+            return redirect("upcoming_events")
 
     return render(request, "student_register.html", {
         "event": event,
