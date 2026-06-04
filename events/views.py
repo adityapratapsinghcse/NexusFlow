@@ -28,21 +28,6 @@ from .agents.venue_agent import run_venue_agent
 from .agents.review_agent import run_review_agent
 from .agents.crowd_agent import run_crowd_agent
 
-
-from django.http import JsonResponse
-from django.core.files.storage import default_storage
-from events.models import Event
-
-def debug_storage(request):
-    e = Event.objects.get(id=51)
-
-    return JsonResponse({
-        "storage": str(type(default_storage)),
-        "poster": str(e.poster),
-        "poster_url": str(e.poster.url) if e.poster else None,
-    })
-
-
 # ===========================================================
 #  SCHEDULE EVENT  (Teacher / Admin)
 #  This is the main view that now uses the AI agent.

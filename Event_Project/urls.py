@@ -68,7 +68,6 @@ urlpatterns = [
     path('my_waitlist/', event_view.my_waitlist, name='my_waitlist'),
     path('leave_waitlist/<int:event_id>/', event_view.leave_waitlist, name='leave_waitlist'),
     path('admin/unpublish_passes/<int:event_id>/', event_view.unpublish_passes, name='unpublish_passes'),
-    path("debug-storage/", event_view.debug_storage)
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
