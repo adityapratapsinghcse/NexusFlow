@@ -305,7 +305,6 @@ def update_event(request, event_id, action):
 
 @login_required
 def event_detail(request, event_id):
-    # Fetch approved event details securely
     event = get_object_or_404(Event, id=event_id, status="APPROVED")
 
     already_registered = EventRegistration.objects.filter(
@@ -314,28 +313,20 @@ def event_detail(request, event_id):
 
     if request.method == "POST":
         now_time = timezone.now()
-        
-        # 1. Registration Timeline Window Validations
         if event.registration_start and now_time < event.registration_start:
             messages.error(request, f"Registration opens on {event.registration_start.strftime('%d %b %Y at %I:%M %p')}.")
-            return redirect("upcoming_events")
+            return redirect("student_events")
 
         if event.registration_end and now_time > event.registration_end:
             messages.error(request, "Registration for this event has closed.")
-            return redirect("upcoming_events")
-            
-        # 2. Existing Registration Validation Safeguard
+            return redirect("student_events")
         if already_registered:
             messages.info(request, "You are already registered for this event.")
-            return redirect("upcoming_events")
 
-        # 3. User Restriction Status Verification Matrix
         elif hasattr(request.user, 'profile') and request.user.profile.is_banned:
             messages.error(request, "You are banned from registering for events.")
-            return redirect("upcoming_events")
-            
+            return redirect("student_events")
         else:
-            # 4. Crowd Capacity & Waitlist Engine Routing Operations
             current_count = EventRegistration.objects.filter(event=event).count()
             if current_count >= event.expected_crowd:
                 already_waiting = WaitlistEntry.objects.filter(
@@ -346,9 +337,8 @@ def event_detail(request, event_id):
                     messages.info(request, "Event is full. You've been added to the waitlist.")
                 else:
                     messages.info(request, "You're already on the waitlist for this event.")
-                return redirect("upcoming_events")
+                return redirect("student_events")
 
-            # 5. Build Fresh Verified Registration Instance 
             reg = EventRegistration.objects.create(
                 student=request.user, event=event,
                 verified=False, pass_active=False
@@ -356,8 +346,6 @@ def event_detail(request, event_id):
             generate_unique_pass(reg)
             generate_qr_code(reg)
             send_registration_email(request.user, event)
-            
-            # Dispatch real-time teacher tracking system notices
             create_notification(role='TEACHER', user=event.organizer,
                                 title='New Student Registration',
                                 message=f"{request.user.get_full_name()} registered for '{event.title}'.")
@@ -368,12 +356,13 @@ def event_detail(request, event_id):
                                     message=f"'{event.title}' has reached its expected crowd size.")
 
             messages.success(request, "Successfully registered! Your pass will be issued soon.")
-            return redirect("upcoming_events")
+        return redirect("student_events")
 
     return render(request, "student_register.html", {
-        "event": event,
+        "event":              event,
         "already_registered": already_registered,
     })
+
 
 # ===========================================================
 #  MY REGISTRATIONS (Student)
@@ -452,7 +441,7 @@ def upcoming_events(request):
         "search_query": search_query,
         "selected_venue": venue_filter,
         "selected_sort": date_filter,
-        "registered_event_ids": registered_event_ids,
+        "registered_event_ids": registered_event_ids, # Sent to template layout engine
     })
 
 
@@ -741,6 +730,7 @@ def event_student_details(request, event_id):
 
 @login_required
 def export_event_students(request, event_id):
+    """Old all-registrations export — kept for backwards compat."""
     user = request.user
     if user.groups.filter(name='Admin').exists():
         event = get_object_or_404(Event, id=event_id)
@@ -759,13 +749,239 @@ def export_event_students(request, event_id):
             idx,
             reg.student.get_full_name(),
             reg.student.email,
-            reg.unique_pass or "—",
+            reg.unique_pass or "-",
             reg.registered_at.strftime("%Y-%m-%d %H:%M"),
             "Yes" if reg.verified else "No",
         ])
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename=registrations_{event.title}.xlsx'
+    wb.save(response)
+    return response
+
+
+@login_required
+def export_attendance_report(request, event_id):
+    """
+    Full branded attendance report export — all fields from Event,
+    EventRegistration and Profile / CollegeData for every participant.
+    Downloaded as  Attendance_Report_<EventTitle>.xlsx
+    """
+    from openpyxl.styles import (
+        PatternFill, Font, Alignment, Border, Side
+    )
+    from openpyxl.utils import get_column_letter
+
+    user = request.user
+    is_admin = user.groups.filter(name='Admin').exists()
+    is_assigned = EventLogisticsAssignment.objects.filter(
+        event_id=event_id, assigned_teacher=user
+    ).exists()
+
+    if is_admin:
+        event = get_object_or_404(Event, id=event_id)
+    elif is_assigned:
+        event = get_object_or_404(Event, id=event_id)
+    else:
+        event = get_object_or_404(Event, id=event_id, organizer=user)
+
+    registrations = (
+        EventRegistration.objects
+        .filter(event=event)
+        .select_related('student', 'student__profile', 'student__profile__college_data')
+        .order_by('-verified', 'student__last_name')
+    )
+
+    # ── Workbook setup ────────────────────────────────────────────────
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Attendance Report"
+
+    # Theme colours matching NexusFlow dark theme
+    DARK_BG   = "060913"
+    CARD_BG   = "0B1120"
+    CYAN      = "00F0FF"
+    GREEN     = "39FF14"
+    YELLOW    = "FFAA00"
+    WHITE     = "FFFFFF"
+    MUTED     = "64748B"
+    LIGHT     = "CBD5E1"
+    HEADER_BG = "0F1A2E"
+
+    def fill(hex_color):
+        return PatternFill("solid", fgColor=hex_color)
+
+    def font(hex_color=WHITE, bold=False, size=10):
+        return Font(color=hex_color, bold=bold, size=size, name="Calibri")
+
+    def center():
+        return Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+    def left():
+        return Alignment(horizontal="left", vertical="center", wrap_text=True)
+
+    thin = Side(style="thin", color="1E293B")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    # ── Title block (rows 1-4) ────────────────────────────────────────
+    ws.merge_cells("A1:J1")
+    ws["A1"] = "NEXUSFLOW — FINAL PARTICIPATION REPORT"
+    ws["A1"].font = Font(color=CYAN, bold=True, size=14, name="Calibri")
+    ws["A1"].fill = fill(DARK_BG)
+    ws["A1"].alignment = center()
+    ws.row_dimensions[1].height = 28
+
+    ws.merge_cells("A2:J2")
+    ws["A2"] = f"Event: {event.title}"
+    ws["A2"].font = Font(color=WHITE, bold=True, size=11, name="Calibri")
+    ws["A2"].fill = fill(CARD_BG)
+    ws["A2"].alignment = center()
+    ws.row_dimensions[2].height = 20
+
+    ws.merge_cells("A3:J3")
+    venue_name = event.venue.name if event.venue else "N/A"
+    organizer_name = event.organizer.get_full_name() if event.organizer else "N/A"
+    ws["A3"] = (
+        f"Date: {event.date.strftime('%d %B %Y')}   |   "
+        f"Time: {event.start_time.strftime('%I:%M %p')} - {event.end_time.strftime('%I:%M %p')}   |   "
+        f"Venue: {venue_name}   |   "
+        f"Organiser: {organizer_name}   |   "
+        f"Capacity: {event.expected_crowd}"
+    )
+    ws["A3"].font = Font(color=MUTED, size=9, name="Calibri")
+    ws["A3"].fill = fill(CARD_BG)
+    ws["A3"].alignment = center()
+    ws.row_dimensions[3].height = 16
+
+    # Stats row (row 4)
+    total_reg    = registrations.count()
+    total_verif  = registrations.filter(verified=True).count()
+    total_absent = total_reg - total_verif
+
+    ws.merge_cells("A4:C4")
+    ws["A4"] = f"Total Registered: {total_reg}"
+    ws["A4"].font = Font(color=CYAN, bold=True, size=10, name="Calibri")
+    ws["A4"].fill = fill(HEADER_BG)
+    ws["A4"].alignment = center()
+
+    ws.merge_cells("D4:F4")
+    ws["D4"] = f"Verified Entry: {total_verif}"
+    ws["D4"].font = Font(color=GREEN, bold=True, size=10, name="Calibri")
+    ws["D4"].fill = fill(HEADER_BG)
+    ws["D4"].alignment = center()
+
+    ws.merge_cells("G4:J4")
+    ws["G4"] = f"Not Scanned: {total_absent}"
+    ws["G4"].font = Font(color=YELLOW, bold=True, size=10, name="Calibri")
+    ws["G4"].fill = fill(HEADER_BG)
+    ws["G4"].alignment = center()
+
+    ws.row_dimensions[4].height = 18
+    ws.append([])  # spacer row 5
+
+    # ── Column headers (row 6) ────────────────────────────────────────
+    HEADERS = [
+        "#",
+        "Full Name",
+        "Student ID",
+        "Email Address",
+        "College",
+        "Branch / Dept",
+        "Phone",
+        "Pass Code",
+        "Arrival Time",
+        "Status",
+    ]
+    ws.append(HEADERS)
+    header_row = ws.max_row
+
+    for col_idx, _ in enumerate(HEADERS, start=1):
+        cell = ws.cell(row=header_row, column=col_idx)
+        cell.fill    = fill(HEADER_BG)
+        cell.font    = Font(color=CYAN, bold=True, size=9, name="Calibri")
+        cell.alignment = center()
+        cell.border  = border
+    ws.row_dimensions[header_row].height = 20
+
+    # ── Data rows ─────────────────────────────────────────────────────
+    COLLEGE_MAP = dict(COLLEGES)
+
+    for idx, reg in enumerate(registrations, start=1):
+        student = reg.student
+        try:
+            profile     = student.profile
+            cd          = profile.college_data
+            college_str = COLLEGE_MAP.get(profile.college_name, profile.college_name)
+            branch_str  = cd.branch or "—" if cd else "—"
+            phone_str   = cd.phone  or profile.phone or "—" if cd else (profile.phone or "—")
+        except Exception:
+            college_str = "—"
+            branch_str  = "—"
+            phone_str   = "—"
+
+        arrival = (
+            reg.verified_at.strftime("%d %b %Y %I:%M %p")
+            if reg.verified_at else "—"
+        )
+        status = "VERIFIED" if reg.verified else "NOT SCANNED"
+
+        row_data = [
+            idx,
+            student.get_full_name(),
+            student.username,
+            student.email,
+            college_str,
+            branch_str,
+            phone_str,
+            reg.unique_pass or "—",
+            arrival,
+            status,
+        ]
+        ws.append(row_data)
+        data_row = ws.max_row
+        ws.row_dimensions[data_row].height = 18
+
+        # Row fill — alternate banding + verified highlight
+        if reg.verified:
+            row_bg = "0D1F0D"   # subtle green tint
+            status_color = GREEN
+        else:
+            row_bg = CARD_BG if idx % 2 == 0 else "0D1426"
+            status_color = YELLOW
+
+        for col_idx in range(1, len(row_data) + 1):
+            cell = ws.cell(row=data_row, column=col_idx)
+            cell.fill    = fill(row_bg)
+            cell.border  = border
+            cell.alignment = center() if col_idx in (1, 9, 10) else left()
+
+            if col_idx == 2:  # name — bold white
+                cell.font = Font(color=WHITE, bold=True, size=10, name="Calibri")
+            elif col_idx == 10:  # status
+                cell.font = Font(color=status_color, bold=True, size=9, name="Calibri")
+            elif col_idx == 8:  # pass code — monospace-ish
+                cell.font = Font(color=CYAN, size=9, name="Courier New")
+            elif col_idx == 9:  # arrival time
+                cell.font = Font(color=CYAN if reg.verified else MUTED, size=9, name="Calibri")
+            else:
+                cell.font = Font(color=LIGHT, size=10, name="Calibri")
+
+    # ── Column widths ─────────────────────────────────────────────────
+    col_widths = [5, 26, 16, 30, 30, 20, 16, 14, 22, 14]
+    for i, width in enumerate(col_widths, start=1):
+        ws.column_dimensions[get_column_letter(i)].width = width
+
+    # Freeze header rows so they stay visible while scrolling
+    ws.freeze_panes = ws.cell(row=header_row + 1, column=1)
+
+    # ── Download response ─────────────────────────────────────────────
+    safe_title = "".join(c for c in event.title if c.isalnum() or c in (" ", "_", "-")).strip()
+    filename = f"Attendance_Report_{safe_title}_{event.date.strftime('%Y%m%d')}.xlsx"
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     wb.save(response)
     return response
 

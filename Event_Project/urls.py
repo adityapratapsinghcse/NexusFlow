@@ -39,6 +39,7 @@ urlpatterns = [
     path('teacher_my_events/', event_view.teacher_events, name='teacher_my_events'),
     path('publish_passes/<int:event_id>/', event_view.publish_passes, name='publish_passes'),
     path('students_participated/<int:event_id>/', event_view.students_participated, name='students_participated'),
+    path('event/<int:event_id>/attendance-report/', event_view.export_attendance_report, name='export_attendance_report'),
     path("scanner/<int:event_id>/", event_view.scan_pass, name="scan_pass"),
     path("verify_pass/<int:event_id>/", event_view.verify_pass, name="verify_pass"),
     path('verify_event_passes/', event_view.verify_passes_list, name='verify_event_passes'),
@@ -71,7 +72,3 @@ urlpatterns = [
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-
-
-    
