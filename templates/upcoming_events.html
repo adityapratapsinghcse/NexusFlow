@@ -331,8 +331,9 @@
             <div class="info-label">About the Event</div>
             <p id="m-desc" style="line-height: 1.7; color: #cbd5e1; font-size: 0.95rem; white-space: pre-line; font-weight: 300; margin: 0;"></p>
         </div>
-
-        <div class="registration-action-box animate-element seq-6">
+        
+        <div class="registration-action-box animate-element seq-6"
+        {% if not is_student %}style="display:none;"{% endif %}>
             <form id="registrationForm" method="POST" action="">
                 {% csrf_token %}
                 <label class="checkbox-label" for="confirm">

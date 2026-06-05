@@ -488,6 +488,9 @@ def profile(request):
     profile = request.user.profile
     if request.method == 'POST':
         phone = request.POST.get('phone', '').strip()
+        if phone == str(request.user.profile.phone or ""):
+            messages.info(request, "Phone number is unchanged.")
+            return redirect("profile")
         if phone:
             profile.phone = phone
             profile.save(update_fields=['phone'])

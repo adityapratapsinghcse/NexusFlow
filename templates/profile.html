@@ -210,21 +210,33 @@
                 <span class="matrix-row-label">Mobile Number</span>
                 <span class="matrix-row-value glow-field-cyan">{% firstof request.user.profile.phone request.user.profile.college_data.phone "No Verified Phone Link" %}</span>
             </div>
-            
-            <form method="POST" action="{% url 'profile' %}" style="margin-top:16px;">
-                {% csrf_token %}
-                <div style="display:flex;gap:10px;align-items:center;">
-                    <input type="tel" name="phone" value="{{ request.user.profile.phone|default:'' }}"
-                           placeholder="Enter new phone number"
-                           style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
-                                  color:#fff;border-radius:8px;padding:9px 14px;font-size:13px;flex:1;">
-                    <button type="submit"
-                            style="background:#00d4ff;color:#05071a;border:none;border-radius:8px;
-                                   padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;">
-                        Update Contact
-                    </button>
-                </div>
-            </form>
+                        
+<form method="POST" action="{% url 'profile' %}" style="margin-top:16px;">
+    {% csrf_token %}
+    <div style="display:flex; gap:10px; align-items:center;">
+        
+        <input
+            type="text"
+            id="phoneInput"
+            name="phone"
+            value="{{ request.user.profile.phone|default:'' }}"
+            data-original="{{ request.user.profile.phone|default:'' }}"
+            placeholder="Enter 10-digit phone number"
+            maxlength="10"
+            style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:8px; padding:9px 14px; font-size:13px; flex:1;"
+        >
+
+        <button
+            type="submit"
+            id="updateBtn"
+            disabled
+            style="background:#64748b; color:white; border:none; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:700; cursor:not-allowed; transition: all 0.2s ease;"
+        >
+            Update Contact
+        </button>
+
+    </div>
+</form>
         </div>
     </main>
 
@@ -284,4 +296,42 @@
         </div>
     </aside>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById('phoneInput');
+    const button = document.getElementById('updateBtn');
+
+    // Security check to see if elements were found
+    if (!input || !button) {
+        console.error("Phone elements not found! Check your element IDs.");
+        return;
+    }
+
+    input.addEventListener("input", function() {
+        // 1. Instantly strip any character that isn't a digit
+        this.value = this.value.replace(/[^0-9]/g, '');
+
+        const originalValue = input.dataset.original.trim();
+        const currentValue = input.value.trim();
+
+        // Debugging logs to read live updates in browser console (F12)
+        console.log("Original:", originalValue);
+        console.log("Current Typed:", currentValue);
+        console.log("Length:", currentValue.length);
+
+        // 2. Button condition: must be different from original AND exactly 10 digits
+        if (currentValue !== originalValue && currentValue.length === 10) {
+            button.disabled = false;
+            button.style.background = '#00d4ff';
+            button.style.color = '#05071a';
+            button.style.cursor = 'pointer';
+        } else {
+            button.disabled = true;
+            button.style.background = '#64748b';
+            button.style.color = 'white';
+            button.style.cursor = 'not-allowed';
+        }
+    });
+});
+</script>
 {% endblock %}

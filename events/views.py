@@ -435,6 +435,8 @@ def upcoming_events(request):
         student=request.user
     ).values_list("event_id", flat=True))
 
+    is_student = request.user.groups.filter(name='Student').exists()
+
     return render(request, "upcoming_events.html", {
         "events": events,
         "venues": venues,
@@ -442,6 +444,7 @@ def upcoming_events(request):
         "selected_venue": venue_filter,
         "selected_sort": date_filter,
         "registered_event_ids": registered_event_ids, # Sent to template layout engine
+        "is_student" : is_student,
     })
 
 
@@ -1422,24 +1425,11 @@ def submit_feedback(request, event_id):
 def event_feedback_summary(request, event_id):
     user = request.user
     event = get_object_or_404(Event, id=event_id)
-    
-    # Permission Check
-    if not (
-        user.groups.filter(name="Admin").exists()
-        or event.organizer == user
-    ):
-        messages.error(request, "Access denied.")
-        return redirect("main_page")
-
     # Fetch Feedbacks
     feedbacks = EventFeedback.objects.filter(
         event=event
     ).select_related('student')
-
-    # Total Reviews
     total_reviews = feedbacks.count()
-
-    # Average Rating
     avg = feedbacks.aggregate(
         avg=models.Avg('rating')
     )['avg']
