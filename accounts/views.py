@@ -486,20 +486,39 @@ def admin_dashboard(request):
 @login_required
 def profile(request):
     profile = request.user.profile
+    role = profile.college_data.role
+
+    # Select base template according to user role
+    if role == "Admin":
+        base_template = "admin_base.html"
+    elif role == "Teacher":
+        base_template = "teacher_base.html"
+    else:
+        base_template = "student_base.html"
+
     if request.method == 'POST':
         phone = request.POST.get('phone', '').strip()
-        if phone == str(request.user.profile.phone or ""):
+
+        if phone == str(profile.phone or ""):
             messages.info(request, "Phone number is unchanged.")
             return redirect("profile")
+
         if phone:
             profile.phone = phone
             profile.save(update_fields=['phone'])
             messages.success(request, "Profile updated successfully.")
         else:
             messages.error(request, "Phone number cannot be empty.")
-        return redirect('profile')
-    return render(request, "profile.html")
 
+        return redirect("profile")
+
+    return render(
+        request,
+        "profile.html",
+        {
+            "base_template": base_template,
+        },
+    )
 #-----------------------------------------------------------------------------------------------------
 
 #------------------------------------!! LOGOUT LOGIC  !!----------------------------------------------

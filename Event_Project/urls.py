@@ -23,20 +23,35 @@ urlpatterns = [
     path('update_event/<int:event_id>/<str:action>/',event_view.update_event,name='update_event'),
     path('ajax/check-email/', views.check_email_exists, name='check_email_exists'),
     path("student_dashboard/events/", event_view.upcoming_events, name="student_events"),
-    path("student_dashboard/events/<int:event_id>/", event_view.event_detail, name="event_detail"),
+
+    path('admin_event_detail/', event_view.admin_event_detail, name='admin_event_detail'),
+    
+
+    
     path("student_dashboard/my_registrations/",event_view.my_registrations,name="my_registrations"),
     path("cancel_registration/<int:event_id>/", event_view.cancel_registration, name="cancel_registration"),
     path("upcoming_events/",event_view.upcoming_events,name="upcoming_events"),
+    path("student_upcoming_events/",event_view.student_upcoming_events,name="student_upcoming_events"),
+
+
+   
     path("check_status/",event_view.check_status,name="check_status"),
     path('cancel_event/', event_view.cancel_event_list, name='cancel_event_list'),
+
+
+
+    path('admin_cancel_event_list/', event_view.admin_cancel_event_list, name='admin_cancel_event_list'),
+    path('admin_cancel_event/<int:event_id>/', event_view.admin_cancel_event, name='admin_cancel_event'),
     path('cancel_event/<int:event_id>/', event_view.cancel_event, name='cancel_event'), 
     path('teachers_event_list/',event_view.teachers_event_list,name="teachers_event_list"),
+    path('admin_event_list/',event_view.admin_event_list,name="admin_event_list"),
     path('update_event_teacher/<int:event_id>/', event_view.update_event_teacher,name="update_event_teacher"),
     path('students_registered/', event_view.students_registered, name='students_registered'),
     path('event/<int:event_id>/details/', event_view.event_student_details, name='event_student_details'),
     path('event/<int:event_id>/export/', event_view.export_event_students, name='export_event_students'),
     path('my_passes/', event_view.my_passes, name='my_passes'),
     path('teacher_my_events/', event_view.teacher_events, name='teacher_my_events'),
+    path('admin_my_events/', event_view.admin_events, name='admin_my_events'),
     path('publish_passes/<int:event_id>/', event_view.publish_passes, name='publish_passes'),
     path('students_participated/<int:event_id>/', event_view.students_participated, name='students_participated'),
     path('event/<int:event_id>/attendance-report/', event_view.export_attendance_report, name='export_attendance_report'),
@@ -49,7 +64,9 @@ urlpatterns = [
     path('upload_certificate/<int:event_id>/', event_view.upload_certificate, name='upload_certificate'),
     path('ajax/get_event_students/<int:event_id>/', event_view.ajax_get_event_students, name='ajax_get_event_students'),
     path('my_certificates/', event_view.my_certificates, name='my_certificates'), 
-    path('prev_events/', event_view.prev_events, name='prev_events'), 
+    path('prev_events/', event_view.prev_events, name='prev_events'),
+    path('student_prev_events/', event_view.student_prev_events, name='student_prev_events'),
+    path('admin_prev_events/', event_view.admin_prev_events, name='admin_prev_events'), 
     path('notifications/', notif_view.all_notifications, name='all_notifications'),
     path('notifications/<int:notification_id>/read/', notif_view.mark_notification_read, name='mark_notification_read'),
     path('notifications/read-all/', notif_view.mark_all_read, name='mark_all_read'),

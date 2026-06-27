@@ -28,7 +28,7 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
             background-color: var(--primary-bg);
             color: white;
             min-height: 100vh;
@@ -42,7 +42,6 @@
             width: 90%;
             max-width: 900px;
             height: 95vh;
-            /* Slightly taller to accommodate the extra field */
             display: flex;
             background: var(--card-bg);
             border-radius: 30px;
@@ -78,42 +77,32 @@
         }
 
         @keyframes float {
-
-            0%,
-            100% {
+            0%, 100% {
                 transform: translateY(0);
             }
-
             50% {
                 transform: translateY(-15px);
             }
         }
 
-        /* RIGHT SIDE */
         /* RIGHT SIDE – FIXED ALIGNMENT */
         .form-side {
             flex: 1;
             padding: 40px 50px;
             background: #0a0d28;
-
             display: flex;
             flex-direction: column;
-
-            /* IMPORTANT FIX */
             justify-content: flex-start;
-            /* instead of center */
             overflow-y: auto;
-
-            /* ensures heading never goes out */
             max-height: 100%;
         }
 
-        /* Give breathing room at top */
         .form-side h2 {
             margin-top: 10px;
+            font-weight: 700;
         }
 
-        1 .subtitle {
+        .subtitle {
             color: var(--text-gray);
             font-size: 0.9rem;
             margin-bottom: 25px;
@@ -147,7 +136,6 @@
                 transform: translateY(-10px);
                 opacity: 0;
             }
-
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -226,6 +214,40 @@
             font-weight: 600;
         }
 
+        /* --- PREMIUM BACK TO HOME PILL --- */
+        .back-home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-gray);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .back-home-btn:hover {
+            color: #ffffff;
+            background: rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.35);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.25);
+            transform: translateX(-3px);
+        }
+
+        .back-home-btn svg {
+            transition: transform 0.3s ease;
+        }
+
+        .back-home-btn:hover svg {
+            transform: translateX(-2px);
+        }
+
         @media (max-width: 850px) {
             .illustration-side {
                 display: none;
@@ -234,6 +256,10 @@
             .main-container {
                 height: auto;
                 padding: 20px 0;
+            }
+            
+            .form-side {
+                padding: 30px 25px;
             }
         }
     </style>
@@ -244,18 +270,27 @@
     <div class="main-container">
         <div class="illustration-side">
             <img src="{% static 'loginnn.svg' %}" class="hero-img">
-            <h3 style="margin-top: 20px;">Welcome <span style="color: var(--accent-pink);">Back</span></h3>
+            <h3 style="margin-top: 20px; font-weight: 600;">Welcome <span style="color: var(--accent-pink);">Back</span></h3>
         </div>
 
         <div class="form-side">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
-            <img src="{% static 'nexusflow_icon.svg' %}"
-                style="height:44px;width:44px;border-radius:10px;">
-            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;
-                        font-weight:800;color:#fff;letter-spacing:-0.5px;">
-                Nexus<span style="color:#00d4ff;">Flow</span>
-            </span>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; width:100%;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="{% static 'nexusflow_icon.svg' %}" style="height:44px;width:44px;border-radius:10px;">
+                    <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem; font-weight:800;color:#fff;letter-spacing:-0.5px;">
+                        Nexus<span style="color:#00d4ff;">Flow</span>
+                    </span>
+                </div>
+                
+                <a href="/" class="back-home-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Home</span>
+                </a>
             </div>
+            
             <h2>Welcome Back</h2>
             <p class="subtitle">Sign in to your NexusFlow account</p>
 
@@ -291,8 +326,7 @@
                 </div>
 
                 <div style="text-align: right; margin-bottom: 20px;">
-                    <a href="{% url 'reset_password' %}"
-                        style="color: var(--text-gray); font-size: 0.75rem; text-decoration: none;">Forgot Password?</a>
+                    <a href="{% url 'reset_password' %}" style="color: var(--text-gray); font-size: 0.75rem; text-decoration: none;">Forgot Password?</a>
                 </div>
 
                 <button type="submit" class="login-btn">Sign In</button>

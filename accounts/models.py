@@ -8,10 +8,10 @@ ROLE_CHOICES = [
 ]
 
 COLLEGES=[
-    ('UCER',"United College of Engineering and Research"),
-    ('UIT','United Institute of Technology'),
-    ('UIP','United College of Pharmacy'),
-    ('UIM','United Institute of Management')
+    ('UCER',"Engineering and Research"),
+    ('UIT','Institute of Technology'),
+    ('UIP','College of Pharmacy'),
+    ('UIM','Institute of Management')
 ]
 
 class CollegeData(models.Model):

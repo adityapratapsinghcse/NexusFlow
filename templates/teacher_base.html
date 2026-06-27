@@ -1,0 +1,485 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Dashboard — NexusFlow</title>      
+    <link rel="icon" type="image/svg+xml" href="{% static 'nexusflow_icon.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            min-height: 100vh;
+            padding: 30px;
+            transition: all .3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: var(--sidebar-collapsed);
+            width: calc(100% - var(--sidebar-collapsed));
+        }
+
+        :root {
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.12);
+            --primary-hover: #0ea5e9;
+            --admin-gold: #fbbf24;
+            --admin-gold-glow: rgba(251, 191, 36, 0.12);
+            --accent-pink: #ff007a;
+            --bg-dark: #070513;
+            --card-glass: rgba(15, 23, 42, 0.55);
+            --text-main: #f9fbff;
+            --text-muted: #94a3b8;
+            --success: #00ff99;
+            --success-glow: rgba(0, 255, 153, 0.12);
+            --error: #ef4444;
+            --border-glow: rgba(255, 255, 255, 0.06);
+            --border-ether: rgba(255, 255, 255, 0.08);
+            --blur-panel: blur(20px);
+            --sidebar-width: 268px;
+            --sidebar-collapsed: 68px;
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            display: flex;
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 60% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 122, 0.02) 0%, transparent 35%);
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* ========================
+           SIDEBAR
+        ======================== */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 200;
+            background: #07061a;
+            border-right: 1px solid var(--border-glow);
+            transition: width 0.3s var(--ease);
+            overflow: hidden;
+        }
+        .sidebar.collapsed { width: var(--sidebar-collapsed); }
+
+        /* Hide text when collapsed */
+        .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .nav-section-title,
+        .sidebar.collapsed .logo-text,
+        .sidebar.collapsed .logout-label {
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+            overflow: hidden;
+        }
+        .sidebar.collapsed .logo-section { justify-content: center; padding-left: 0; }
+        .sidebar.collapsed .nav-links li a { justify-content: center; padding: 10px 0; }
+        .sidebar.collapsed .logout-btn { justify-content: center; padding: 10px 0; }
+
+        /* Toggle chevron btn */
+        .toggle-btn {
+            position: fixed;
+            top: 22px;
+            left: calc(var(--sidebar-width) - 14px);
+            width: 28px; height: 28px;
+            background: #0f0c2a;
+            border: 1px solid var(--border-ether);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            z-index: 300;
+            transition: left 0.3s var(--ease), background 0.2s, color 0.2s;
+            color: var(--text-muted);
+        }
+        .toggle-btn:hover { background: var(--primary); color: #070513; border-color: var(--primary); }
+        .toggle-btn svg { width: 12px; height: 12px; transition: transform 0.3s ease; }
+        .sidebar.collapsed ~ .toggle-btn,
+        .toggle-btn.is-collapsed { left: calc(var(--sidebar-collapsed) - 14px); }
+        .toggle-btn.is-collapsed svg { transform: rotate(180deg); }
+
+        /* Logo */
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 18px 16px;
+            border-bottom: 1px solid var(--border-ether);
+            flex-shrink: 0;
+            text-decoration: none;
+            min-height: 68px;
+        }
+        .logo-section img { height: 32px; width: 32px; border-radius: 8px; flex-shrink: 0; }
+        .logo-text {
+            font-size: 20px; font-weight: 800; color: #fff;
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+            transition: opacity 0.2s, width 0.3s;
+        }
+        .logo-text span { color: var(--primary); }
+
+        /* Scrollable nav area */
+        .nav-scroll {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 10px 10px;
+            scrollbar-width: none;
+        }
+        .nav-scroll::-webkit-scrollbar { display: none; }
+
+        /* Section titles */
+        .nav-section-title {
+            font-size: 9.5px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            color: rgba(148, 163, 184, 0.4);
+            padding: 12px 8px 5px;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+        }
+
+        /* Nav items */
+        .nav-links { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+        .nav-links li { position: relative; }
+
+        .nav-links li a {
+            display: flex; align-items: center;
+            padding: 9px 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13.5px; font-weight: 600;
+            border-radius: 10px;
+            gap: 11px;
+            transition: color 0.2s, background 0.2s, border-color 0.2s;
+            position: relative; overflow: hidden;
+            white-space: nowrap;
+        }
+        .nav-icon {
+            height: 18px; width: 18px; flex-shrink: 0;
+            stroke: var(--text-muted); fill: none; stroke-width: 2;
+            transition: stroke 0.2s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .nav-label { transition: opacity 0.2s, width 0.3s; white-space: nowrap; }
+
+        .nav-links li a:hover { color: #fff; background: rgba(255,255,255,0.04); }
+        .nav-links li a:hover .nav-icon { stroke: #fff; transform: scale(1.12); }
+
+        .nav-links li a.active {
+            color: #fff; background: rgba(56,189,248,0.1);
+            border-left: 3px solid var(--primary); font-weight: 700;
+        }
+        .nav-links li a.active .nav-icon { stroke: var(--primary); }
+
+        /* Ripple */
+        .nav-ripple {
+            position: absolute; border-radius: 50%;
+            transform: scale(0); animation: rippleAnim 0.55s linear;
+            background: rgba(56,189,248,0.15); pointer-events: none;
+        }
+        @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+
+        /* Tooltip when collapsed */
+        .nav-tooltip {
+            position: absolute;
+            left: calc(var(--sidebar-collapsed) - 8px);
+            top: 50%; transform: translateY(-50%);
+            background: #1a1635; color: #fff;
+            font-size: 12px; font-weight: 600;
+            padding: 6px 12px; border-radius: 8px;
+            white-space: nowrap; pointer-events: none;
+            opacity: 0; border: 1px solid var(--border-ether);
+            z-index: 999;
+            transition: opacity 0.15s, transform 0.15s;
+            transform: translateY(-50%) translateX(-4px);
+        }
+        .sidebar.collapsed .nav-links li:hover .nav-tooltip {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        /* Logout */
+        .logout-container {
+            padding: 12px 10px;
+            border-top: 1px solid var(--border-ether);
+            flex-shrink: 0;
+        }
+        .logout-btn {
+            width: 100%; padding: 10px 12px;
+            background: rgba(239,68,68,0.07);
+            border: 1px solid rgba(239,68,68,0.18);
+            color: #fca5a5; font-size: 13.5px; font-weight: 700;
+            display: flex; align-items: center; gap: 10px;
+            border-radius: 10px; cursor: pointer;
+            transition: all 0.2s; white-space: nowrap; overflow: hidden;
+        }
+        .logout-icon { flex-shrink: 0; }
+        .logout-btn:hover {
+            background: rgba(239,68,68,0.18); border-color: var(--error);
+            color: #fff; box-shadow: 0 4px 14px rgba(239,68,68,0.18);
+            transform: translateY(-1px);
+        }
+
+        /* Mobile overlay */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 199;
+        }
+        .mobile-overlay.active { display: block; }
+
+        @media (max-width: 1200px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s var(--ease), width 0.3s var(--ease); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-content { margin-left: 0; width: 100%; }
+            .main-content.expanded { margin-left: 0; width: 100%; }
+        }
+    </style>
+
+{% block extrahead %}
+{% endblock %}
+
+</head>
+
+<body>
+
+<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
+
+<button class="toggle-btn" id="toggleBtn" onclick="toggleSidebar()" title="Toggle sidebar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+    </svg>
+</button>
+
+<!-- ✅ SIDEBAR — properly closed with </div> at the bottom -->
+<div class="sidebar" id="sidebar">
+    <a href="{% url 'admin_dashboard' %}" class="logo-section">
+        <img src="{% static 'nexusflow_icon.svg' %}" alt="NexusFlow">
+        <span class="logo-text">Nexus<span>Flow</span></span>
+    </a>
+
+    <div class="nav-scroll">
+
+        <div class="nav-section-title">Main</div>
+        <ul class="nav-links">
+            <li>
+                <a href="{% url 'profile' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span class="nav-label">User Profile</span>
+                </a>
+                <span class="nav-tooltip">User Profile</span>
+            </li>
+            <li>
+                <a href="{% url 'teacher_dashboard' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span class="nav-label">Dashboard</span>
+                </a>
+                <span class="nav-tooltip">Dashboard</span>
+            </li>
+            <li>
+                <a href="{% url 'check_status' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                    <span class="nav-label">Check Approvals</span>
+                </a>
+                <span class="nav-tooltip">Check Approvals</span>
+            </li>
+        </ul>
+
+        <div class="nav-section-title">Management</div>
+        <ul class="nav-links">
+            <li>
+                <a href="{% url 'upcoming_events' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span class="nav-label">Upcoming Events</span>
+                </a>
+                <span class="nav-tooltip">Upcoming Events</span>
+            </li>
+            <li>
+                <a href="{% url 'teacher_my_events' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                    <span class="nav-label">My Scheduled Events</span>
+                </a>
+                <span class="nav-tooltip">My Events</span>
+            </li>
+            <li>
+                <a href="{% url 'cancel_event_list' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span class="nav-label">Cancel Event</span>
+                </a>
+                <span class="nav-tooltip">Cancel Event</span>
+            </li>
+            <li>
+                <a href="{% url 'teachers_event_list' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span class="nav-label">Update Event</span>
+                </a>
+                <span class="nav-tooltip">Update Event</span>
+            </li>
+        </ul>
+
+        <div class="nav-section-title">Events</div>
+        <ul class="nav-links">
+            <li>
+                <a href="{% url 'students_registered' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span class="nav-label">Registered Students</span>
+                </a>
+                <span class="nav-tooltip">Registered Students</span>
+            </li>
+            <li>
+                <a href="{% url 'verify_event_passes' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span class="nav-label"> Scan Passes</span>
+                </a>
+                <span class="nav-tooltip">Scan Passes</span>
+            </li>
+            <li>
+                <a href="{% url 'manage_events' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span class="nav-label">Manage Event Logistics</span>
+                </a>
+                <span class="nav-tooltip">Manage Event Logistics</span>
+            </li>
+            <li>
+                <a href="{% url 'teacher_logistics_dashboard' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    <span class="nav-label">Assigned Events</span>
+                </a>
+                <span class="nav-tooltip">Assigned Events</span>
+            </li>
+            <li>
+                <a href="{% url 'prev_events' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span class="nav-label">Previous Events</span>
+                </a>
+                <span class="nav-tooltip">Previous Events</span>
+            </li>
+        </ul>
+
+        <div class="nav-section-title"></div>
+        
+
+    </div>
+
+    <div class="logout-container">
+        <form method="POST" action="{% url 'logout_view' %}" style="display:block;width:100%;">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">
+                <svg class="logout-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span class="logout-label">Sign Out</span>
+            </button>
+        </form>
+    </div>
+</div>
+<!-- ✅ SIDEBAR CLOSED HERE — was missing in original -->
+
+<!-- ✅ mainContent is NOW outside the sidebar, as a sibling -->
+<div id="mainContent" class="main-content">
+    {% block content %}
+    {% endblock %}
+</div>
+<!-- ✅ mainContent properly closed -->
+
+<script>
+/* ========================
+   SIDEBAR TOGGLE
+======================== */
+const sidebar = document.getElementById('sidebar');
+const mainContent = document.getElementById('mainContent');
+const toggleBtn = document.getElementById('toggleBtn');
+let isCollapsed = false;
+
+function isMobile() { return window.innerWidth <= 1200; }
+
+function toggleSidebar() {
+    if (isMobile()) {
+        sidebar.classList.toggle('mobile-open');
+        document.getElementById('mobileOverlay').classList.toggle('active');
+    } else {
+        isCollapsed = !isCollapsed;
+        sidebar.classList.toggle('collapsed', isCollapsed);
+        mainContent.classList.toggle('expanded', isCollapsed);
+        toggleBtn.classList.toggle('is-collapsed', isCollapsed);
+    }
+}
+function closeMobileSidebar() {
+    sidebar.classList.remove('mobile-open');
+    document.getElementById('mobileOverlay').classList.remove('active');
+}
+window.addEventListener('resize', () => {
+    if (!isMobile()) {
+        sidebar.classList.remove('mobile-open');
+        document.getElementById('mobileOverlay').classList.remove('active');
+    }
+});
+
+/* ========================
+   RIPPLE ON NAV CLICK
+======================== */
+document.querySelectorAll('.nav-item').forEach(link => {
+    link.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        ripple.classList.add('nav-ripple');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+        ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+    });
+});
+
+/* ========================
+   AUTO ACTIVE NAV ITEM
+   Matches current URL path to nav links and highlights the best match
+======================== */
+(function() {
+    const currentPath = window.location.pathname;
+    const navItems = document.querySelectorAll('.nav-item');
+    let bestMatch = null;
+    let bestMatchLength = 0;
+
+    navItems.forEach(link => {
+        const href = link.getAttribute('href');
+        if (!href || href === '#') return;
+        // Match if current path starts with the link's path (longest match wins)
+        if (currentPath.startsWith(href) && href.length > bestMatchLength) {
+            bestMatch = link;
+            bestMatchLength = href.length;
+        }
+    });
+
+    if (bestMatch) {
+        bestMatch.classList.add('active');
+    }
+})();
+</script>
+
+{% block scripts %}
+{% endblock %}
+
+</body>
+</html>

@@ -1,12 +1,12 @@
-{% extends 'teacher_base.html' %}
+{% extends 'admin_base.html' %}
 {% load static %}
 
 {% block title %}Manage Events | NexusFlow{% endblock %}
 
 {% block content %}
 <style>
-    /* --- Premium Isolated Portal Workspace --- */
-    .nexus-portal-viewport {
+    /* --- Premium Isolated Management Workspace --- */
+    .nexus-management-viewport {
         max-width: 1200px;
         margin: 40px auto 80px auto;
         padding: 0 24px;
@@ -15,11 +15,11 @@
     }
 
     /* --- Responsive Header Unit --- */
-    .portal-header-row {
+    .management-header-row {
         margin-bottom: 32px;
     }
     
-    .portal-header-row h1 {
+    .management-header-row h1 {
         font-size: 2rem;
         font-weight: 800;
         color: #ffffff;
@@ -27,7 +27,7 @@
         margin-top: 6px;
     }
 
-    .portal-badge { 
+    .role-badge { 
         display: inline-flex; 
         padding: 4px 12px; 
         border-radius: 100px; 
@@ -38,6 +38,12 @@
         background: rgba(56, 189, 248, 0.1); 
         color: var(--neon-cyan, #00f0ff);
         border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+    
+    .role-badge.admin-mode { 
+        background: rgba(168, 85, 247, 0.1); 
+        color: #a855f7; 
+        border-color: rgba(168, 85, 247, 0.2);
     }
 
     /* --- Filter Panel --- */
@@ -136,13 +142,13 @@
     }
 
     /* --- Responsive Event Cards Layout --- */
-    .portal-grid { 
+    .cancel-grid { 
         display: grid; 
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
         gap: 24px; 
     }
     
-    .portal-card { 
+    .cancel-card { 
         background: var(--surface-card, #1a202c); 
         border: 1px solid var(--border-ether, #2d3748); 
         border-radius: 16px; 
@@ -153,8 +159,8 @@
         justify-content: space-between;
     }
     
-    .portal-card:hover { 
-        border-color: #38bdf8; 
+    .cancel-card:hover { 
+        border-color: #ef4444; 
         transform: translateY(-4px); 
         box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
     }
@@ -174,17 +180,10 @@
     .event-title { 
         font-size: 1.25rem; 
         font-weight: 700; 
-        margin-bottom: 8px; 
+        margin-bottom: 16px; 
         color: #ffffff; 
         letter-spacing: -0.01em;
         line-height: 1.4;
-    }
-
-    .event-description {
-        font-size: 13.5px;
-        color: var(--slate-muted, #a0aec0);
-        line-height: 1.6;
-        margin-bottom: 20px;
     }
     
     .meta-info { 
@@ -206,14 +205,14 @@
         font-weight: 500;
     }
 
-    .btn-update { 
+    .btn-delete { 
         display: block; 
         width: 100%; 
         padding: 12px; 
         border-radius: 10px;
-        background: rgba(56, 189, 248, 0.04); 
-        border: 1px solid #38bdf8;
-        color: #38bdf8; 
+        background: rgba(239, 68, 68, 0.06); 
+        border: 1px solid #ef4444;
+        color: #ef4444; 
         text-decoration: none; 
         text-align: center;
         font-weight: 700; 
@@ -221,10 +220,10 @@
         transition: all 0.2s ease;
     }
     
-    .btn-update:hover { 
-        background: #38bdf8; 
-        color: #070513; 
-        box-shadow: 0 6px 20px rgba(56, 189, 248, 0.2); 
+    .btn-delete:hover { 
+        background: #ef4444; 
+        color: white; 
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.25); 
     }
 
     /* --- Blank Workspaces Container --- */
@@ -243,76 +242,55 @@
         margin-bottom: 8px;
     }
     
-    /* --- Modern Alert Toast Wrapper --- */
-    .messages-container {
-        position: fixed;
-        top: 32px;
-        right: 32px;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
+    /* --- Modern Alert Banners --- */
+    .messages-container { margin-bottom: 32px; }
     
-    .message-toast { 
-        padding: 16px 24px; 
+    .alert { 
+        padding: 16px 20px; 
         border-radius: 12px; 
         font-size: 14.5px; 
         font-weight: 600; 
-        color: #ffffff;
+        margin-bottom: 12px; 
         display: flex; 
         align-items: center; 
-        justify-content: space-between;
-        gap: 20px;
-        min-width: 320px;
-        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(12px);
-        animation: toastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes toastIn {
-        from { transform: translateX(40px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+        gap: 10px;
     }
     
-    .msg-success { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; }
-    .msg-error { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; }
-    .msg-info { background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; }
-
-    .close-msg {
-        cursor: pointer;
-        font-size: 18px;
-        line-height: 1;
-        opacity: 0.6;
-        transition: opacity 0.2s ease;
+    .alert-success { 
+        background: rgba(16, 185, 129, 0.05); 
+        color: #10b981; 
+        border: 1px solid rgba(16, 185, 129, 0.2); 
     }
-    .close-msg:hover { opacity: 1; }
 </style>
 
-<div class="nexus-portal-viewport">
+<div class="nexus-analytics-viewport">
 
     {% if messages %}
     <div class="messages-container">
         {% for message in messages %}
-        <div class="message-toast msg-{{ message.tags }}">
-            <span>{{ message }}</span>
-            <span class="close-msg" onclick="this.parentElement.remove()">&times;</span>
+        <div class="alert alert-{{ message.tags }}">
+            <span>Notice:</span> {{ message }}
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
     <!-- Top Management Context Block -->
-    <div class="portal-header-row">
-        <span class="portal-badge">Management Workspace</span>
-        <h1>Review Scheduled Events</h1>
+    <div class="management-header-row">
+        {% if request.user.groups.all.0.name == "Admin" %}
+            <span class="role-badge admin-mode">Administrator View</span>
+            <h1>Manage Cancellations</h1>
+        {% else %}
+            <span class="role-badge">Teacher View</span>
+            <h1>My Scheduled Events</h1>
+        {% endif %}
     </div>
 
     <!-- Active Structural Filtering Toolset -->
-    <form method="GET" action="{% url 'upcoming_events' %}" class="filter-bar">
+    <form method="GET" action="{% url 'admin_cancel_event_list' %}" class="filter-bar">
         <div class="filter-group">
             <label for="search">Search Events</label>
-            <input type="text" id="search" name="search" class="filter-input" placeholder="Search title or details..." value="{{ search_query }}">
+            <input type="text" id="search" name="search" class="filter-input" placeholder="Search by title..." value="{{ search_query }}">
         </div>
 
         <div class="filter-group">
@@ -320,7 +298,7 @@
             <select id="venue" name="venue" class="filter-input">
                 <option value="">All Venues</option>
                 {% for venue in venues %}
-                    <option value="{{ venue.id }}" {% if selected_venue == venue.id|stringformat:"s" %}selected{% endif %}>
+                    <option value="{{ venue.id }}" {% if selected_venue == venue.id|stringformat:"i" %}selected{% endif %}>
                         {{ venue.name }}
                     </option>
                 {% endfor %}
@@ -337,30 +315,31 @@
 
         <div class="filter-actions">
             <button type="submit" class="btn-search">Apply Filters</button>
-            <a href="{% url 'upcoming_events' %}" class="btn-reset">Reset</a>
+            <a href="{% url 'admin_cancel_event_list' %}" class="btn-reset">Reset</a>
         </div>
     </form>
 
     <!-- Response Grid Cluster -->
-    <div class="portal-grid">
+    <div class="cancel-grid">
         {% for event in events %}
-        <div class="portal-card">
+        <div class="cancel-card">
             <div>
                 <span class="status {{ event.status }}">{{ event.status }}</span>
                 <div class="event-title">{{ event.title }}</div>
                 
-                <p class="event-description">
-                    {{ event.description|truncatewords:15 }}
-                </p>
-                
                 <div class="meta-info">
                     <div>Location: <b>{{ event.venue.name|default:"Venue TBD" }}</b></div>
                     <div>Scheduled Date: <b>{{ event.date|date:"M d, Y" }}</b></div>
-                    <div>Time Frame: <b>{{ event.start_time|time:"H:i" }} - {{ event.end_time|time:"H:i" }}</b></div>
+                    <div>Start Time: <b>{{ event.start_time|time:"H:i" }}</b></div>
+                    {% if request.user.groups.all.0.name == "Admin" %}
+                        <div>Organizer: <b>{{ event.organizer.last_name }}</b></div>
+                    {% endif %}
                 </div>
             </div>
 
-            <a href="{% url 'update_event_teacher' event.id %}" class="btn-update">Update Event Details</a>
+            <a href="{% url 'admin_cancel_event' event.id %}" class="btn-delete">
+                {% if request.user.groups.all.0.name == "Admin" %} Cancel Event {% else %} Remove Listing {% endif %}
+            </a>
         </div>
         {% empty %}
         <div class="empty-state-card">
@@ -370,19 +349,4 @@
         {% endfor %}
     </div>
 </div>
-
-<script>
-    // System Lifecycle: Toast Auto Dismissal
-    document.addEventListener('DOMContentLoaded', () => {
-        const toasts = document.querySelectorAll('.message-toast');
-        toasts.forEach(toast => {
-            setTimeout(() => {
-                toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(-10px)';
-                setTimeout(() => toast.remove(), 400);
-            }, 5000);
-        });
-    });
-</script>
 {% endblock %}

@@ -23,7 +23,6 @@ INSTALLED_APPS = [
     'events',
     'notifications',
     'anymail',
-    'storages',
     'cloudinary_storage',
     'cloudinary',
 ]

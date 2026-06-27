@@ -1,6 +1,11 @@
+{% extends 'teacher_base.html' %}
 {% load static %}
+
+{% block title %}Faculty Dashboard{% endblock %}
+
+{% block content %}
 <!DOCTYPE html>
-<html lang="en">
+
 
 <head>
     <meta charset="UTF-8">
@@ -48,114 +53,55 @@
             overflow: hidden; /* Strictly locks viewport scroll */
         }
 
-        /* --- Sidebar Navigation --- */
-        .sidebar {
-            width: 260px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            min-height: 100vh;
+            padding: 30px;
+            transition: all .3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: var(--sidebar-collapsed);
+            width: calc(100% - var(--sidebar-collapsed));
+        }
+
+        :root {
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.12);
+            --primary-hover: #0ea5e9;
+            --admin-gold: #fbbf24;
+            --admin-gold-glow: rgba(251, 191, 36, 0.12);
+            --accent-pink: #ff007a;
+            --bg-dark: #070513;
+            --card-glass: rgba(15, 23, 42, 0.55);
+            --text-main: #f9fbff;
+            --text-muted: #94a3b8;
+            --success: #00ff99;
+            --success-glow: rgba(0, 255, 153, 0.12);
+            --error: #ef4444;
+            --border-glow: rgba(255, 255, 255, 0.06);
+            --border-ether: rgba(255, 255, 255, 0.08);
+            --blur-panel: blur(20px);
+            --sidebar-width: 268px;
+            --sidebar-collapsed: 68px;
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
             display: flex;
-            flex-direction: column;
-            padding: 24px 16px;
-            z-index: 100;
-            background: linear-gradient(180deg, #0b0f19 0%, #070513 100%);
-            border-right: 1px solid var(--border-ether);
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 60% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 122, 0.02) 0%, transparent 35%);
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
         }
 
-        .logo-section {
-            padding: 0 12px;
-            font-size: 20px;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-section span span {
-            color: var(--primary);
-        }
-
-        .nav-links {
-            flex-grow: 1;
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            overflow-y: auto;
-        }
-
-        .nav-links::-webkit-scrollbar {
-            width: 4px;
-        }
-        .nav-links::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 2px;
-        }
-
-        .nav-links li a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 14px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 13.5px;
-            font-weight: 600;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-        }
-
-        .nav-links li a i {
-            font-size: 16px;
-        }
-
-        .nav-links li a:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .logistics-hub-link {
-            color: var(--primary) !important;
-            background: rgba(56, 189, 248, 0.03) !important;
-            border: 1px dashed rgba(56, 189, 248, 0.2);
-            margin-top: 6px;
-        }
-
-        .logistics-hub-link:hover {
-            background: rgba(56, 189, 248, 0.08) !important;
-        }
-
-        .logout-btn-wrapper {
-            margin-top: auto;
-            padding-top: 16px;
-            border-top: 1px solid var(--border-ether);
-        }
-
-        .logout-btn {
-            background: rgba(239, 68, 68, 0.03);
-            border: 1px solid rgba(239, 68, 68, 0.1);
-            color: #f87171;
-            padding: 10px 14px;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            text-align: left;
-            font-size: 13.5px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.2s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-        }
-
+       
         /* --- Fixed Workspace Main Screen Viewport --- */
         .main-content {
             margin-left: 260px;
@@ -486,66 +432,14 @@
 
 <body>
 
-    <!-- --- Sidebar Navigation Section --- -->
-    <div class="sidebar">
-        <div class="logo-section">
-            <img src="{% static 'nexusflow_icon.svg' %}" style="height:34px; width:34px; border-radius:8px; flex-shrink:0;">
-            <span>Nexus<span style="color:var(--primary);">Flow</span></span>
-        </div>
-        
-        <ul class="nav-links">
-            <li><a href="{% url 'profile' %}"><i class="bi bi-person-badge"></i> Profile</a></li>
-            <li><a href="{% url 'check_status' %}"><i class="bi bi-activity"></i>Check Approvals </a></li>
-            <li><a href="{% url 'upcoming_events' %}"><i class="bi bi-calendar-event"></i> Upcoming Events</a></li>
-            <li><a href="{% url 'teacher_my_events' %}"><i class="bi bi-folder2-open"></i> My Scheduled Events</a></li>
-            <li><a href="{% url 'cancel_event_list' %}"><i class="bi bi-x-circle"></i> Cancel Event</a></li>
-            <li><a href="{% url 'teachers_event_list' %}"><i class="bi bi-arrow-up-right-square"></i> Update Event</a></li>
-            <li><a href="{% url 'students_registered' %}"><i class="bi bi-people"></i> Registered Students</a></li>
-            <li><a href="{% url 'verify_event_passes' %}"><i class="bi bi-patch-check"></i> Scan Passes</a></li>
-            <li><a href="{% url 'manage_events' %}"><i class="bi bi-sliders"></i> Manage Event Logistics</a></li>
-            
-            <li>
-                <a href="{% url 'teacher_logistics_dashboard' %}" class="logistics-hub-link" title="Logistics Control Hub">
-                    <i class="bi bi-truck"></i> Assigned Events</a>
-            </li>
-            
-            <li><a href="{% url 'prev_events' %}"><i class="bi bi-clock-history"></i> Previous Events</a></li>
-        </ul>
+    
+<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
 
-        <div class="logout-btn-wrapper">
-            <form method="POST" action="{% url 'logout_view' %}" style="display: block; width: 100%;">
-                {% csrf_token %}
-                <button type="submit" class="logout-btn">
-                    <i class="bi bi-box-arrow-left"></i> Terminate Session
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- --- Main Screen App Layout Matrix --- -->
-    <div class="main-content">
-
-        <div class="workspace-header">
-            <div class="workspace-title">
-                <h1>
-                    <span class="greeting">Welcome back,</span> 
-                    <span>Prof. {{ request.user.first_name }}</span>
-                </h1>
-                <p>Monitor event submissions, attendee updates, and logistics records from a single panel view.</p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'all_notifications' %}" class="bell-trigger-btn">
-                    <i class="bi bi-bell"></i>
-                    {% if recent_notifications.count > 0 %}
-                    <span class="bell-badge" id="bell-notif-badge">{{ recent_notifications.count }}</span>
-                    {% endif %}
-                </a>
-                <a href="{% url 'schedule_event' %}" class="btn-primary">
-                    <i class="bi bi-plus-lg"></i> Create New Event
-                </a>
-            </div>
-        </div>
-
+<button class="toggle-btn" id="toggleBtn" onclick="toggleSidebar()" title="Toggle sidebar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+    </svg>
+</button>
         <!-- --- Analytics Overview Matrix --- -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -702,4 +596,5 @@
         }
     </script>
 
-</html>
+
+{% endblock %}

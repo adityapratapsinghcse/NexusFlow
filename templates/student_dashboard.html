@@ -1,6 +1,9 @@
+{% extends 'student_base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
+
+{% block title %}Event Archive | NexusFlow{% endblock %}
+
+{% block content %}
 
 <head>
     <meta charset="UTF-8">
@@ -28,7 +31,6 @@
             --border-glow: rgba(255, 255, 255, 0.06);
             --border-ether: rgba(255, 255, 255, 0.08);
             --blur-panel: blur(20px);
-            --sidebar-width: 290px;
         }
 
         * {
@@ -37,189 +39,32 @@
             box-sizing: border-box;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
+        html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: auto; /* Prevent body scrolling */
+}
 
-        body {
-            display: flex;
-            background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at 60% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
-                              radial-gradient(circle at 90% 80%, rgba(255, 0, 122, 0.02) 0%, transparent 35%);
-            height: 100vh;
-            color: var(--text-main);
-            overflow: hidden;
-        }
 
-        /* --- Premium Sidebar Hub Layer --- */
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            display: flex;
-            flex-direction: column;
-            padding: 30px 24px;
-            z-index: 100;
-            background: #090718;
-            border-right: 1px solid var(--border-glow);
-        }
 
-        .logo-section {
-            font-size: 22px;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: -0.5px;
-            margin-bottom: 28px;
-            padding-left: 4px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid var(--border-ether);
-            padding-bottom: 16px;
-        }
-
-        .nav-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding-right: 2px;
-        }
-        
-        .nav-container::-webkit-scrollbar { width: 4px; }
-        .nav-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
-
-        .nav-links {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .nav-links li a {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            color: var(--text-muted);
-            text-decoration: none;
-            transition: all 0.2s ease;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 12px;
-            gap: 14px;
-        }
-
-        .nav-links li a svg {
-            height: 20px;
-            width: 20px;
-            flex-shrink: 0;
-            stroke: var(--text-muted);
-            fill: none;
-            stroke-width: 2;
-            transition: stroke 0.2s ease;
-        }
-
-        .nav-links li a:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .nav-links li a:hover svg { stroke: #ffffff; }
-
-        .nav-links li a.active {
-            color: #ffffff;
-            background: rgba(56, 189, 248, 0.08);
-            border-left: 3px solid var(--primary);
-            font-weight: 700;
-        }
-
-        .nav-links li a.active svg { stroke: var(--primary); }
-
-        .btn-secondary-node {
-            color: var(--primary) !important;
-            background: rgba(56, 189, 248, 0.03) !important;
-            border: 1px dashed rgba(56, 189, 248, 0.2);
-            margin-top: 12px;
-        }
-
-        .btn-secondary-node:hover {
-            background: rgba(56, 189, 248, 0.08) !important;
-        }
-
-        /* --- Profile & Footer Systems --- */
-        .sidebar-footer {
-            padding-top: 20px;
-            border-top: 1px solid var(--border-ether);
-            margin-top: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .profile-btn {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px;
-            text-decoration: none;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 14px;
-            border: 1px solid var(--border-glow);
-            transition: all 0.2s ease;
-        }
-
-        .profile-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-
-        .profile-btn svg {
-            height: 34px;
-            width: 34px;
-            border-radius: 10px;
-            background: var(--primary-glow);
-            stroke: var(--primary);
-            fill: none;
-            stroke-width: 2;
-            padding: 6px;
-        }
-
-        .profile-info {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .logout-btn {
-            width: 100%;
-            padding: 10px 16px;
-            background: rgba(239, 68, 68, 0.08);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-            font-size: 14px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .logout-btn:hover { 
-            background: rgba(239, 68, 68, 0.2);
-            border-color: var(--error);
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
-        }
 
         /* --- Main Content Core Container & Top Header Navigation System --- */
         .main-content {
-            margin-left: var(--sidebar-width);
-            width: calc(100% - var(--sidebar-width));
-            padding: 32px 48px 40px 48px;
+            
+            width: auto;
+            margin-left: 15%;
+            margin-right: 5%;
+            margin-bottom: 10px; 
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            overflow-y: visible;
+            padding-top: 24px;
+            padding-left: 0px;
+            padding-right: 0px;
+            padding-bottom: 40px;
         }
 
         .top-utility-header {
@@ -459,6 +304,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            margin-bottom: 30px;
         }
         
         .notif-panel::-webkit-scrollbar { width: 4px; }
@@ -554,83 +400,7 @@
 
 <body>
 
-    <!-- Sidebar Component Layer -->
-    <div class="sidebar">
-        <div class="logo-section">
-            <img src="{% static 'nexusflow_icon.svg' %}" style="height:34px; width:34px; border-radius:8px; flex-shrink:0;">
-            <span>Nexus<span style="color:var(--primary);">Flow</span></span>
-        </div>
-        
-        <div class="nav-container">
-            <ul class="nav-links">
-                <li>
-                    <a href="{% url 'profile' %}" class="active">
-                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        User Profile Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'my_registrations' %}">
-                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        My Core Registrations
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'my_waitlist' %}" title="My Waitlist">
-                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        Waitlist Allocations
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'upcoming_events' %}">
-                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        Upcoming Event Matrix
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'my_passes' %}">
-                        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                        Gate Access Passes
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'display_bus_routes' %}">
-                        <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="12" rx="2"/><path d="M7 20h2v2H7z"/><path d="M15 20h2v2h-2z"/><circle cx="8" cy="12" r="1"/><circle cx="16" cy="12" r="1"/></svg>
-                        Logistics & Bus Routes
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'my_certificates' %}">
-                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        Earned Certificates
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'prev_events' %}" class="btn-secondary-node">
-                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        Historical Archives
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="sidebar-footer">
-            <a href="{% url 'profile' %}" class="profile-btn">
-                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <div class="profile-info">
-                    <span style="color: #ffffff; font-size: 13px; font-weight: 700;">{{ name }}</span>
-                    <span style="font-size: 10px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px;">STUDENT</span>
-                </div>
-            </a>
-            <form method="POST" action="{% url 'logout_view' %}" style="display:block; width: 100%;">
-                {% csrf_token %}
-                <button type="submit" class="logout-btn">
-                    <span>Sign Out Session</span>
-                </button>
-            </form>
-        </div>
-    </div>
-
+    
     <!-- Main Workspace Frame Layer Container -->
     <div class="main-content">
 
@@ -664,7 +434,7 @@
                 <span style="font-size: 0.8rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;">Live Operations</span>
                 <h2>Happening This Week In {{ user.profile.college_name }}</h2>
             </div>
-            <a href="{% url 'upcoming_events' %}" style="color: var(--primary); font-size: 13px; font-weight: 700; text-decoration: none; background: var(--primary-glow); padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.15);">View All Calendar &rarr;</a>
+            <a href="{% url 'student_upcoming_events' %}" style="color: var(--primary); font-size: 13px; font-weight: 700; text-decoration: none; background: var(--primary-glow); padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.15);">View All Calendar &rarr;</a>
         </div>
 
         <!-- Horizontal Scroll Deck Strip Loop Grid -->
@@ -772,5 +542,5 @@
             });
         }
     </script>
-</body>
-</html>
+
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'student_base.html' %}
 {% load static %}
 
 {% block title %}My Waitlist | Nexus{% endblock %}
@@ -242,7 +242,7 @@
         <span class="icon-frame">📋</span>
         <h2>Queue Empty</h2>
         <p>You aren't monitoring or waiting in line for any maximum-capacity campus events right now.</p>
-        <a href="{% url 'student_events' %}" class="btn-browse-fallback">Browse Events Catalog</a>
+        <a href="{% url 'student_upcoming_events' %}" class="btn-browse-fallback">Browse Events Catalog</a>
     </div>
     {% endif %}
 

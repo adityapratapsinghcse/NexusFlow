@@ -1,10 +1,9 @@
-{% extends 'base.html' %}
+{% extends 'admin_base.html' %}
 {% load static %}
 
 {% block title %}Schedule Event — NexusFlow {% endblock %}
 
 {% block content %}
-<!-- Isolated UI Sandbox Wrapper to prevent style contamination with base layout -->
 <div class="nf-sandbox">
     <style>
         .nf-sandbox {
@@ -258,6 +257,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            position: relative;
         }
 
         .nf-input-group label {
@@ -278,6 +278,21 @@
             font-weight: 500;
             transition: all 0.25s ease;
             width: 100%;
+        }
+
+        .nf-sandbox select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .nf-sandbox select option {
+            background: #0f1235;
+            color: #fff;
         }
 
         .nf-sandbox input:focus, .nf-sandbox select:focus, .nf-sandbox textarea:focus {
@@ -377,6 +392,15 @@
             cursor: pointer;
         }
 
+        .nf-toggle-group label {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #e2e8f0;
+            cursor: pointer;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
         /* Dynamic Control Action Buttons Block */
         .nf-action-button-row {
             display: flex;
@@ -418,13 +442,198 @@
             background: linear-gradient(135deg, #7dd3fc, var(--primary));
         }
 
+        .nf-btn-nav-control.primary-action:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         #nf-icon {
             height: 32px;
             width: auto;
         }
 
+        /* Modern Custom Modal Popups */
+        .nf-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 7, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 20px;
+        }
+
+        .nf-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .nf-modal-card {
+            background: #0f1235;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            box-shadow: 0 0 40px rgba(56, 189, 248, 0.15);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 620px;
+            transform: translateY(20px) scale(0.96);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        .nf-modal-overlay.active .nf-modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .nf-modal-header {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 24px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nf-modal-badge {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--success);
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .nf-modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .nf-modal-body {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .nf-modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .nf-modal-stat {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255,255,255,0.04);
+            padding: 16px;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nf-stat-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .nf-stat-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .nf-stat-value.highlight {
+            color: var(--ai-gold);
+        }
+
+        .nf-stat-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .nf-modal-section h4 {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .nf-modal-log {
+            background: rgba(5, 7, 26, 0.6);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #cbd5e1;
+            border-left: 3px solid var(--primary);
+        }
+
+        .nf-modal-log.error-log {
+            border-left-color: var(--error);
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .nf-time-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #e2e8f0;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 12px 16px;
+            border-radius: 10px;
+        }
+
+        .nf-modal-footer {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 20px 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .nf-modal-btn {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nf-modal-btn.primary {
+            background: linear-gradient(135deg, var(--primary), #0284c7);
+            color: #070513;
+            border: none;
+        }
+
+        .nf-modal-btn.primary:hover {
+            background: linear-gradient(135deg, #7dd3fc, var(--primary));
+        }
+
+        .nf-modal-btn.secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nf-modal-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
         @media (max-width: 680px) {
-            .nf-form-grid, .nf-ai-metrics-row {
+            .nf-form-grid, .nf-ai-metrics-row, .nf-modal-grid {
                 grid-template-columns: 1fr;
             }
             .nf-step-progress-wrapper {
@@ -441,9 +650,7 @@
     <div class="nf-container">
         <div class="nf-header">
             <div class="nf-header-title-area">
-                {% if static %}
-                    <img src="{% static 'nexusflow_icon.svg' %}" id="nf-icon" alt="NexusFlow" style="height:32px;width:32px;border-radius:7px;">
-                {% endif %}
+                <img src="{% static 'nexusflow_icon.svg' %}" id="nf-icon" alt="NexusFlow" style="height:32px;width:32px;border-radius:7px;">
                 <h1>Schedule New Event</h1>
             </div>
             <p>Configure operational parameters and system infrastructure assignments cleanly.</p>
@@ -466,20 +673,21 @@
             </div>
         </div>
 
-        {% if messages %}
-        <div class="nf-messages-container">
-            {% for message in messages %}
-                <div class="nf-alert nf-alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
+        <div id="alerts-injection-point">
+            {% if messages %}
+            <div class="nf-messages-container">
+                {% for message in messages %}
+                    <div class="nf-alert nf-alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
 
         <form method="POST" enctype="multipart/form-data" class="nf-glass-card" id="multi-step-form">
             {% csrf_token %}
             
-            <!-- STEP 1: Basic Metrics -->
             <div class="nf-form-step-section active" id="step-section-1">
                 <div class="nf-form-grid">
                     
@@ -536,7 +744,6 @@
                 </div>
             </div>
 
-            <!-- STEP 2: Time & Allocation Window -->
             <div class="nf-form-step-section" id="step-section-2">
                 <div class="nf-form-grid">
                     <div class="nf-timeline-section-header">Target Date & Operational Hours</div>
@@ -570,7 +777,6 @@
                 </div>
             </div>
 
-            <!-- STEP 3: Review & Post Controls -->
             <div class="nf-form-step-section" id="step-section-3">
                 <div class="nf-form-grid">
                     <div class="nf-timeline-section-header">Visual Promotional Asset</div>
@@ -595,23 +801,22 @@
                             <label for="is_general">Promote to General Scope Event (Cross-Institutional)</label>
                         </div>
 
-                        <div class="nf-form-grid" style="gap: 16px;">
-                            <div class="nf-input-group">
-                                <label>Static Venue Override</label>
-                                <select name="override_venue">
-                                    <option value="">-- Auto-Assign Allocation --</option>
-                                    {% for venue in venues %}
-                                        <option value="{{ venue.id }}">{{ venue.name }} (Cap: {{ venue.capacity }})</option>
+                        <div class="nf-form-grid" style="margin-top: 8px;">
+                            <div class="nf-input-group" id="college-select-group">
+                                <label>Target College Profile</label>
+                                <select name="college_profile" id="college_profile" required>
+                                    <option value="">-- Select Target Institution --</option>
+                                    {% for college in colleges %}
+                                        <option value="{{ college.id }}">{{ college.institution_name|default:college.user.get_full_name|default:college }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
-
-                            <div class="nf-input-group" id="college_selector">
-                                <label>Institution Assignment Context</label>
-                                <select name="college_profile">
-                                    <option value="">-- Target Profile --</option>
-                                    {% for college in colleges %}
-                                        <option value="{{ college.id }}">{{ college.college_name }}</option>
+                            <div class="nf-input-group">
+                                <label>Manual Venue Override Allocation</label>
+                                <select name="override_venue" id="override_venue">
+                                    <option value="">-- Use Heuristic AI Routing --</option>
+                                    {% for venue in venues %}
+                                        <option value="{{ venue.id }}">{{ venue.name }} (Cap: {{ venue.capacity }})</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -622,191 +827,308 @@
             </div>
 
             <div class="nf-action-button-row">
-                <button type="button" class="nf-btn-nav-control" id="btn-prev-step" style="visibility: hidden;">Previous Step</button>
-                <button type="button" class="nf-btn-nav-control primary-action" id="btn-next-step">Continue</button>
+                <button type="button" class="nf-btn-nav-control" id="btn-prev" style="display: none;">Back</button>
+                <button type="button" class="nf-btn-nav-control primary-action" id="btn-next">Continue</button>
             </div>
         </form>
     </div>
 </div>
 
+<div class="nf-modal-overlay" id="success-modal">
+    <div class="nf-modal-card">
+        <div class="nf-modal-header">
+            <div class="nf-modal-badge">✓ SUCCESSFUL APPLICATION COMPILATION</div>
+            <h3 id="modal-event-title">Event Scheduled</h3>
+        </div>
+        <div class="nf-modal-body">
+            <div class="nf-modal-grid">
+                <div class="nf-modal-stat">
+                    <span class="nf-stat-label">ASSIGNED INFRASTRUCTURE</span>
+                    <span class="nf-stat-value" id="modal-venue-name">N/A</span>
+                    <span class="nf-stat-sub" id="modal-venue-capacity">Capacity: 0</span>
+                </div>
+                <div class="nf-modal-stat">
+                    <span class="nf-stat-label">PREDICTED ATTENDANCE</span>
+                    <span class="nf-stat-value highlight" id="modal-predicted-crowd">0 Students</span>
+                    <span class="nf-stat-sub" id="modal-crowd-confidence">Confidence: Low</span>
+                </div>
+            </div>
+            
+            <div class="nf-modal-section">
+                <h4>🔮 Predictive Routing Diagnostics</h4>
+                <div class="nf-modal-log" id="modal-ai-venue-reason">Heuristic logic applied.</div>
+                <div class="nf-modal-log" id="modal-ai-crowd-reason" style="margin-top: 8px;">Crowd core assessment evaluated.</div>
+            </div>
+
+            <div class="nf-modal-section" id="modal-warnings-wrapper" style="display: none;">
+                <h4 style="color: var(--error);">⚠ Heuristic Edge Warnings</h4>
+                <div class="nf-modal-log error-log" id="modal-ai-warnings"></div>
+            </div>
+
+            <div class="nf-modal-section">
+                <h4>⏰ Execution Timeline Window</h4>
+                <div class="nf-time-row">
+                    <div><strong>Starts:</strong> <span id="modal-start-dt">N/A</span></div>
+                    <div><strong>Ends:</strong> <span id="modal-end-dt">N/A</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="nf-modal-footer">
+            <button type="button" class="nf-modal-btn secondary" id="btn-modal-another">Schedule Another</button>
+            <button type="button" class="nf-modal-btn primary" id="btn-modal-dashboard">Go to Dashboard</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Set dynamic date validation safeguards
-    const todayStr = new Date().toISOString().split('T')[0];
-    const eventDateInput = document.getElementById('event_date');
-    if (eventDateInput) eventDateInput.setAttribute('min', todayStr);
+    document.addEventListener("DOMContentLoaded", function () {
+        let currentStep = 1;
+        const totalSteps = 3;
 
-    let activeStep = 1;
-    const totalSteps = 3;
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const form = document.getElementById('multi-step-form');
 
-    const btnPrev = document.getElementById('btn-prev-step');
-    const btnNext = document.getElementById('btn-next-step');
-    const multiForm = document.getElementById('multi-step-form');
+        // --- Step Interface Management Function ---
+        function updateStepUI() {
+            document.querySelectorAll('.nf-form-step-section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.getElementById(`step-section-${currentStep}`).classList.add('active');
 
-    // --- Inline Error UI Elements State Renderers ---
-    function showFieldError(inputElement, message) {
-        clearFieldError(inputElement);
-        inputElement.style.borderColor = 'var(--error)';
-        inputElement.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.15)';
+            document.querySelectorAll('.nf-step-item').forEach((node, idx) => {
+                if (idx + 1 <= currentStep) {
+                    node.classList.add('active');
+                } else {
+                    node.classList.remove('active');
+                }
+            });
+
+            btnPrev.style.display = (currentStep === 1) ? 'none' : 'block';
+            btnNext.textContent = (currentStep === totalSteps) ? "Submit Application Pipeline" : "Continue";
+        }
+
+        // --- Navigation Input Validators ---
+        btnPrev.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepUI();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        btnNext.addEventListener('click', async function () {
+            const currentSection = document.getElementById(`step-section-${currentStep}`);
+            const requiredFields = currentSection.querySelectorAll('input[required], textarea[required], select[required]');
+            let valid = true;
+
+            // Clear previous validation text anchors inside this segment
+            currentSection.querySelectorAll('.nf-field-error-msg').forEach(el => el.remove());
+
+            requiredFields.forEach(field => {
+                if (!field.checkValidity()) {
+                    valid = false;
+                    field.reportValidity();
+                }
+            });
+
+            if (!valid) return;
+
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStepUI();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                await executePipelineSubmission();
+            }
+        });
+
+        // --- AJAX Form Processing ---
+        async function executePipelineSubmission() {
+            btnNext.disabled = true;
+            const originalButtonText = btnNext.textContent;
+            btnNext.textContent = "Processing System Heuristics...";
+
+            // Clean errors
+            document.querySelectorAll('.nf-field-error-msg').forEach(el => el.remove());
+            const globalAlerts = document.querySelector('.nf-messages-container');
+            if (globalAlerts) globalAlerts.remove();
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Injecting properties safely inside the Summary Modal
+                    document.getElementById('modal-event-title').textContent = data.title || "Context Initialized";
+                    document.getElementById('modal-venue-name').textContent = data.venue_name || "Unallocated";
+                    document.getElementById('modal-venue-capacity').textContent = `Capacity Layout: ${data.venue_capacity || 0}`;
+                    document.getElementById('modal-predicted-crowd').textContent = `${data.predicted_crowd || 0} Target Units`;
+                    document.getElementById('modal-crowd-confidence').textContent = `Confidence: ${data.crowd_confidence || 'Low'}`;
+                    document.getElementById('modal-ai-venue-reason').innerHTML = `<strong>AI Venue Strategy:</strong><br>${data.ai_venue_reason || ''}`;
+                    document.getElementById('modal-ai-crowd-reason').innerHTML = `<strong>AI Attendance Logic:</strong><br>${data.ai_crowd_reason || ''}`;
+
+                    const warningBox = document.getElementById('modal-warnings-wrapper');
+                    if (data.ai_warnings && data.ai_warnings.trim() !== "" && data.ai_warnings !== "null") {
+                        document.getElementById('modal-ai-warnings').textContent = data.ai_warnings;
+                        warningBox.style.display = 'block';
+                    } else if (data.night_event_warning) {
+                        document.getElementById('modal-ai-warnings').textContent = "Night execution constraints enabled. Operational end timeline occurs past hours threshold (18:00).";
+                        warningBox.style.display = 'block';
+                    } else {
+                        warningBox.style.display = 'none';
+                    }
+
+                    document.getElementById('modal-start-dt').textContent = data.start_datetime || 'N/A';
+                    document.getElementById('modal-end-dt').textContent = data.end_datetime || 'N/A';
+
+                    // Reveal compilation summary modal
+                    document.getElementById('success-modal').classList.add('active');
+                } else {
+                    if (data.errors) {
+                        parseErrorMatrix(data.errors);
+                    } else {
+                        renderGlobalAlert('System Module experienced a runtime layout exception.', 'error');
+                    }
+                }
+            } catch (err) {
+                renderGlobalAlert('Network transport anomaly detected — check your connection context and try again.', 'error');
+            } finally {
+                btnNext.disabled = false;
+                btnNext.textContent = originalButtonText;
+            }
+        }
+
+        // --- Error Parsing Logic ---
+        function parseErrorMatrix(errors) {
+            let elementToFocus = null;
+
+            for (const [fieldName, errorList] of Object.entries(errors)) {
+                const combinedMessage = errorList.join(' · ');
+
+                if (fieldName === '__all__') {
+                    renderGlobalAlert(combinedMessage, 'error');
+                } else {
+                    const fieldInput = form.querySelector(`[name="${fieldName}"]`);
+                    if (fieldInput) {
+                        const parentGroup = fieldInput.closest('.nf-input-group');
+                        if (parentGroup) {
+                            const inlineError = document.createElement('span');
+                            inlineError.className = 'nf-field-error-msg';
+                            inlineError.textContent = combinedMessage;
+                            parentGroup.appendChild(inlineError);
+
+                            if (!elementToFocus) elementToFocus = parentGroup;
+                        }
+                    } else {
+                        renderGlobalAlert(`${fieldName}: ${combinedMessage}`, 'error');
+                    }
+                }
+            }
+
+            if (elementToFocus) {
+                elementToFocus.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function renderGlobalAlert(msg, type) {
+            const wrapper = document.getElementById('alerts-injection-point');
+            wrapper.innerHTML = `
+                <div class="nf-messages-container">
+                    <div class="nf-alert nf-alert-${type}">${msg}</div>
+                </div>
+            `;
+        }
+
+        // --- File Uploader Visual Context Rules ---
+        const dropZone = document.querySelector('.nf-file-upload-wrapper');
+        const fileInput = document.getElementById('poster_input');
+        const uploadStatus = document.getElementById('file_status');
+        const imagePreview = document.getElementById('poster_preview');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    const activeFile = this.files[0];
+                    uploadStatus.textContent = `Asset Locked: ${activeFile.name} (${(activeFile.size / 1024).toFixed(1)} KB)`;
+
+                    const fileReader = new FileReader();
+                    fileReader.onload = function (e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    };
+                    fileReader.readAsDataURL(activeFile);
+                }
+            });
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--primary)';
+                dropZone.style.background = 'rgba(56, 189, 248, 0.05)';
+            });
+
+            ['dragleave', 'drop'].forEach(evtType => {
+                dropZone.addEventListener(evtType, () => {
+                    dropZone.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                    dropZone.style.background = 'rgba(15, 23, 42, 0.2)';
+                });
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    fileInput.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+
+        // --- Privileged Admin Field Handling Rules ---
+        const isGeneralCheckbox = document.getElementById('is_general');
+        const collegeSelectGroup = document.getElementById('college-select-group');
         
-        const errorDiv = document.createElement('span');
-        errorDiv.className = 'nf-field-error-msg';
-        errorDiv.innerText = message;
-        inputElement.parentNode.appendChild(errorDiv);
-    }
-
-    function clearFieldError(inputElement) {
-        inputElement.style.borderColor = '';
-        inputElement.style.boxShadow = '';
-        const existingError = inputElement.parentNode.querySelector('.nf-field-error-msg');
-        if (existingError) {
-            existingError.remove();
-        }
-    }
-
-    // --- Real-time Validation Engine ---
-    function runRealTimeChecks() {
-        let isStep2Valid = true;
-
-        const dateInput = document.getElementById('event_date');
-        const startTimeInput = document.getElementById('start_time');
-        const endTimeInput = document.getElementById('end_time');
-        const regStartInput = document.getElementById('registration_start');
-        const regEndInput = document.getElementById('registration_end');
-
-        const now = new Date();
-
-        // 1. Validate Event Date Window Context
-        if (dateInput && dateInput.value) {
-            const selectedDate = new Date(dateInput.value + 'T00:00:00');
-            const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            if (selectedDate < todayMidnight) {
-                showFieldError(dateInput, "Target event dates cannot look into the past.");
-                isStep2Valid = false;
-            } else {
-                clearFieldError(dateInput);
-            }
+        if (isGeneralCheckbox && collegeSelectGroup) {
+            const institutionSelect = collegeSelectGroup.querySelector('select');
+            isGeneralCheckbox.addEventListener('change', function () {
+                if (this.checked) {
+                    collegeSelectGroup.style.opacity = '0.35';
+                    institutionSelect.required = false;
+                    institutionSelect.disabled = true;
+                    institutionSelect.value = "";
+                } else {
+                    collegeSelectGroup.style.opacity = '1';
+                    institutionSelect.disabled = false;
+                    institutionSelect.required = true;
+                }
+            });
         }
 
-        // 2. Validate Operational Layout Timelines
-        if (startTimeInput && endTimeInput && startTimeInput.value && endTimeInput.value) {
-            if (endTimeInput.value <= startTimeInput.value) {
-                showFieldError(endTimeInput, "Operational end time must occur strictly after start execution.");
-                isStep2Valid = false;
-            } else {
-                clearFieldError(endTimeInput);
-            }
-        }
-
-        // 3. Validate Gate Registration Access Bounds
-        if (regStartInput && regEndInput && regStartInput.value && regEndInput.value) {
-            const regStart = new Date(regStartInput.value);
-            const regEnd = new Date(regEndInput.value);
-
-            if (regEnd <= regStart) {
-                showFieldError(regEndInput, "Registration gate window close must be after opening timeline initialization.");
-                isStep2Valid = false;
-            } else {
-                clearFieldError(regEndInput);
-            }
-        }
-
-        return isStep2Valid;
-    }
-
-    // Assign Event Listeners dynamically to detect input changes or blur highlights
-    const step2Fields = ['event_date', 'start_time', 'end_time', 'registration_start', 'registration_end'];
-    step2Fields.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener('blur', runRealTimeChecks);
-            element.addEventListener('input', runRealTimeChecks);
-        }
-    });
-
-    // --- Multi-Step Visibility Controller Layer ---
-    function changeStepVisibility(targetStep) {
-        document.querySelectorAll('.nf-form-step-section').forEach(section => section.classList.remove('active'));
-        document.querySelectorAll('.nf-step-item').forEach(node => node.classList.remove('active'));
-
-        document.getElementById(`step-section-${targetStep}`).classList.add('active');
-        for(let i = 1; i <= targetStep; i++) {
-            document.getElementById(`step-node-${i}`).classList.add('active');
-        }
-
-        btnPrev.style.visibility = (targetStep === 1) ? 'hidden' : 'visible';
-        btnNext.innerText = (targetStep === totalSteps) ? 'Schedule & Reserve Venue ⚡' : 'Continue';
-    }
-
-    btnNext.addEventListener('click', () => {
-        // Validate system parameters within current viewport section
-        const activeInputs = document.getElementById(`step-section-${activeStep}`).querySelectorAll('input[required], textarea[required]');
-        let stepValid = true;
-        activeInputs.forEach(input => {
-            if(!input.checkValidity()) {
-                input.reportValidity();
-                stepValid = false;
-            }
+        // --- Modal Control Buttons Action Hooks ---
+        document.getElementById('btn-modal-another').addEventListener('click', () => {
+            document.getElementById('success-modal').classList.remove('active');
+            form.reset();
+            if (imagePreview) imagePreview.style.display = 'none';
+            if (uploadStatus) uploadStatus.textContent = 'Drag & drop or click to upload assets';
+            if (isGeneralCheckbox) isGeneralCheckbox.dispatchEvent(new Event('change'));
+            currentStep = 1;
+            updateStepUI();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        if(!stepValid) return;
-
-        // Deep intercept conditional mapping validation check for Step 2 parameters
-        if (activeStep === 2 && !runRealTimeChecks()) {
-            return;
-        }
-
-        if (activeStep < totalSteps) {
-            activeStep++;
-            changeStepVisibility(activeStep);
-        } else {
-            multiForm.submit();
-        }
-    });
-
-    btnPrev.addEventListener('click', () => {
-        if (activeStep > 1) {
-            activeStep--;
-            changeStepVisibility(activeStep);
-        }
-    });
-
-    // Live Image File Poster Asset Upload Rendering Preview Logic
-    const fileInput = document.getElementById('poster_input');
-    const fileStatus = document.getElementById('file_status');
-    const previewImg = document.getElementById('poster_preview');
-
-    if (fileInput && fileStatus) {
-        fileInput.addEventListener('change', (e) => {
-            if(e.target.files.length > 0) {
-                const selectedFile = e.target.files[0];
-                fileStatus.innerText = `Selected asset: ${selectedFile.name}`;
-                fileStatus.style.color = 'var(--primary)';
-                
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    previewImg.src = event.target.result;
-                    previewImg.style.display = 'inline-block';
-                };
-                reader.readAsDataURL(selectedFile);
-            }
+        document.getElementById('btn-modal-dashboard').addEventListener('click', () => {
+            window.location.href = "{% url "teacher_dashboard" %}";
         });
-    }
-
-    // Admin Profile Context Selection Visibility States
-    {% if is_admin %}
-    const isGeneralCheck = document.getElementById('is_general');
-    const collegeSelector = document.getElementById('college_selector');
-    if (isGeneralCheck && collegeSelector) {
-        isGeneralCheck.addEventListener('change', () => {
-            if (isGeneralCheck.checked) {
-                collegeSelector.style.opacity = '0.25';
-                collegeSelector.style.pointerEvents = 'none';
-            } else {
-                collegeSelector.style.opacity = '1';
-                collegeSelector.style.pointerEvents = 'all';
-            }
-        });
-    }
-    {% endif %}
+    });
 </script>
 {% endblock %}

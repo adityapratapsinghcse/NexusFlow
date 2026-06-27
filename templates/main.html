@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <title>NexusFlow — Intelligent Event Management</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
     <style>
         :root {
@@ -181,11 +181,14 @@
 
         .swiper {
             width: 100%;
-            padding: 40px 0 60px 0 !important;
+            overflow: hidden;
+            padding: 40px 0 60px;
         }
 
         .swiper-slide {
-            width: 310px;
+            width: 310px !important;
+            max-width: 310px;
+            flex-shrink: 0;
             height: 440px;
             border-radius: 24px;
             overflow: hidden;
@@ -197,6 +200,13 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         }
 
+<<<<<<< HEAD
+        .swiper-wrapper {
+            align-items: center;
+        }
+
+=======
+>>>>>>> 0aba069e60462ddf93acc3b15b774dd50fe7148c
         /* Focused center-most card layout */
         .swiper-slide-active {
             filter: brightness(1) blur(0px);
@@ -264,38 +274,54 @@
             font-weight: 500;
         }
 
-        /* --- CLEAN INTEGRATED SVG NAV CONTROLS --- */
+        /* --- PREMIUM NON-FLUTTERING SLIDER NAVIGATION CONTROLS --- */
         .nav-control {
             position: absolute;
             top: 50%;
-            transform: translateY(-50%);
+            transform: translateY(-50%) translate3d(0, 0, 0);
             z-index: 500;
             cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), filter 0.3s ease;
             user-select: none;
+            width: 165px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
         }
 
         .nav-control.prev { left: 4%; }
         .nav-control.next { right: 4%; }
 
-        /* Pure explicit formatting for standard SVG control tags mapping */
-        #button_eve {
-            width: 165px;
+        /* Style transitions applied to structural class to handle rendering layers beautifully */
+        .swiper-nav-btn {
+            width: 100%;
             height: auto;
             display: block;
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
-            transition: filter 0.3s ease, transform 0.3s ease;
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), filter 0.3s ease;
+            will-change: transform, filter;
         }
 
-        .nav-control:hover #button_eve {
-            filter: drop-shadow(0 0 12px rgba(0, 212, 255, 0.65));
+        /* Safe non-breaking visual aura glows on hover */
+        .nav-control:hover .swiper-nav-btn {
+            filter: drop-shadow(0 0 14px rgba(0, 212, 255, 0.75));
         }
 
-        .nav-control.prev:hover { transform: translateY(-50%) scale(1.06) translateX(-4px); }
-        .nav-control.next:hover { transform: translateY(-50%) scale(1.06) translateX(4px); }
-        .nav-control:active { transform: translateY(-50%) scale(0.96); }
+        /* Transforms locked inside the isolated stationary bounding box to avoid oscillation bugs */
+        .nav-control.prev:hover .swiper-nav-btn { 
+            transform: scale(1.05) translateX(-6px); 
+        }
+        
+        .nav-control.next:hover .swiper-nav-btn { 
+            transform: scale(1.05) translateX(6px); 
+        }
+        
+        .nav-control:active .swiper-nav-btn { 
+            transform: scale(0.94); 
+        }
 
         /* --- REST OF STYLESHEETS PRESERVED --- */
         .cards-section {
@@ -398,7 +424,7 @@
             }
 
             .nav-control {
-                display: none !important; /* Touch tracking handles swipe configurations flawlessly on tiny layouts */
+                display: none !important; 
             }
         }
 
@@ -889,6 +915,113 @@
         }
 
         .team-sub { color: #64748b; font-size: 14px; }
+
+        /* --- FLOATING GLASS TOAST NOTIFICATIONS --- */
+        .message-container {
+            position: fixed;
+            top: 85px; 
+            right: 25px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 380px;
+            width: calc(100% - 50px);
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(15, 18, 53, 0.65);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 16px;
+            color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 500;
+            line-height: 1.4;
+            border-left: 4px solid transparent;
+            animation: toastSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toast.success {
+            border-left-color: var(--accent-blue);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.error, .toast.danger {
+            border-left-color: var(--accent-pink);
+            box-shadow: 0 10px 30px rgba(255, 0, 122, 0.15), 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.warning {
+            border-left-color: #ffaa00;
+            box-shadow: 0 10px 30px rgba(255, 170, 0, 0.1);
+        }
+
+        .toast.info {
+            border-left-color: #a0aec0;
+        }
+
+        .toast-icon {
+            margin-right: 12px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .toast.success .toast-icon { color: var(--accent-blue); background: rgba(0, 212, 255, 0.1); }
+        .toast.error .toast-icon, .toast.danger .toast-icon { color: var(--accent-pink); background: rgba(255, 0, 122, 0.1); }
+        .toast.warning .toast-icon { color: #ffaa00; background: rgba(255, 170, 0, 0.1); }
+        .toast.info .toast-icon { color: #a0aec0; background: rgba(255, 255, 255, 0.05); }
+
+        .toast-content {
+            flex-grow: 1;
+            padding-right: 8px;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+        }
+
+        .toast-close:hover {
+            color: #fff;
+        }
+
+        @keyframes toastSlideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toastFadeOut {
+            to { 
+                transform: translateX(130%); 
+                opacity: 0; 
+                margin-top: -60px; 
+                padding-top: 0; 
+                padding-bottom: 0; 
+                height: 0; 
+                overflow: hidden; 
+            }
+        }
     </style>
 </head>
 
@@ -914,6 +1047,25 @@
         </div>
     </nav>
 
+    {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+        <div class="toast {{ message.tags }}">
+            <div class="toast-icon">
+                {% if message.tags == 'success' %}✓
+                {% elif message.tags == 'error' or message.tags == 'danger' %}✕
+                {% elif message.tags == 'warning' %}⚠
+                {% else %}ℹ{% endif %}
+            </div>
+            <div class="toast-content">
+                {{ message }}
+            </div>
+            <button class="toast-close" onclick="dismissToast(this.parentElement)">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <section id="home" class="hero">
         <img src="{% static 'tagline3.svg' %}" id="text">
     </section>
@@ -930,7 +1082,7 @@
             <div ID="h3"><img src="{% static 'tgl.svg' %}" id="up1"></div>
 
             <div class="nav-control prev" id="slide-prev">
-                <img src="{% static 'prev.svg' %}" id="button_eve">
+                <img src="{% static 'prev.svg' %}" class="swiper-nav-btn">
             </div>
 
             <div class="swiper mySwiper">
@@ -955,7 +1107,7 @@
             </div>
 
             <div class="nav-control next" id="slide-next">
-                <img src="{% static 'next.svg' %}" id="button_eve">
+                <img src="{% static 'next.svg' %}" class="swiper-nav-btn">
             </div>
         </div>
     </section>
@@ -1084,26 +1236,39 @@
         </div>
     </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
         // --- 3D Coverflow Configuration Setup ---
-        var swiper = new Swiper(".mySwiper", {
+        const swiper = new Swiper(".mySwiper", {
             effect: "coverflow",
             grabCursor: true,
             centeredSlides: true,
             slidesPerView: "auto",
-            loop: true,
-            coverflowEffect: {
-                rotate: 12,
-                stretch: 0,
-                depth: 160,
-                modifier: 1,
-                slideShadows: false,
-            },
+            slidesPerGroup: 1,
+            spaceBetween: 30,
+            speed: 600,
+            loop: false,
+            rewind: true,
+            watchSlidesProgress: true,
+            observer: true,
+            observeParents: true,
             navigation: {
                 nextEl: "#slide-next",
                 prevEl: "#slide-prev",
             },
+            coverflowEffect: {
+                rotate: 12,
+                stretch: 0,
+                depth: 180,
+                modifier: 1,
+                scale: 1,
+                slideShadows: false,
+            },
+            on: {
+                init() {
+                    this.slideTo(0,0);
+                }
+            }
         });
 
         // --- Video Controls ---
@@ -1144,6 +1309,23 @@
 
         sections.forEach(section => {
             observer.observe(section);
+        });
+
+        // --- TOAST NOTIFICATION UTILITIES ---
+        function dismissToast(toastElement) {
+            toastElement.style.animation = "toastFadeOut 0.4s ease forwards";
+            setTimeout(() => {
+                toastElement.remove();
+            }, 400);
+        }
+
+        // Auto dismiss countdown routine
+        document.querySelectorAll('.toast').forEach(toast => {
+            setTimeout(() => {
+                if (toast && toast.parentNode) {
+                    dismissToast(toast);
+                }
+            }, 5000);
         });
     </script>
 
