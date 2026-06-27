@@ -220,19 +220,6 @@
 
 {% block content %}
 <div class="hub-workspace-container">
-    
-    <!-- Unified Authentication Role Navigation Redirect Map -->
-    {% if user.is_authenticated %}
-        {% if user.profile.college_data.role == 'Admin' %}
-            <a href="{% url 'admin_dashboard' %}" class="dashboard-back-link" id="globalBackBtn">← Return to Dashboard</a>
-        {% elif user.profile.college_data.role == 'Teacher' %} 
-            <a href="{% url 'teacher_dashboard' %}" class="dashboard-back-link" id="globalBackBtn">← Return to Dashboard</a>
-        {% elif user.profile.college_data.role == 'Student' %}
-            <a href="{% url 'student_dashboard' %}" class="dashboard-back-link" id="globalBackBtn">← Return to Dashboard</a>
-        {% endif %}
-    {% else %}
-        <a href="{% url 'login' %}" class="dashboard-back-link" id="globalBackBtn">← Return to Login</a>
-    {% endif %}
 
     <!-- Top Headline Section Block Component -->
     <header>
@@ -308,7 +295,7 @@
     <!-- Empty Fallback Interface Block Grid Layout Component -->
     <div class="empty-state-card">
         <h2>No Registered Events</h2>
-        <p>You haven't signed up for any events yet. Head over to the <a href="{% url 'student_events' %}">Browse Events Catalog</a> to see what's happening around campus.</p>
+        <p>You haven't signed up for any events yet. Head over to the <a href="{% url 'student_upcoming_events' %}">Browse Events Catalog</a> to see what's happening around campus.</p>
     </div>
     {% endif %}
 

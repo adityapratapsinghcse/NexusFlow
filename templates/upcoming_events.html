@@ -239,7 +239,7 @@
     </header>
 
     <section class="search-section">
-        <form method="GET" action="{% url 'upcoming_events' %}" class="search-form" id="searchFilterForm">
+        <form method="GET" action="{% url 'upcoming_events' %}" class="search-form" id="searchFilterForm">   
             <input type="text" name="search" id="liveSearchInput" placeholder="Type to filter instantly..." value="{{ search_query }}">
             <select name="venue" id="venueSelect">
                 <option value="">All Venues</option>

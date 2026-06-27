@@ -4,7 +4,7 @@
 {% block title %}Faculty Dashboard{% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
+{% load static %}
 
 
 <head>
@@ -43,69 +43,22 @@
         }
 
         body {
-            display: flex;
+            
             background-color: var(--bg-deep);
             background-image: 
                 radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.04) 0%, transparent 50%),
                 radial-gradient(circle at 15% 80%, rgba(255, 0, 122, 0.02) 0%, transparent 40%);
             height: 100vh;
             color: var(--text-main);
-            overflow: hidden; /* Strictly locks viewport scroll */
+            overflow: auto; /* Strictly locks viewport scroll */
         }
 
-        .main-content {
-            margin-left: var(--sidebar-width);
-            width: calc(100% - var(--sidebar-width));
-            min-height: 100vh;
-            padding: 30px;
-            transition: all .3s ease;
-        }
-
-        .main-content.expanded {
-            margin-left: var(--sidebar-collapsed);
-            width: calc(100% - var(--sidebar-collapsed));
-        }
-
-        :root {
-            --primary: #38bdf8;
-            --primary-glow: rgba(56, 189, 248, 0.12);
-            --primary-hover: #0ea5e9;
-            --admin-gold: #fbbf24;
-            --admin-gold-glow: rgba(251, 191, 36, 0.12);
-            --accent-pink: #ff007a;
-            --bg-dark: #070513;
-            --card-glass: rgba(15, 23, 42, 0.55);
-            --text-main: #f9fbff;
-            --text-muted: #94a3b8;
-            --success: #00ff99;
-            --success-glow: rgba(0, 255, 153, 0.12);
-            --error: #ef4444;
-            --border-glow: rgba(255, 255, 255, 0.06);
-            --border-ether: rgba(255, 255, 255, 0.08);
-            --blur-panel: blur(20px);
-            --sidebar-width: 268px;
-            --sidebar-collapsed: 68px;
-            --ease: cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-
-        body {
-            display: flex;
-            background-color: var(--bg-dark);
-            background-image:
-                radial-gradient(circle at 60% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(255, 0, 122, 0.02) 0%, transparent 35%);
-            min-height: 100vh;
-            color: var(--text-main);
-            overflow-x: hidden;
-        }
-
-       
+        
         /* --- Fixed Workspace Main Screen Viewport --- */
         .main-content {
-            margin-left: 260px;
-            width: calc(100% - 260px);
+            margin-left: 12%;
+            margin-right: 0%;
+            width: auto;
             padding: 24px 32px;
             height: 100vh;
             display: flex;
@@ -433,13 +386,32 @@
 <body>
 
     
-<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
+        
 
-<button class="toggle-btn" id="toggleBtn" onclick="toggleSidebar()" title="Toggle sidebar">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M15 18l-6-6 6-6"/>
-    </svg>
-</button>
+    <!-- --- Main Screen App Layout Matrix --- -->
+    <div class="main-content">
+
+        <div class="workspace-header">
+            <div class="workspace-title">
+                <h1>
+                    <span class="greeting">Welcome back,</span> 
+                    <span>Prof. {{ request.user.first_name }}</span>
+                </h1>
+                <p>Monitor event submissions, attendee updates, and logistics records from a single panel view.</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'all_notifications' %}" class="bell-trigger-btn">
+                    <i class="bi bi-bell"></i>
+                    {% if recent_notifications.count > 0 %}
+                    <span class="bell-badge" id="bell-notif-badge">{{ recent_notifications.count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'schedule_event' %}" class="btn-primary">
+                    <i class="bi bi-plus-lg"></i> Create New Event
+                </a>
+            </div>
+        </div>
+
         <!-- --- Analytics Overview Matrix --- -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -595,6 +567,7 @@
             });
         }
     </script>
+
 
 
 {% endblock %}
