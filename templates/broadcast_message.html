@@ -214,7 +214,7 @@
             <div class="broadcast-char-count" id="cc">0 / 500 characters used</div>
 
             <div class="broadcast-actions">
-                <a href="{% url 'teacher_my_events' %}" class="btn-cancel">Cancel</a>
+                <a href="{% if is_teacher %}{% url 'teacher_my_events' %} {% else%} {% url "admin_my_events" %} {%endif%}" class="btn-cancel">Cancel</a>
                 <button type="submit" class="btn-send">Send Announcement</button>
             </div>
         </form>

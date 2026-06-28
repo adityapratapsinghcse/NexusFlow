@@ -309,7 +309,7 @@
     </div>
 
     <!-- Active Structural Filtering Toolset -->
-    <form method="GET" action="{% url 'upcoming_events' %}" class="filter-bar">
+    <form method="GET" action="{% url 'admin_event_list' %}" class="filter-bar">
         <div class="filter-group">
             <label for="search">Search Events</label>
             <input type="text" id="search" name="search" class="filter-input" placeholder="Search title or details..." value="{{ search_query }}">
@@ -337,7 +337,7 @@
 
         <div class="filter-actions">
             <button type="submit" class="btn-search">Apply Filters</button>
-            <a href="{% url 'upcoming_events' %}" class="btn-reset">Reset</a>
+            <a href="{% url 'admin_event_list' %}" class="btn-reset">Reset</a>
         </div>
     </form>
 

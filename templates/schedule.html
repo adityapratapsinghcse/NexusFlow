@@ -1,4 +1,4 @@
-{% extends 'admin_base.html' %}
+{% extends base_template %}
 {% load static %}
 
 {% block title %}Schedule Event — NexusFlow {% endblock %}
@@ -806,8 +806,8 @@
                                 <label>Target College Profile</label>
                                 <select name="college_profile" id="college_profile" required>
                                     <option value="">-- Select Target Institution --</option>
-                                    {% for college in colleges %}
-                                        <option value="{{ college.id }}">{{ college.institution_name|default:college.user.get_full_name|default:college }}</option>
+                                    {% for code, full_name in colleges %}
+                                        <option value="{{ code }}">{{ full_name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -1127,7 +1127,7 @@
         });
 
         document.getElementById('btn-modal-dashboard').addEventListener('click', () => {
-            window.location.href = "{% url "teacher_dashboard" %}";
+            window.location.href = "{% if is_admin %}{% url 'admin_dashboard' %}{% else %}{% url 'teacher_dashboard' %}{% endif %}";
         });
     });
 </script>

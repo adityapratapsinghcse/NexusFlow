@@ -348,7 +348,11 @@
             </div>
 
             <div class="btn-row">
+                {% if request.user.groups.all.0.name == 'Admin' %}
+                <a href="{% url 'admin_event_list' %}" class="btn btn-cancel">Discard Changes</a>
+                {% else %}
                 <a href="{% url 'teachers_event_list' %}" class="btn btn-cancel">Discard Changes</a>
+                {% endif%}
                 <button type="submit" class="btn btn-save">Update Event</button>
             </div>
         </form>

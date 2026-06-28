@@ -119,7 +119,7 @@
         <form method="POST">
             {% csrf_token %}
             <div class="btn-group">
-                <a href="{% url 'cancel_event_list' %}" class="btn btn-secondary">Nevermind, Keep It</a>
+                <a href="{% if request.user.groups.all.0.name == "Admin" %} {% url 'admin_cancel_event_list' %}" {% else %} {% url 'cancel_event_list'%} {% endif%}" class="btn btn-secondary">Nevermind, Keep It</a>
                 <button type="submit" class="btn btn-danger">
                     {% if request.user.groups.all.0.name == "Admin" %} Delete Permanently {% else %} Confirm Withdrawal {% endif %}
                 </button>

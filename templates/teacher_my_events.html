@@ -281,7 +281,7 @@
         </div>
         <div class="header-actions-group">
             {% if user.is_authenticated %}
-                <a href="{% url "schedule_event"%}" class="nav-action-btn btn-style-cyan">
+                <a href="{% url "teacher_schedule_event"%}" class="nav-action-btn btn-style-cyan">
                     <svg style="margin-right: 8px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     Create New Event
                 </a>
@@ -409,7 +409,7 @@
         <div style="text-align: center; padding: 60px 40px; border: 2px dashed var(--border-ether, #2d3748); border-radius: 16px; background: rgba(255, 255, 255, 0.01);">
             <h2 style="color: #ffffff; margin-bottom: 8px; font-weight: 700;">No Scheduled Events Found</h2>
             <p style="margin-bottom: 24px; color: var(--slate-muted, #a0aec0); font-size: 15px;">There are currently no active sessions registered in your itinerary.</p>
-            <a href="{% url "schedule_event" %}" style="color: var(--neon-cyan, #00f0ff); text-decoration: none; font-size: 14px; font-weight: 700;">
+            <a href="{% url "teacher_schedule_event" %}" style="color: var(--neon-cyan, #00f0ff); text-decoration: none; font-size: 14px; font-weight: 700;">
                 Create your first event entry &rarr;
             </a>
         </div>

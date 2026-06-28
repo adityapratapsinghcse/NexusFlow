@@ -5,6 +5,7 @@ from events import views as event_view
 from django.conf import settings
 from django.conf.urls.static import static
 from notifications import views as notif_view
+from django.http import HttpResponse
 
 urlpatterns = [
     path('dev_admin/', admin.site.urls),
@@ -18,19 +19,21 @@ urlpatterns = [
     path('reset_password/<uidb64>/<token>/', views.reset_confirm, name='password_reset_confirm'),
     path('profile/',views.profile,name= 'profile'),
     path('logout/', views.logout_view, name='logout_view'),
-    path('schedule/',event_view.schedule_event,name='schedule_event'),
+    path('teacher_schedule/',event_view.teacher_schedule_event,name='teacher_schedule_event'),
+    path('admin_schedule/',event_view.admin_schedule_event,name='admin_schedule_event'),
     path('action/',event_view.action_event,name='action_event'),
     path('update_event/<int:event_id>/<str:action>/',event_view.update_event,name='update_event'),
     path('ajax/check-email/', views.check_email_exists, name='check_email_exists'),
-    path("student_dashboard/events/", event_view.upcoming_events, name="student_events"),
-
+    path("student_dashboard/events/", event_view.student_upcoming_events, name="student_events"),
+    path("student_dashboard/events/<int:event_id>/",event_view.event_detail,name="event_detail"),
     path('admin_event_detail/', event_view.admin_event_detail, name='admin_event_detail'),
     
 
     
     path("student_dashboard/my_registrations/",event_view.my_registrations,name="my_registrations"),
     path("cancel_registration/<int:event_id>/", event_view.cancel_registration, name="cancel_registration"),
-    path("upcoming_events/",event_view.upcoming_events,name="upcoming_events"),
+    path("teacher_upcoming_events/",event_view.teacher_upcoming_events,name="teacher_upcoming_events"),
+    path("admin_upcoming_events/",event_view.admin_upcoming_events,name="admin_upcoming_events"),
     path("student_upcoming_events/",event_view.student_upcoming_events,name="student_upcoming_events"),
 
 

@@ -34,14 +34,15 @@ from .agents.crowd_agent import run_crowd_agent
 # ===========================================================
 
 @login_required
-def schedule_event(request):
+def admin_schedule_event(request):
     venues = Venue.objects.filter(is_active=True).order_by('capacity')
     is_admin = request.user.groups.filter(name="Admin").exists()
 
     context = {
         "venues": venues,
-        "colleges": Profile.objects.all(),
+        "colleges": COLLEGES,
         "is_admin": is_admin,
+        "base_template": "admin_base.html",
     }
 
     # ── Detect AJAX fetch() call from the modal UI ──────────────────────────
@@ -203,6 +204,266 @@ def schedule_event(request):
 
             if is_general:
                 college_profile = request.user.profile
+            # AFTER
+            else:
+                college_code = request.POST.get("college_profile")
+                college_profile = Profile.objects.filter(college_name=college_code).first()
+                if not college_profile:
+                    error_msg = "No registered profile exists yet for the selected college. Tick 'General Scope' or pick a different college."
+                    if is_ajax:
+                        return JsonResponse({'success': False, 'errors': {'college_profile': [error_msg]}}, status=400)
+                    messages.error(request, error_msg)
+                    return render(request, "admin_schedule.html", context)
+        elif request.user.groups.filter(name="Teacher").exists():
+            initial_status = "PENDING"
+            redirect_to = "teacher_dashboard"
+            college_profile = request.user.profile
+            is_general = False
+        else:
+            if is_ajax:
+                return JsonResponse(
+                    {'success': False, 'errors': {'__all__': ['System Authorization Privileges evaluation failed. Access Denied.']}},
+                    status=403
+                )
+            messages.error(request, "System Authorization Privileges evaluation failed. Access Denied.")
+            return render(request, "schedule.html", context)
+
+        # ---- Persistent Data Compilation & Instantiation ----
+        event = Event.objects.create(
+            organizer=request.user,
+            college_profile=college_profile,
+            venue=selected_venue,
+            title=title,
+            description=description,
+            date=event_date,
+            start_time=start_time_obj,
+            end_time=end_time_obj,
+            start_datetime=start_dt,
+            end_datetime=end_dt,
+            expected_crowd=expected_crowd,
+            night_event_warning=(end_time_obj >= time(18, 0)),
+            poster=poster,
+            status=initial_status,
+            is_general=is_general,
+            registration_start=registration_start,
+            registration_end=registration_end,
+        )
+
+        # Store prediction evaluation metrics safely
+        event.predicted_crowd = predicted_crowd
+        event.crowd_confidence = crowd_confidence
+        event.ai_crowd_reason = ai_crowd_reason
+        event.ai_venue_reason = ai_reason
+        event.ai_warnings = json.dumps(ai_warnings) if ai_warnings else None
+        event.save()
+
+        # ---- Broadcast Lifecycle Notifications ----
+        Notification.objects.create(
+            role="ADMIN",
+            title="New Operational Core Registration Event",
+            message=f"{request.user.get_full_name()} created/proposed operational context execution '{title}'"
+        )
+
+        # ── AJAX path — return JSON for the modal popup ─────────────────────
+        if is_ajax:
+            # Normalise ai_warnings: could be a list or a JSON string
+            warnings_display = ""
+            if ai_warnings:
+                if isinstance(ai_warnings, list):
+                    warnings_display = " · ".join(ai_warnings)
+                else:
+                    warnings_display = str(ai_warnings)
+
+            return JsonResponse({
+                'success': True,
+                'event_id':            event.id,
+                'title':               event.title,
+                'status':              event.status,
+
+                # Venue
+                'venue_name':          selected_venue.name,
+                'venue_capacity':      selected_venue.capacity,
+
+                # Crowd & AI
+                'predicted_crowd':     predicted_crowd,
+                'crowd_confidence':    crowd_confidence,
+                'ai_venue_reason':     ai_reason,
+                'ai_crowd_reason':     ai_crowd_reason,
+                'ai_warnings':         warnings_display,
+                'night_event_warning': bool(end_time_obj >= time(18, 0)),
+
+                # Formatted datetimes for display in modal
+                'start_datetime':      start_dt.strftime('%a, %d %b %Y  %H:%M'),
+                'end_datetime':        end_dt.strftime('%H:%M, %d %b %Y'),
+            })
+
+        # ── Non-AJAX fallback (old behaviour, kept for safety) ───────────────
+        context['ai_prediction'] = {
+            "predicted_crowd": predicted_crowd,
+            "confidence":      crowd_confidence,
+            "reason":          ai_crowd_reason,
+            "venue_reason":    ai_reason,
+            "venue_name":      selected_venue.name,
+            "warnings":        ai_warnings,
+        }
+        messages.success(request, f"Event scheduled successfully in {selected_venue.name}")
+        return render(request, "schedule.html", context)
+
+    return render(request, "schedule.html", context)
+
+
+@login_required
+def teacher_schedule_event(request):
+    venues = Venue.objects.filter(is_active=True).order_by('capacity')
+    is_admin = request.user.groups.filter(name="Admin").exists()
+
+    context = {
+        "venues": venues,
+        "colleges": Profile.objects.all(),
+        "is_admin": is_admin,
+        "base_template": "teacher_base.html",
+    }
+
+    # ── Detect AJAX fetch() call from the modal UI ──────────────────────────
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    if request.method == "POST":
+        try:
+            title = request.POST.get('title')
+            description = request.POST.get('description')
+            expected_crowd = int(request.POST.get('expected_crowd', 0))
+
+            date_str = request.POST.get('date')
+            start_str = request.POST.get('start_time')
+            end_str = request.POST.get('end_time')
+
+            registration_start_str = request.POST.get("registration_start")
+            registration_end_str = request.POST.get("registration_end")
+
+            poster = request.FILES.get('poster')
+            override_venue_id = request.POST.get("override_venue")
+
+            # ---- Convert date/time ----
+            event_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            start_time_obj = datetime.strptime(start_str, "%H:%M").time()
+            end_time_obj = datetime.strptime(end_str, "%H:%M").time()
+
+            registration_start = timezone.make_aware(
+                datetime.strptime(registration_start_str, "%Y-%m-%dT%H:%M")
+            )
+            registration_end = timezone.make_aware(
+                datetime.strptime(registration_end_str, "%Y-%m-%dT%H:%M")
+            )
+
+        except (ValueError, TypeError, Exception):
+            if is_ajax:
+                return JsonResponse(
+                    {'success': False, 'errors': {'__all__': ['Invalid date/time context or input structural format.']}},
+                    status=400
+                )
+            messages.error(request, "Invalid date/time context or input structural format.")
+            return render(request, "schedule.html", context)
+
+        # ---- Combine datetimes safely ----
+        start_dt = timezone.make_aware(datetime.combine(event_date, start_time_obj))
+        end_dt = timezone.make_aware(datetime.combine(event_date, end_time_obj))
+
+        # ---- Basic Data Integrity Validations ----
+        if end_dt <= start_dt:
+            if is_ajax:
+                return JsonResponse(
+                    {'success': False, 'errors': {'end_time': ['Operational end time must occur strictly after start execution.']}},
+                    status=400
+                )
+            messages.error(request, "Operational end time must occur strictly after start execution.")
+            return render(request, "schedule.html", context)
+
+        if event_date < timezone.now().date():
+            if is_ajax:
+                return JsonResponse(
+                    {'success': False, 'errors': {'date': ['Target event parameter profile dates cannot look into the past.']}},
+                    status=400
+                )
+            messages.error(request, "Target event parameter profile dates cannot look into the past.")
+            return render(request, "schedule.html", context)
+
+        if registration_end <= registration_start:
+            if is_ajax:
+                return JsonResponse(
+                    {'success': False, 'errors': {'registration_end': ['Registration gate window close must be after opening timeline initialization.']}},
+                    status=400
+                )
+            messages.error(request, "Registration gate window close must be after opening timeline initialization.")
+            return render(request, "schedule.html", context)
+
+        # ---------------- AI CROWD ENGINE ANALYSIS ----------------
+        try:
+            crowd_result = run_crowd_agent(
+                event_title=title,
+                event_description=description
+            )
+            predicted_crowd = crowd_result.get('predicted_crowd', 0)
+            ai_crowd_reason = crowd_result.get('reason', '')
+            crowd_confidence = crowd_result.get('confidence', 'N/A')
+        except Exception:
+            predicted_crowd = expected_crowd
+            ai_crowd_reason = "AI Prediction Node unreachable."
+            crowd_confidence = "Low"
+
+        # Dynamically scale infrastructure demands up if teacher parameters under-assessed scope
+        if expected_crowd < predicted_crowd:
+            expected_crowd = predicted_crowd
+
+        # ---- Infrastructure Venue Distribution Processing ----
+        selected_venue = None
+        buffer = timedelta(hours=1)
+        check_start_dt = start_dt - buffer
+        check_end_dt = end_dt + buffer
+
+        # 2️⃣ AI Automation Agent Routine Routing
+        if not selected_venue:
+            is_night = (end_time_obj.hour >= 18)
+            try:
+                agent_result = run_venue_agent(
+                    event_name=title,
+                    event_description=description,
+                    expected_crowd=expected_crowd,
+                    start_dt_iso=start_dt.isoformat(),
+                    end_dt_iso=end_dt.isoformat(),
+                    is_night_event=is_night,
+                )
+
+                if not agent_result or not agent_result.get('venue_id'):
+                    if is_ajax:
+                        return JsonResponse(
+                            {'success': False, 'errors': {'__all__': ['AI Scheduler Agent: No available allocation layouts could mitigate scheduling conflict clusters.']}},
+                            status=400
+                        )
+                    messages.error(request, "AI Scheduler Agent: No available allocation layouts could mitigate scheduling conflict clusters.")
+                    return render(request, "schedule.html", context)
+
+                selected_venue = Venue.objects.get(id=agent_result['venue_id'])
+                ai_reason = agent_result.get('reason', 'Automated heuristic profiling allocation logic.')
+                ai_warnings = agent_result.get('warnings', [])
+            except Exception as e:
+                if is_ajax:
+                    return JsonResponse(
+                        {'success': False, 'errors': {'__all__': [f'AI Allocation system module experienced exceptions: {str(e)}']}},
+                        status=400
+                    )
+                messages.error(request, f"AI Allocation system module experienced exceptions: {str(e)}")
+                return render(request, "schedule.html", context)
+        else:
+            ai_reason = "Manually locked override assigned via Admin Authorization Interface."
+            ai_warnings = []
+
+        # ---- User Identity Role Context Mapping ----
+        if is_admin:
+            initial_status = "APPROVED"
+            is_general = request.POST.get("is_general") == "on"
+
+            if is_general:
+                college_profile = request.user.profile
             else:
                 college_id = request.POST.get("college_profile")
                 college_profile = get_object_or_404(Profile, id=college_id)
@@ -255,6 +516,7 @@ def schedule_event(request):
             title="New Operational Core Registration Event",
             message=f"{request.user.get_full_name()} created/proposed operational context execution '{title}'"
         )
+
 
         # ── AJAX path — return JSON for the modal popup ─────────────────────
         if is_ajax:
@@ -418,6 +680,7 @@ def event_detail(request, event_id):
             return redirect("student_events")
         if already_registered:
             messages.info(request, "You are already registered for this event.")
+            return redirect("student_events")
 
         elif hasattr(request.user, 'profile') and request.user.profile.is_banned:
             messages.error(request, "You are banned from registering for events.")
@@ -545,6 +808,7 @@ def student_upcoming_events(request):
         "selected_sort": date_filter,
         "registered_event_ids": registered_event_ids, # Sent to template layout engine
         "is_student" : is_student,
+        "base_template": "student_base.html",
     })
 
 
@@ -552,7 +816,7 @@ def student_upcoming_events(request):
 #====================================================================================================
 
 @login_required
-def upcoming_events(request):
+def admin_upcoming_events(request):
     today = date.today()
     search_query = request.GET.get('search', '').strip()
     venue_filter = request.GET.get('venue', '')
@@ -575,6 +839,7 @@ def upcoming_events(request):
 
     is_student = request.user.groups.filter(name='Student').exists()
 
+    is_admin = request.user.groups.filter(name='Admin').exists()
     return render(request, "upcoming_events.html", {
         "events": events,
         "venues": venues,
@@ -583,6 +848,48 @@ def upcoming_events(request):
         "selected_sort": date_filter,
         "registered_event_ids": registered_event_ids, # Sent to template layout engine
         "is_student" : is_student,
+        "is_admin" : is_admin,
+        "base_template": "admin_base.html",
+    })
+
+
+
+@login_required
+def teacher_upcoming_events(request):
+    today = date.today()
+    search_query = request.GET.get('search', '').strip()
+    venue_filter = request.GET.get('venue', '')
+    date_filter = request.GET.get('date_sort', 'soonest')
+
+    events = Event.objects.filter(status="APPROVED", date__gte=today).select_related('venue')
+    if search_query:
+        events = events.filter(Q(title__icontains=search_query) | Q(description__icontains=search_query))
+    if venue_filter:
+        events = events.filter(venue__id=venue_filter)
+
+    if date_filter == 'soonest':
+        events = events.order_by("date", "start_time")
+    else:
+        events = events.order_by("-date")
+    venues = Venue.objects.filter(is_active=True)
+    registered_event_ids = list(EventRegistration.objects.filter(
+        student=request.user
+    ).values_list("event_id", flat=True))
+
+    is_student = request.user.groups.filter(name='Student').exists()
+
+    is_admin = request.user.groups.filter(name='Admin').exists()
+
+    return render(request, "upcoming_events.html", {
+        "events": events,
+        "venues": venues,
+        "search_query": search_query,
+        "selected_venue": venue_filter,
+        "selected_sort": date_filter,
+        "registered_event_ids": registered_event_ids, # Sent to template layout engine
+        "is_student" : is_student,
+        "is_admin" : is_admin,
+        "base_template": "teacher_base.html",
     })
 
 
@@ -638,7 +945,7 @@ def admin_cancel_event(request, event_id):
             send_cancellation_email(reg.student, event)
         event.delete()
         messages.success(request, f"Event '{event_name}' cancelled successfully.")
-        return redirect("cancel_event_list")
+        return redirect("admin_cancel_event_list")
 
     return render(request, "cancel_event_confirm.html", {"event": event})
 
@@ -757,85 +1064,6 @@ def admin_event_list(request):
         "selected_sort":  date_filter,
     })
 
-@login_required
-def reassign_venue(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-    user  = request.user
-    is_admin = user.groups.filter(name='Admin').exists()
-
-    # Permission: admin can always; teacher only for their own PENDING event
-    if not is_admin:
-        if event.organizer != user:
-            messages.error(request, "You can only reassign your own events.")
-            return redirect('admin_my_events')
-        if event.status != 'PENDING':
-            messages.error(request, "Venue can only be changed while event is PENDING. Contact admin for approved events.")
-            return redirect('check_status')
-        # Teachers can only override within 72h of creation
-        from datetime import timedelta
-        if timezone.now() > event.created_at + timedelta(hours=72):
-            messages.error(request, "72-hour self-reassignment window has expired. Contact admin.")
-            return redirect('check_status')
-
-    venues = Venue.objects.filter(
-        is_active=True,
-        capacity__gte=event.expected_crowd
-    ).order_by('capacity')
-
-    if request.method == 'POST':
-        venue_id = request.POST.get('venue_id')
-        reason   = request.POST.get('reason', '').strip()
-
-        if not reason or len(reason) < 20:
-            messages.error(request, "Please provide a detailed reason (at least 20 characters).")
-            return render(request, 'reassign_venue.html', {'event': event, 'venues': venues, 'is_admin': is_admin})
-
-        new_venue = get_object_or_404(Venue, id=venue_id, is_active=True)
-
-        # Capacity check
-        if new_venue.capacity < event.expected_crowd:
-            messages.error(request, f"'{new_venue.name}' capacity ({new_venue.capacity}) is less than expected crowd ({event.expected_crowd}).")
-            return render(request, 'reassign_venue.html', {'event': event, 'venues': venues, 'is_admin': is_admin})
-
-        # Clash check
-        buffer = timedelta(hours=1)
-        clash = Event.objects.filter(
-            venue=new_venue,
-            start_datetime__lt=event.end_datetime + buffer,
-            end_datetime__gt=event.start_datetime - buffer,
-        ).exclude(id=event.id).exists()
-
-        if clash:
-            messages.error(request, f"'{new_venue.name}' is already booked during this time.")
-            return render(request, 'reassign_venue.html', {'event': event, 'venues': venues, 'is_admin': is_admin})
-
-        old_venue_name = event.venue.name if event.venue else '(none)'
-        event.venue = new_venue
-        event.save(update_fields=['venue'])
-
-        log_action(
-            user, 'VENUE_OVERRIDE', event=event,
-            notes=f"{'Admin' if is_admin else 'Teacher'} changed venue from '{old_venue_name}' to '{new_venue.name}'. Reason: {reason}",
-            request=request,
-        )
-
-        # If teacher override, notify admin
-        if not is_admin:
-            create_notification(
-                role='ADMIN',
-                title='Venue Changed by Teacher',
-                message=f"{user.get_full_name()} changed venue for '{event.title}' from '{old_venue_name}' to '{new_venue.name}'. Reason: {reason}",
-                event=event,
-            )
-
-        messages.success(request, f"Venue changed to '{new_venue.name}'.")
-        return redirect('admin_my_events' if not is_admin else 'admin_event_list')
-
-    return render(request, 'reassign_venue.html', {
-        'event': event, 'venues': venues, 'is_admin': is_admin,
-        'can_override': True,
-    })
-
 # ===========================================================
 #  TEACHERS EVENT LIST
 # ===========================================================
@@ -881,7 +1109,7 @@ def reassign_venue(request, event_id):
     if not is_admin:
         if event.organizer != user:
             messages.error(request, "You can only reassign your own events.")
-            return redirect('teacher_my_events')
+            return redirect('teacher_my_events' if not is_admin else 'admin_my_events')
         if event.status != 'PENDING':
             messages.error(request, "Venue can only be changed while event is PENDING. Contact admin for approved events.")
             return redirect('check_status')
@@ -943,7 +1171,7 @@ def reassign_venue(request, event_id):
             )
 
         messages.success(request, f"Venue changed to '{new_venue.name}'.")
-        return redirect('teacher_my_events' if not is_admin else 'teachers_event_list')
+        return redirect('admin_event_list' if is_admin else 'teacher_my_events')
 
     return render(request, 'reassign_venue.html', {
         'event': event, 'venues': venues, 'is_admin': is_admin,
@@ -1010,7 +1238,7 @@ def update_event_teacher(request, event_id):
         else:
             messages.info(request, "No changes detected.")
 
-        return redirect('teachers_event_list')
+        return redirect('admin_event_list' if user.groups.filter(name="Admin").exists() else 'teachers_event_list')
 
     return render(request, "update_event.html", {"events": event})
 
@@ -1513,7 +1741,7 @@ def scan_pass(request, event_id):
 
     if not (is_admin or is_organizer or is_assigned):
         messages.error(request, "You don't have permission to scan passes for this event.")
-        return redirect('teacher_dashboard')
+        return redirect('main_page')
 
     return render(request, 'scan_pass.html', {'event': event})
 
@@ -1651,7 +1879,7 @@ def upload_certificate(request, event_id):
                     )
                 messages.success(request, f"Certificates uploaded for {registrations.count()} students.")
                 if request.user.groups.filter(name='Admin').exists():
-                    return redirect('teachers_event_list')
+                    return redirect('admin_logistics_overview')
                 return redirect('manage_events')
 
         elif 'certificate_file' in request.FILES:
@@ -1675,7 +1903,7 @@ def upload_certificate(request, event_id):
                 )
                 messages.success(request, f"Certificate uploaded for {student.get_full_name()}.")
                 if request.user.groups.filter(name='Admin').exists():
-                    return redirect('teachers_event_list')
+                    return redirect('admin_logistics_overview')
                 is_assigned_user = EventLogisticsAssignment.objects.filter(
                     event_id=event_id, assigned_teacher=request.user
                 ).exists()

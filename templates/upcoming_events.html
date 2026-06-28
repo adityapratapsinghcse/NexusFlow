@@ -1,4 +1,4 @@
-{% extends 'teacher_base.html' %}
+{% extends base_template %}
 {% load static %}
 
 {% block title %}Explore Events | Nexus{% endblock %}
@@ -239,7 +239,7 @@
     </header>
 
     <section class="search-section">
-        <form method="GET" action="{% url 'upcoming_events' %}" class="search-form" id="searchFilterForm">   
+        <form method="GET" action="{% if is_admin %}{% url 'admin_upcoming_events' %}{% elif is_student %}{% url 'student_upcoming_events' %} {% else %} {% url "teacher_upcoming_events"%}{% endif %}" class="search-form" id="searchFilterForm">   
             <input type="text" name="search" id="liveSearchInput" placeholder="Type to filter instantly..." value="{{ search_query }}">
             <select name="venue" id="venueSelect">
                 <option value="">All Venues</option>
