@@ -15,6 +15,197 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
     <style>
+        /* ============================================================
+   MOBILE RESPONSIVE — Complete Fix
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    /* --- NAVBAR --- */
+    .navbar {
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        gap: 8px;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .nav-left { order: 1; }
+
+    .nav-center {
+        order: 3;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        gap: 4px;
+        padding: 6px 0 2px;
+        flex-wrap: wrap;
+    }
+
+    .nav-item {
+        font-size: 0.65rem;
+        margin: 0 8px;
+    }
+
+    .nav-right {
+        order: 2;
+        gap: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    #button_main {
+        height: 24px !important;
+    }
+
+    /* --- HERO --- */
+    .hero {
+        height: 100svh;
+        padding: 0 16px;
+        margin-top: 0;
+    }
+
+    #text {
+        width: 95%;
+    }
+
+    /* --- UPCOMING EVENTS SECTION --- */
+    #upcoming { min-height: auto; }
+
+    #d_up {
+        padding: 16px 20px;
+        margin-bottom: 24px;
+    }
+
+    #up { height: 28px; }
+    #up1 { height: 12px; }
+
+    #h3 { padding-left: 20px; margin-bottom: 12px; }
+
+    .events-slider-wrapper {
+        padding: 20px 0 30px;
+    }
+
+    .swiper {
+        padding: 20px 0 40px;
+    }
+
+    .swiper-slide {
+        width: 220px !important;
+        height: 320px;
+    }
+
+    /* Hide nav arrows on mobile — swipe works natively */
+    .nav-control { display: none !important; }
+
+    /* --- ABOUT SECTION --- */
+    #about {
+        padding: 32px 16px 48px;
+        margin-top: 20px;
+        margin-bottom: 32px;
+    }
+
+    .about-row {
+        flex-direction: column;
+        gap: 28px;
+        margin-bottom: 40px;
+    }
+
+    .about-left, .about-right {
+        width: 100%;
+    }
+
+    .about-headline h2 {
+        font-size: 1.8rem;
+    }
+
+    .nf-badge {
+        max-width: 100%;
+    }
+
+    .about-body {
+        font-size: 13px;
+    }
+
+    .feature-pills {
+        gap: 8px;
+    }
+
+    .pill {
+        font-size: 11px;
+        padding: 6px 11px;
+    }
+
+    /* --- STATS + VIDEO ROW --- */
+    .about-row-2 {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .stats-col {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .stat-item {
+        padding: 16px 14px;
+    }
+
+    .stat-num {
+        font-size: 1.7rem;
+    }
+
+    .stat-label { font-size: 12px; }
+    .stat-sub { font-size: 10px; }
+
+    .video-col { width: 100%; }
+
+    .video-box {
+        height: 220px;
+        margin-left: 0;
+        border-radius: 16px;
+    }
+
+    /* --- TEAM SECTION --- */
+    .team-title { font-size: 1.5rem; }
+
+    .team-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .team-card { padding: 20px 10px; }
+
+    #rt { width: 100%; }
+
+    .link-dev img { height: 26px; }
+
+    /* --- TOAST NOTIFICATIONS --- */
+    .message-container {
+        top: auto;
+        bottom: 16px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-width: 100%;
+    }
+
+    .toast {
+        font-size: 0.82rem;
+        padding: 12px 14px;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 400px) {
+    .about-headline h2 { font-size: 1.5rem; }
+    .swiper-slide { width: 190px !important; height: 290px; }
+    .stats-col { grid-template-columns: 1fr 1fr; }
+    .team-grid { grid-template-columns: 1fr 1fr; }
+    .nav-item { font-size: 0.6rem; margin: 0 5px; }
+}
         :root {
             --primary-bg: #05071a;
             --card-bg: #0f1235;
@@ -200,13 +391,10 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         }
 
-<<<<<<< HEAD
         .swiper-wrapper {
             align-items: center;
         }
 
-=======
->>>>>>> 0aba069e60462ddf93acc3b15b774dd50fe7148c
         /* Focused center-most card layout */
         .swiper-slide-active {
             filter: brightness(1) blur(0px);
